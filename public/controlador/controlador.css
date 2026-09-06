@@ -1,0 +1,332 @@
+:root {
+  --bg: #14172e;
+  --surface: #1c2140;
+  --ink: #f2efe4;
+  --ink-soft: #a9adc9;
+  --gold: #e8bf5c;
+  --violet: #8462c9;
+  --verde: #4caf7d;
+  --vermelho: #d16060;
+  --gosma: #6ba832;
+  font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.oculto { display: none !important; }
+
+.tela {
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+}
+
+h1 { color: var(--gold); font-size: 1.8rem; }
+h2 { font-size: 1.4rem; }
+
+label {
+  display: block;
+  text-align: left;
+  margin: 16px 0 6px;
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+}
+
+input {
+  width: 100%;
+  padding: 14px;
+  font-size: 1.3rem;
+  border-radius: 10px;
+  border: none;
+  background: var(--surface);
+  color: var(--ink);
+  text-transform: uppercase;
+}
+
+input#campo-nome { text-transform: none; }
+
+button {
+  width: 100%;
+  padding: 16px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  border-radius: 10px;
+  border: none;
+  background: var(--gold);
+  color: #1c1608;
+  margin-top: 20px;
+}
+
+button:active { opacity: 0.8; }
+
+.erro { color: var(--vermelho); min-height: 1.2em; }
+.ajuda { color: var(--ink-soft); }
+
+#lista-jogadores {
+  list-style: none;
+  padding: 0;
+}
+
+#lista-jogadores li {
+  background: var(--surface);
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.categoria {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--violet);
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.alternativas {
+  display: grid;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.alternativa {
+  padding: 18px;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 2px solid transparent;
+  font-size: 1.1rem;
+}
+
+.alternativa.selecionada { border-color: var(--gold); }
+.alternativa:disabled { opacity: 0.5; }
+
+.pontos { font-size: 2rem; color: var(--gold); }
+
+#placar {
+  list-style: none;
+  padding: 0;
+}
+
+#placar li {
+  background: var(--surface);
+  margin-bottom: 6px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* ---------- Jogos de Poder ---------- */
+.poder-alvos {
+  display: grid;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.poder-alvo-btn {
+  padding: 14px;
+  font-size: 1.05rem;
+  margin-top: 0;
+  background: var(--violet);
+  color: #fff;
+  border-radius: 10px;
+  border: 2px solid transparent;
+}
+
+.poder-alvo-btn.selecionada { border-color: var(--gold); }
+.poder-alvo-btn:disabled { opacity: 0.5; }
+
+/* banner flutuante: aparece por cima de qualquer tela, não é uma .tela */
+#aviso-atingido {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  z-index: 20;
+  background: rgba(209, 96, 96, 0.95);
+  color: #fff;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+
+.area-alternativas {
+  position: relative;
+}
+
+.obstrucao {
+  position: absolute;
+  inset: 0;
+  background: rgba(20, 23, 46, 0.92);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px;
+  text-align: center;
+  z-index: 5;
+}
+
+.obstrucao-mensagem {
+  font-weight: 600;
+  color: var(--gold);
+}
+
+.obstrucao-toque {
+  width: 100%;
+  padding: 24px;
+  border-radius: 10px;
+  background: repeating-linear-gradient(135deg, #2a6fb0, #2a6fb0 10px, #1c4a78 10px, #1c4a78 20px);
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.1rem;
+  border: none;
+}
+
+.bolhas-area {
+  position: relative;
+  width: 100%;
+  height: 120px;
+}
+
+.bolha {
+  position: absolute;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--gosma);
+  border: none;
+  font-size: 1.3rem;
+}
+
+/* ---------- Linking ---------- */
+.linking-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.linking-item-full {
+  padding: 16px;
+  font-size: 1.05rem;
+  margin-top: 0;
+  background: var(--surface);
+  border: 2px solid transparent;
+  color: var(--ink);
+  border-radius: 10px;
+  text-align: left;
+}
+
+.linking-item-full.correto {
+  background: rgba(76, 175, 125, 0.2);
+  border-color: var(--verde);
+  color: var(--verde);
+}
+
+.linking-item-full.incorreto { background: rgba(209, 96, 96, 0.3); border-color: var(--vermelho); }
+.linking-item-full.usado { opacity: 0.35; }
+.linking-item-full:disabled { opacity: 0.6; }
+
+.linking-voltar {
+  margin-top: 6px;
+  background: transparent;
+  border: 2px solid var(--ink-soft);
+  color: var(--ink-soft);
+}
+
+.gabarito-lista {
+  list-style: none;
+  padding: 0;
+  text-align: left;
+  max-width: 100%;
+}
+
+.gabarito-lista li {
+  background: var(--surface);
+  margin-bottom: 6px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+/* ---------- Sorting ---------- */
+.sorting-itens {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.sorting-item {
+  background: var(--surface);
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.sorting-item-nome {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.sorting-item-botoes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.sorting-botao-categoria {
+  padding: 10px;
+  font-size: 0.85rem;
+  margin-top: 0;
+  background: var(--violet);
+  color: #fff;
+}
+
+.sorting-item.correto .sorting-item-botoes { opacity: 0.6; }
+.sorting-item.incorreto .sorting-botao-categoria.escolhida { background: var(--vermelho); }
+.sorting-item.correto .sorting-botao-categoria.escolhida { background: var(--verde); }
+
+/* ---------- Pirâmide do Conhecimento ---------- */
+#piramide-degrau { font-weight: 600; color: var(--gold); }
+
+.alternativa.errada-piramide {
+  background: rgba(209, 96, 96, 0.3);
+  border-color: var(--vermelho);
+  opacity: 0.6;
+}
+
+#piramide-posicoes-finais {
+  list-style: none;
+  padding: 0;
+}
+
+#piramide-posicoes-finais li {
+  background: var(--surface);
+  margin-bottom: 6px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+}
+
+#piramide-posicoes-finais li.vencedor {
+  border: 2px solid var(--gold);
+  color: var(--gold);
+  font-weight: 600;
+}

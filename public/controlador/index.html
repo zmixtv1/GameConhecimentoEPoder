@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>Conhecimento é Poder — Controle</title>
+  <link rel="stylesheet" href="controlador.css" />
+</head>
+<body>
+  <p class="oculto" id="aviso-atingido"></p>
+
+  <div id="tela-entrada" class="tela">
+    <h1>Conhecimento é Poder</h1>
+    <label>
+      Seu nome
+      <input id="campo-nome" type="text" maxlength="20" placeholder="Ex: Rodrigo" />
+    </label>
+    <label>
+      Código da sala
+      <input id="campo-codigo" type="text" maxlength="4" placeholder="AB3K" autocapitalize="characters" />
+    </label>
+    <button id="botao-entrar">Entrar</button>
+    <p id="mensagem-erro" class="erro"></p>
+  </div>
+
+  <div id="tela-aguardando" class="tela oculto">
+    <h2>Você entrou!</h2>
+    <p class="ajuda">Aguardando o anfitrião iniciar a partida...</p>
+    <ul id="lista-jogadores"></ul>
+    <button id="botao-iniciar" class="oculto">Iniciar partida</button>
+  </div>
+
+  <div id="tela-escolha-porta" class="tela oculto">
+    <p class="ajuda" id="rodada-rotulo"></p>
+    <h2>Escolha uma porta</h2>
+    <div class="alternativas" id="portas"></div>
+  </div>
+
+  <div id="tela-aguardando-porta" class="tela oculto">
+    <h2>Voto registrado!</h2>
+    <p class="ajuda">Aguardando os outros jogadores escolherem...</p>
+  </div>
+
+  <div id="tela-escolha-poder" class="tela oculto">
+    <p class="ajuda" id="poder-rodada-rotulo"></p>
+    <h2>Escolha um poder</h2>
+    <p class="ajuda" id="poder-tempo"></p>
+    <div class="alternativas" id="poder-tipos"></div>
+  </div>
+
+  <div id="tela-escolha-alvo" class="tela oculto">
+    <h2 id="alvo-titulo"></h2>
+    <p class="ajuda" id="alvo-tempo"></p>
+    <div class="poder-alvos" id="alvo-lista"></div>
+    <p class="ajuda oculto" id="alvo-usado-msg"></p>
+  </div>
+
+  <div id="tela-pergunta" class="tela oculto">
+    <p class="ajuda" id="progresso-rodada"></p>
+    <p class="categoria" id="pergunta-categoria"></p>
+    <h2 id="pergunta-texto"></h2>
+    <p class="ajuda oculto" id="fase-leitura">Leia com atenção... <span id="contagem-leitura"></span></p>
+
+    <div class="area-alternativas">
+      <div class="alternativas" id="alternativas"></div>
+      <div id="obstrucao" class="obstrucao oculto"></div>
+    </div>
+  </div>
+
+  <div id="tela-aguardando-outros" class="tela oculto">
+    <h2>Resposta enviada!</h2>
+    <p class="ajuda">Aguardando os outros jogadores...</p>
+  </div>
+
+  <div id="tela-resultado" class="tela oculto">
+    <h2 id="resultado-titulo"></h2>
+    <p id="resultado-pontos" class="pontos"></p>
+    <h3>Placar</h3>
+    <ol id="placar"></ol>
+    <button id="botao-proxima">Próxima pergunta</button>
+    <p class="ajuda oculto" id="status-proximo"></p>
+  </div>
+
+  <div id="tela-linking" class="tela oculto">
+    <p class="categoria" id="linking-tema"></p>
+    <h2 id="linking-titulo">Ligue os pares!</h2>
+    <p class="ajuda" id="linking-tempo"></p>
+    <p class="ajuda" id="linking-progresso"></p>
+    <div class="linking-lista" id="linking-lista"></div>
+  </div>
+
+  <div id="tela-resultado-linking" class="tela oculto">
+    <h2>Resultado da Associação</h2>
+    <p id="linking-pontos" class="pontos"></p>
+    <ol id="linking-gabarito" class="gabarito-lista"></ol>
+    <h3>Placar</h3>
+    <ol id="placar-linking"></ol>
+    <button id="botao-continuar-linking">Continuar</button>
+    <p class="ajuda oculto" id="status-continuar-linking"></p>
+  </div>
+
+  <div id="tela-sorting" class="tela oculto">
+    <h2>Classifique!</h2>
+    <p class="ajuda" id="sorting-tempo"></p>
+    <p class="categoria" id="sorting-categorias"></p>
+    <div id="sorting-itens" class="sorting-itens"></div>
+    <p class="ajuda" id="sorting-progresso"></p>
+  </div>
+
+  <div id="tela-resultado-sorting" class="tela oculto">
+    <h2>Resultado da Classificação</h2>
+    <p id="sorting-pontos" class="pontos"></p>
+    <ol id="sorting-gabarito" class="gabarito-lista"></ol>
+    <h3>Placar</h3>
+    <ol id="placar-sorting"></ol>
+    <button id="botao-continuar-sorting">Continuar</button>
+    <p class="ajuda oculto" id="status-continuar-sorting"></p>
+  </div>
+
+  <div id="tela-piramide" class="tela oculto">
+    <p class="ajuda" id="piramide-degrau">Degrau 0 de 0</p>
+    <h2>Pirâmide do Conhecimento</h2>
+    <p class="categoria" id="piramide-categoria"></p>
+    <h3 id="piramide-pergunta"></h3>
+    <div class="alternativas" id="piramide-alternativas"></div>
+  </div>
+
+  <div id="tela-resultado-piramide" class="tela oculto">
+    <h1 id="piramide-vencedor-titulo"></h1>
+    <h3>Posições finais</h3>
+    <ol id="piramide-posicoes-finais"></ol>
+    <button id="botao-continuar-piramide">Continuar</button>
+    <p class="ajuda oculto" id="status-continuar-piramide"></p>
+  </div>
+
+  <div id="tela-fim" class="tela oculto">
+    <h1 id="fim-titulo">Fim de partida!</h1>
+    <h3>Placar acumulado (Battle Rounds + Linking + Sorting)</h3>
+    <ol id="placar-final"></ol>
+  </div>
+
+  <script src="controlador.js"></script>
+</body>
+</html>

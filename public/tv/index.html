@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <title>Conhecimento é Poder — TV</title>
+  <link rel="stylesheet" href="tv.css" />
+</head>
+<body>
+  <div id="tela-lobby" class="tela">
+    <h1>Conhecimento é Poder</h1>
+    <p class="rotulo">Código da sala</p>
+    <div id="codigo-sala" class="codigo">----</div>
+    <p class="instrucao">
+      No celular, entre na mesma rede Wi-Fi e acesse o endereço do controle
+      mostrado pelo servidor, depois digite este código.
+    </p>
+    <h2>Jogadores conectados</h2>
+    <ul id="lista-jogadores" class="lista-jogadores"></ul>
+  </div>
+
+  <div id="tela-escolha-porta" class="tela oculto">
+    <p class="rotulo" id="rodada-rotulo"></p>
+    <h2>Escolham uma porta</h2>
+    <div class="portas" id="portas"></div>
+  </div>
+
+  <div id="tela-porta-escolhida" class="tela oculto">
+    <p class="rotulo" id="rodada-rotulo-2"></p>
+    <p class="categoria">O tema desta rodada é</p>
+    <h1 id="categoria-escolhida"></h1>
+  </div>
+
+  <div id="tela-escolha-poder" class="tela oculto">
+    <p class="rotulo" id="poder-rodada-rotulo"></p>
+    <h2>Escolhendo poderes...</h2>
+    <p class="rotulo" id="poder-tempo"></p>
+  </div>
+
+  <div id="tela-escolha-alvo" class="tela oculto">
+    <h2>Escolhendo em quem usar...</h2>
+    <p class="rotulo" id="alvo-tempo"></p>
+    <ul class="log-poderes" id="log-poderes"></ul>
+  </div>
+
+  <div id="tela-pergunta" class="tela oculto">
+    <p class="rotulo" id="progresso-rodada"></p>
+    <p class="categoria" id="pergunta-categoria"></p>
+    <h2 id="pergunta-texto"></h2>
+
+    <p class="fase-leitura" id="fase-leitura">Preparem-se... <span id="contagem-leitura"></span></p>
+
+    <div class="barra-tempo-fundo oculto" id="barra-tempo-fundo">
+      <div class="barra-tempo" id="barra-tempo"></div>
+    </div>
+    <div class="alternativas" id="alternativas"></div>
+    <p class="progresso" id="progresso-respostas"></p>
+  </div>
+
+  <div id="tela-resultado" class="tela oculto">
+    <h2>Resultado</h2>
+    <div class="alternativas" id="alternativas-resultado"></div>
+    <h3>Placar</h3>
+    <ol id="placar"></ol>
+    <p class="progresso" id="progresso-proximo"></p>
+  </div>
+
+  <div id="tela-linking" class="tela oculto">
+    <p class="categoria" id="linking-tema"></p>
+    <h2>Desafio de Associação</h2>
+    <p class="rotulo" id="linking-tempo"></p>
+    <ul class="progresso-jogadores" id="linking-progresso"></ul>
+  </div>
+
+  <div id="tela-resultado-linking" class="tela oculto">
+    <h2>Resultado da Associação</h2>
+    <ol class="gabarito-lista" id="linking-gabarito"></ol>
+    <h3>Placar</h3>
+    <ol id="placar-linking"></ol>
+    <p class="progresso" id="progresso-continuar-linking"></p>
+  </div>
+
+  <div id="tela-sorting" class="tela oculto">
+    <p class="categoria" id="sorting-categorias"></p>
+    <h2>Desafio de Classificação</h2>
+    <p class="rotulo" id="sorting-tempo"></p>
+    <ul class="progresso-jogadores" id="sorting-progresso"></ul>
+  </div>
+
+  <div id="tela-resultado-sorting" class="tela oculto">
+    <h2>Resultado da Classificação</h2>
+    <ol class="gabarito-lista" id="sorting-gabarito"></ol>
+    <h3>Placar</h3>
+    <ol id="placar-sorting"></ol>
+    <p class="progresso" id="progresso-continuar-sorting"></p>
+  </div>
+
+  <div id="tela-piramide" class="tela oculto">
+    <h2>Pirâmide do Conhecimento</h2>
+    <p class="rotulo" id="piramide-total-degraus"></p>
+    <ul class="piramide-corrida" id="piramide-corrida"></ul>
+  </div>
+
+  <div id="tela-resultado-piramide" class="tela oculto">
+    <h1 id="piramide-vencedor-titulo"></h1>
+    <h3>Posições finais</h3>
+    <ol id="piramide-posicoes-finais"></ol>
+    <p class="progresso" id="progresso-continuar-piramide"></p>
+  </div>
+
+  <div id="tela-fim" class="tela oculto">
+    <h1 id="fim-titulo">Fim de partida!</h1>
+    <h3>Placar acumulado (Battle Rounds + Linking + Sorting)</h3>
+    <ol id="placar-final"></ol>
+  </div>
+
+  <script src="tv.js"></script>
+</body>
+</html>

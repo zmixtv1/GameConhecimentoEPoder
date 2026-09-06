@@ -1,0 +1,4130 @@
+[
+  {
+    "id": 1,
+    "categoria": "Geografia",
+    "dificuldade": "facil",
+    "pergunta": "Qual é o maior país do mundo em extensão territorial?",
+    "resposta_correta": "Rússia",
+    "alternativas_erradas": [
+      "Canadá",
+      "China",
+      "Estados Unidos"
+    ]
+  },
+  {
+    "id": 2,
+    "categoria": "Geografia",
+    "dificuldade": "facil",
+    "pergunta": "Qual é o menor país do mundo em área?",
+    "resposta_correta": "Vaticano",
+    "alternativas_erradas": [
+      "Mônaco",
+      "San Marino",
+      "Liechtenstein"
+    ]
+  },
+  {
+    "id": 3,
+    "categoria": "Geografia",
+    "dificuldade": "medio",
+    "pergunta": "Qual continente tem o maior número de países?",
+    "resposta_correta": "África",
+    "alternativas_erradas": [
+      "Ásia",
+      "Europa",
+      "América"
+    ]
+  },
+  {
+    "id": 4,
+    "categoria": "Geografia",
+    "dificuldade": "medio",
+    "pergunta": "Qual é a capital da Austrália?",
+    "resposta_correta": "Camberra",
+    "alternativas_erradas": [
+      "Sydney",
+      "Melbourne",
+      "Perth"
+    ]
+  },
+  {
+    "id": 5,
+    "categoria": "Geografia",
+    "dificuldade": "medio",
+    "pergunta": "Qual é o maior deserto quente do mundo?",
+    "resposta_correta": "Saara",
+    "alternativas_erradas": [
+      "Deserto da Arábia",
+      "Kalahari",
+      "Gobi"
+    ]
+  },
+  {
+    "id": 6,
+    "categoria": "Geografia",
+    "dificuldade": "facil",
+    "pergunta": "Qual é a montanha mais alta do mundo acima do nível do mar?",
+    "resposta_correta": "Everest",
+    "alternativas_erradas": [
+      "K2",
+      "Kangchenjunga",
+      "Denali"
+    ]
+  },
+  {
+    "id": 7,
+    "categoria": "Geografia",
+    "dificuldade": "facil",
+    "pergunta": "Qual é o maior oceano do mundo em área?",
+    "resposta_correta": "Oceano Pacífico",
+    "alternativas_erradas": [
+      "Oceano Atlântico",
+      "Oceano Índico",
+      "Oceano Ártico"
+    ]
+  },
+  {
+    "id": 8,
+    "categoria": "Geografia",
+    "dificuldade": "facil",
+    "pergunta": "Em qual continente fica o Egito?",
+    "resposta_correta": "África",
+    "alternativas_erradas": [
+      "Ásia",
+      "Europa",
+      "Oceania"
+    ]
+  },
+  {
+    "id": 9,
+    "categoria": "História",
+    "dificuldade": "facil",
+    "pergunta": "Em que ano começou a Segunda Guerra Mundial?",
+    "resposta_correta": "1939",
+    "alternativas_erradas": [
+      "1914",
+      "1945",
+      "1938"
+    ]
+  },
+  {
+    "id": 10,
+    "categoria": "História",
+    "dificuldade": "medio",
+    "pergunta": "Quem foi o primeiro imperador do Brasil?",
+    "resposta_correta": "Dom Pedro I",
+    "alternativas_erradas": [
+      "Dom Pedro II",
+      "Dom João VI",
+      "Tiradentes"
+    ]
+  },
+  {
+    "id": 11,
+    "categoria": "História",
+    "dificuldade": "facil",
+    "pergunta": "Em que ano a esquadra de Pedro Álvares Cabral chegou ao Brasil?",
+    "resposta_correta": "1500",
+    "alternativas_erradas": [
+      "1492",
+      "1530",
+      "1822"
+    ]
+  },
+  {
+    "id": 12,
+    "categoria": "História",
+    "dificuldade": "facil",
+    "pergunta": "Qual civilização construiu as pirâmides de Gizé?",
+    "resposta_correta": "Egípcios antigos",
+    "alternativas_erradas": [
+      "Maias",
+      "Astecas",
+      "Babilônios"
+    ]
+  },
+  {
+    "id": 13,
+    "categoria": "História",
+    "dificuldade": "medio",
+    "pergunta": "Em que ano caiu o Muro de Berlim?",
+    "resposta_correta": "1989",
+    "alternativas_erradas": [
+      "1991",
+      "1985",
+      "1979"
+    ]
+  },
+  {
+    "id": 14,
+    "categoria": "História",
+    "dificuldade": "medio",
+    "pergunta": "Quem foi o líder da Revolução Francesa que depois se tornou imperador?",
+    "resposta_correta": "Napoleão Bonaparte",
+    "alternativas_erradas": [
+      "Luís XVI",
+      "Robespierre",
+      "Luís XIV"
+    ]
+  },
+  {
+    "id": 15,
+    "categoria": "História",
+    "dificuldade": "medio",
+    "pergunta": "Em que ano ocorreu a Proclamação da República no Brasil?",
+    "resposta_correta": "1889",
+    "alternativas_erradas": [
+      "1822",
+      "1888",
+      "1891"
+    ]
+  },
+  {
+    "id": 16,
+    "categoria": "História",
+    "dificuldade": "dificil",
+    "pergunta": "Qual foi a primeira civilização a usar a escrita cuneiforme?",
+    "resposta_correta": "Sumérios",
+    "alternativas_erradas": [
+      "Egípcios",
+      "Fenícios",
+      "Persas"
+    ]
+  },
+  {
+    "id": 17,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "facil",
+    "pergunta": "Qual é o maior planeta do sistema solar?",
+    "resposta_correta": "Júpiter",
+    "alternativas_erradas": [
+      "Saturno",
+      "Netuno",
+      "Urano"
+    ]
+  },
+  {
+    "id": 18,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "medio",
+    "pergunta": "Qual é o elemento químico mais abundante no universo?",
+    "resposta_correta": "Hidrogênio",
+    "alternativas_erradas": [
+      "Hélio",
+      "Oxigênio",
+      "Carbono"
+    ]
+  },
+  {
+    "id": 19,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "medio",
+    "pergunta": "Quantos ossos tem o corpo humano adulto?",
+    "resposta_correta": "206",
+    "alternativas_erradas": [
+      "186",
+      "226",
+      "256"
+    ]
+  },
+  {
+    "id": 20,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "facil",
+    "pergunta": "Qual é o animal terrestre mais rápido do mundo?",
+    "resposta_correta": "Guepardo",
+    "alternativas_erradas": [
+      "Leão",
+      "Antílope",
+      "Cavalo"
+    ]
+  },
+  {
+    "id": 21,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "facil",
+    "pergunta": "Qual órgão é responsável por bombear o sangue no corpo humano?",
+    "resposta_correta": "Coração",
+    "alternativas_erradas": [
+      "Pulmão",
+      "Fígado",
+      "Rim"
+    ]
+  },
+  {
+    "id": 22,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "facil",
+    "pergunta": "Qual gás os seres humanos liberam ao expirar, resultado da respiração celular?",
+    "resposta_correta": "Dióxido de carbono",
+    "alternativas_erradas": [
+      "Oxigênio",
+      "Hidrogênio",
+      "Metano"
+    ]
+  },
+  {
+    "id": 23,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "facil",
+    "pergunta": "Qual é o maior mamífero do mundo?",
+    "resposta_correta": "Baleia-azul",
+    "alternativas_erradas": [
+      "Elefante-africano",
+      "Baleia-jubarte",
+      "Girafa"
+    ]
+  },
+  {
+    "id": 24,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "facil",
+    "pergunta": "Quantos planetas existem no sistema solar, na classificação atual?",
+    "resposta_correta": "8",
+    "alternativas_erradas": [
+      "9",
+      "7",
+      "10"
+    ]
+  },
+  {
+    "id": 25,
+    "categoria": "Esportes",
+    "dificuldade": "facil",
+    "pergunta": "De quantos em quantos anos acontecem os Jogos Olímpicos de Verão?",
+    "resposta_correta": "A cada 4 anos",
+    "alternativas_erradas": [
+      "A cada 2 anos",
+      "A cada 3 anos",
+      "Todo ano"
+    ]
+  },
+  {
+    "id": 26,
+    "categoria": "Esportes",
+    "dificuldade": "medio",
+    "pergunta": "Quantos jogadores de linha (sem contar o goleiro) cada time de futebol coloca em campo?",
+    "resposta_correta": "10",
+    "alternativas_erradas": [
+      "9",
+      "11",
+      "8"
+    ]
+  },
+  {
+    "id": 27,
+    "categoria": "Esportes",
+    "dificuldade": "medio",
+    "pergunta": "Quantos jogadores titulares compõem um time de vôlei em quadra?",
+    "resposta_correta": "6",
+    "alternativas_erradas": [
+      "5",
+      "7",
+      "4"
+    ]
+  },
+  {
+    "id": 28,
+    "categoria": "Esportes",
+    "dificuldade": "facil",
+    "pergunta": "Qual país sediou a Copa do Mundo de 2014?",
+    "resposta_correta": "Brasil",
+    "alternativas_erradas": [
+      "África do Sul",
+      "Rússia",
+      "Catar"
+    ]
+  },
+  {
+    "id": 29,
+    "categoria": "Esportes",
+    "dificuldade": "facil",
+    "pergunta": "Em que esporte de combate as lutas ocorrem em um ringue e usam socos?",
+    "resposta_correta": "Boxe",
+    "alternativas_erradas": [
+      "Judô",
+      "Esgrima",
+      "Luta Livre"
+    ]
+  },
+  {
+    "id": 30,
+    "categoria": "Esportes",
+    "dificuldade": "medio",
+    "pergunta": "Quantos pontos vale um touchdown no futebol americano, sem contar a conversão?",
+    "resposta_correta": "6",
+    "alternativas_erradas": [
+      "7",
+      "3",
+      "8"
+    ]
+  },
+  {
+    "id": 31,
+    "categoria": "Esportes",
+    "dificuldade": "facil",
+    "pergunta": "Qual país tem mais títulos de Copa do Mundo de futebol masculina?",
+    "resposta_correta": "Brasil",
+    "alternativas_erradas": [
+      "Alemanha",
+      "Itália",
+      "Argentina"
+    ]
+  },
+  {
+    "id": 32,
+    "categoria": "Esportes",
+    "dificuldade": "medio",
+    "pergunta": "Qual modalidade de natação combina os quatro estilos (borboleta, costas, peito e livre) em uma única prova?",
+    "resposta_correta": "Nado medley",
+    "alternativas_erradas": [
+      "Nado sincronizado",
+      "Revezamento livre",
+      "Maratona aquática"
+    ]
+  },
+  {
+    "id": 33,
+    "categoria": "Cinema e TV",
+    "dificuldade": "facil",
+    "pergunta": "Quem dirigiu o filme \"Tubarão\" (1975)?",
+    "resposta_correta": "Steven Spielberg",
+    "alternativas_erradas": [
+      "George Lucas",
+      "Martin Scorsese",
+      "James Cameron"
+    ]
+  },
+  {
+    "id": 34,
+    "categoria": "Cinema e TV",
+    "dificuldade": "medio",
+    "pergunta": "Qual foi o primeiro longa-metragem de animação da Disney?",
+    "resposta_correta": "Branca de Neve e os Sete Anões",
+    "alternativas_erradas": [
+      "Pinóquio",
+      "Fantasia",
+      "Cinderela"
+    ]
+  },
+  {
+    "id": 35,
+    "categoria": "Cinema e TV",
+    "dificuldade": "facil",
+    "pergunta": "Em qual trilogia de filmes aparece o personagem Frodo Bolseiro?",
+    "resposta_correta": "O Senhor dos Anéis",
+    "alternativas_erradas": [
+      "Star Wars",
+      "Harry Potter",
+      "Jogos Vorazes"
+    ]
+  },
+  {
+    "id": 36,
+    "categoria": "Cinema e TV",
+    "dificuldade": "facil",
+    "pergunta": "Qual ator interpretou o Homem de Ferro nos filmes da Marvel?",
+    "resposta_correta": "Robert Downey Jr.",
+    "alternativas_erradas": [
+      "Chris Evans",
+      "Chris Hemsworth",
+      "Mark Ruffalo"
+    ]
+  },
+  {
+    "id": 37,
+    "categoria": "Cinema e TV",
+    "dificuldade": "medio",
+    "pergunta": "Qual é o nome do café onde os personagens de \"Friends\" se encontram?",
+    "resposta_correta": "Central Perk",
+    "alternativas_erradas": [
+      "MacLaren's",
+      "Monk's Café",
+      "Central Park"
+    ]
+  },
+  {
+    "id": 38,
+    "categoria": "Cinema e TV",
+    "dificuldade": "facil",
+    "pergunta": "Qual filme brasileiro venceu o Oscar de Melhor Filme Internacional em 2025?",
+    "resposta_correta": "Ainda Estou Aqui",
+    "alternativas_erradas": [
+      "Cidade de Deus",
+      "Central do Brasil",
+      "Tropa de Elite"
+    ]
+  },
+  {
+    "id": 39,
+    "categoria": "Cinema e TV",
+    "dificuldade": "facil",
+    "pergunta": "Qual atriz interpreta Hermione Granger na saga \"Harry Potter\"?",
+    "resposta_correta": "Emma Watson",
+    "alternativas_erradas": [
+      "Emma Stone",
+      "Emma Roberts",
+      "Evanna Lynch"
+    ]
+  },
+  {
+    "id": 40,
+    "categoria": "Cinema e TV",
+    "dificuldade": "medio",
+    "pergunta": "Em que ano o programa \"Chaves\" estreou no Brasil, exibido pelo SBT?",
+    "resposta_correta": "1984",
+    "alternativas_erradas": [
+      "1973",
+      "1990",
+      "1988"
+    ]
+  },
+  {
+    "id": 41,
+    "categoria": "Música",
+    "dificuldade": "medio",
+    "pergunta": "Qual banda gravou o álbum \"Abbey Road\"?",
+    "resposta_correta": "The Beatles",
+    "alternativas_erradas": [
+      "The Rolling Stones",
+      "Pink Floyd",
+      "Queen"
+    ]
+  },
+  {
+    "id": 42,
+    "categoria": "Música",
+    "dificuldade": "facil",
+    "pergunta": "Qual artista é conhecido como o \"Rei do Pop\"?",
+    "resposta_correta": "Michael Jackson",
+    "alternativas_erradas": [
+      "Elvis Presley",
+      "Prince",
+      "Justin Timberlake"
+    ]
+  },
+  {
+    "id": 43,
+    "categoria": "Música",
+    "dificuldade": "facil",
+    "pergunta": "Qual instrumento musical tem 88 teclas?",
+    "resposta_correta": "Piano",
+    "alternativas_erradas": [
+      "Acordeon",
+      "Órgão",
+      "Harpa"
+    ]
+  },
+  {
+    "id": 44,
+    "categoria": "Música",
+    "dificuldade": "facil",
+    "pergunta": "Quem canta a música \"Ai Se Eu Te Pego\"?",
+    "resposta_correta": "Michel Teló",
+    "alternativas_erradas": [
+      "Gusttavo Lima",
+      "Luan Santana",
+      "Wesley Safadão"
+    ]
+  },
+  {
+    "id": 45,
+    "categoria": "Música",
+    "dificuldade": "medio",
+    "pergunta": "Qual gênero musical, nascido no Rio de Janeiro, é considerado símbolo da música popular brasileira?",
+    "resposta_correta": "Samba",
+    "alternativas_erradas": [
+      "Forró",
+      "Bossa Nova",
+      "Axé"
+    ]
+  },
+  {
+    "id": 46,
+    "categoria": "Música",
+    "dificuldade": "medio",
+    "pergunta": "Quem compôs a Nona Sinfonia, com o famoso \"Hino à Alegria\"?",
+    "resposta_correta": "Beethoven",
+    "alternativas_erradas": [
+      "Mozart",
+      "Bach",
+      "Chopin"
+    ]
+  },
+  {
+    "id": 47,
+    "categoria": "Música",
+    "dificuldade": "facil",
+    "pergunta": "Qual cantora é conhecida como \"Rainha do Pop\"?",
+    "resposta_correta": "Madonna",
+    "alternativas_erradas": [
+      "Beyoncé",
+      "Lady Gaga",
+      "Rihanna"
+    ]
+  },
+  {
+    "id": 48,
+    "categoria": "Música",
+    "dificuldade": "dificil",
+    "pergunta": "O tango tem origem na região do Rio da Prata, entre quais dois países?",
+    "resposta_correta": "Argentina e Uruguai",
+    "alternativas_erradas": [
+      "Brasil e Paraguai",
+      "Chile e Peru",
+      "México e Cuba"
+    ]
+  },
+  {
+    "id": 49,
+    "categoria": "Games",
+    "dificuldade": "facil",
+    "pergunta": "Qual empresa criou o personagem Mario?",
+    "resposta_correta": "Nintendo",
+    "alternativas_erradas": [
+      "Sega",
+      "Sony",
+      "Capcom"
+    ]
+  },
+  {
+    "id": 50,
+    "categoria": "Games",
+    "dificuldade": "medio",
+    "pergunta": "Em que ano foi lançado o primeiro \"Super Mario Bros.\"?",
+    "resposta_correta": "1985",
+    "alternativas_erradas": [
+      "1981",
+      "1990",
+      "1983"
+    ]
+  },
+  {
+    "id": 51,
+    "categoria": "Games",
+    "dificuldade": "facil",
+    "pergunta": "Qual é o nome do protagonista da série \"The Legend of Zelda\"?",
+    "resposta_correta": "Link",
+    "alternativas_erradas": [
+      "Zelda",
+      "Ganon",
+      "Epona"
+    ]
+  },
+  {
+    "id": 52,
+    "categoria": "Games",
+    "dificuldade": "facil",
+    "pergunta": "Qual empresa desenvolveu o jogo battle royale \"Fortnite\"?",
+    "resposta_correta": "Epic Games",
+    "alternativas_erradas": [
+      "Activision",
+      "Ubisoft",
+      "EA"
+    ]
+  },
+  {
+    "id": 53,
+    "categoria": "Games",
+    "dificuldade": "medio",
+    "pergunta": "Qual é o console mais vendido da história até hoje?",
+    "resposta_correta": "PlayStation 2",
+    "alternativas_erradas": [
+      "Nintendo Switch",
+      "Game Boy",
+      "PlayStation 4"
+    ]
+  },
+  {
+    "id": 54,
+    "categoria": "Games",
+    "dificuldade": "medio",
+    "pergunta": "Em qual franquia de jogos o protagonista é conhecido como \"Master Chief\"?",
+    "resposta_correta": "Halo",
+    "alternativas_erradas": [
+      "Gears of War",
+      "Destiny",
+      "Call of Duty"
+    ]
+  },
+  {
+    "id": 55,
+    "categoria": "Games",
+    "dificuldade": "medio",
+    "pergunta": "Qual empresa é dona da franquia \"Call of Duty\"?",
+    "resposta_correta": "Activision",
+    "alternativas_erradas": [
+      "EA",
+      "Ubisoft",
+      "Take-Two"
+    ]
+  },
+  {
+    "id": 56,
+    "categoria": "Games",
+    "dificuldade": "facil",
+    "pergunta": "Qual é o nome do vilão principal na franquia \"Sonic the Hedgehog\"?",
+    "resposta_correta": "Dr. Robotnik (Dr. Eggman)",
+    "alternativas_erradas": [
+      "Bowser",
+      "Dr. Wily",
+      "Ganondorf"
+    ]
+  },
+  {
+    "id": 57,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "facil",
+    "pergunta": "Quem pintou a \"Mona Lisa\"?",
+    "resposta_correta": "Leonardo da Vinci",
+    "alternativas_erradas": [
+      "Michelangelo",
+      "Rafael",
+      "Botticelli"
+    ]
+  },
+  {
+    "id": 58,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "facil",
+    "pergunta": "Quem escreveu \"Dom Casmurro\"?",
+    "resposta_correta": "Machado de Assis",
+    "alternativas_erradas": [
+      "José de Alencar",
+      "Guimarães Rosa",
+      "Jorge Amado"
+    ]
+  },
+  {
+    "id": 59,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "medio",
+    "pergunta": "Qual escritor brasileiro escreveu \"Grande Sertão: Veredas\"?",
+    "resposta_correta": "Guimarães Rosa",
+    "alternativas_erradas": [
+      "Machado de Assis",
+      "Clarice Lispector",
+      "Graciliano Ramos"
+    ]
+  },
+  {
+    "id": 60,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "facil",
+    "pergunta": "Quem pintou \"A Noite Estrelada\"?",
+    "resposta_correta": "Vincent van Gogh",
+    "alternativas_erradas": [
+      "Claude Monet",
+      "Pablo Picasso",
+      "Salvador Dalí"
+    ]
+  },
+  {
+    "id": 61,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "facil",
+    "pergunta": "Qual é o nome do livro que inaugura a saga \"Harry Potter\"?",
+    "resposta_correta": "Harry Potter e a Pedra Filosofal",
+    "alternativas_erradas": [
+      "Harry Potter e a Câmara Secreta",
+      "Harry Potter e o Cálice de Fogo",
+      "Harry Potter e o Prisioneiro de Azkaban"
+    ]
+  },
+  {
+    "id": 62,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "medio",
+    "pergunta": "Quem escreveu \"Dom Quixote\"?",
+    "resposta_correta": "Miguel de Cervantes",
+    "alternativas_erradas": [
+      "Fernando Pessoa",
+      "Gabriel García Márquez",
+      "Jorge Luis Borges"
+    ]
+  },
+  {
+    "id": 63,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "medio",
+    "pergunta": "Qual movimento artístico brasileiro teve a Semana de Arte Moderna de 1922 como marco?",
+    "resposta_correta": "Modernismo",
+    "alternativas_erradas": [
+      "Romantismo",
+      "Barroco",
+      "Realismo"
+    ]
+  },
+  {
+    "id": 64,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "facil",
+    "pergunta": "Quem pintou o teto da Capela Sistina?",
+    "resposta_correta": "Michelangelo",
+    "alternativas_erradas": [
+      "Rafael",
+      "Leonardo da Vinci",
+      "Ticiano"
+    ]
+  },
+  {
+    "id": 65,
+    "categoria": "Geografia",
+    "dificuldade": "facil",
+    "pergunta": "Qual é a capital da França?",
+    "resposta_correta": "Paris",
+    "alternativas_erradas": [
+      "Londres",
+      "Berlim",
+      "Roma"
+    ]
+  },
+  {
+    "id": 66,
+    "categoria": "Geografia",
+    "dificuldade": "facil",
+    "pergunta": "Qual é o rio mais longo da América do Sul?",
+    "resposta_correta": "Amazonas",
+    "alternativas_erradas": [
+      "São Francisco",
+      "Paraná",
+      "Orinoco"
+    ]
+  },
+  {
+    "id": 67,
+    "categoria": "Geografia",
+    "dificuldade": "facil",
+    "pergunta": "Qual é a capital do Japão?",
+    "resposta_correta": "Tóquio",
+    "alternativas_erradas": [
+      "Osaka",
+      "Kyoto",
+      "Yokohama"
+    ]
+  },
+  {
+    "id": 68,
+    "categoria": "Geografia",
+    "dificuldade": "facil",
+    "pergunta": "Em qual país fica a Torre Eiffel?",
+    "resposta_correta": "França",
+    "alternativas_erradas": [
+      "Itália",
+      "Espanha",
+      "Bélgica"
+    ]
+  },
+  {
+    "id": 69,
+    "categoria": "Geografia",
+    "dificuldade": "medio",
+    "pergunta": "Qual é o país mais populoso do mundo atualmente?",
+    "resposta_correta": "Índia",
+    "alternativas_erradas": [
+      "China",
+      "Estados Unidos",
+      "Indonésia"
+    ]
+  },
+  {
+    "id": 70,
+    "categoria": "Geografia",
+    "dificuldade": "facil",
+    "pergunta": "Qual é a capital da Itália?",
+    "resposta_correta": "Roma",
+    "alternativas_erradas": [
+      "Milão",
+      "Nápoles",
+      "Veneza"
+    ]
+  },
+  {
+    "id": 71,
+    "categoria": "Geografia",
+    "dificuldade": "medio",
+    "pergunta": "Quantos estados tem o Brasil?",
+    "resposta_correta": "26",
+    "alternativas_erradas": [
+      "25",
+      "27",
+      "24"
+    ]
+  },
+  {
+    "id": 72,
+    "categoria": "Geografia",
+    "dificuldade": "medio",
+    "pergunta": "Qual é a capital do Canadá?",
+    "resposta_correta": "Ottawa",
+    "alternativas_erradas": [
+      "Toronto",
+      "Vancouver",
+      "Montreal"
+    ]
+  },
+  {
+    "id": 73,
+    "categoria": "Geografia",
+    "dificuldade": "medio",
+    "pergunta": "Qual é o menor continente do planeta em área?",
+    "resposta_correta": "Oceania",
+    "alternativas_erradas": [
+      "Europa",
+      "Antártida",
+      "América do Sul"
+    ]
+  },
+  {
+    "id": 74,
+    "categoria": "Geografia",
+    "dificuldade": "facil",
+    "pergunta": "Em qual país está localizada a Grande Muralha?",
+    "resposta_correta": "China",
+    "alternativas_erradas": [
+      "Mongólia",
+      "Coreia do Sul",
+      "Japão"
+    ]
+  },
+  {
+    "id": 75,
+    "categoria": "Geografia",
+    "dificuldade": "facil",
+    "pergunta": "Qual é a capital da Argentina?",
+    "resposta_correta": "Buenos Aires",
+    "alternativas_erradas": [
+      "Córdoba",
+      "Rosário",
+      "Mendoza"
+    ]
+  },
+  {
+    "id": 76,
+    "categoria": "Geografia",
+    "dificuldade": "facil",
+    "pergunta": "Qual é o país com maior população da América do Sul?",
+    "resposta_correta": "Brasil",
+    "alternativas_erradas": [
+      "Argentina",
+      "Colômbia",
+      "Peru"
+    ]
+  },
+  {
+    "id": 77,
+    "categoria": "Geografia",
+    "dificuldade": "medio",
+    "pergunta": "Em qual oceano fica o Triângulo das Bermudas?",
+    "resposta_correta": "Oceano Atlântico",
+    "alternativas_erradas": [
+      "Oceano Pacífico",
+      "Oceano Índico",
+      "Oceano Ártico"
+    ]
+  },
+  {
+    "id": 78,
+    "categoria": "Geografia",
+    "dificuldade": "facil",
+    "pergunta": "Qual é a capital da Rússia?",
+    "resposta_correta": "Moscou",
+    "alternativas_erradas": [
+      "São Petersburgo",
+      "Kiev",
+      "Minsk"
+    ]
+  },
+  {
+    "id": 79,
+    "categoria": "Geografia",
+    "dificuldade": "medio",
+    "pergunta": "Qual é o único país que também é um continente?",
+    "resposta_correta": "Austrália",
+    "alternativas_erradas": [
+      "Groenlândia",
+      "Nova Zelândia",
+      "Madagascar"
+    ]
+  },
+  {
+    "id": 80,
+    "categoria": "Geografia",
+    "dificuldade": "facil",
+    "pergunta": "Qual é a capital do México?",
+    "resposta_correta": "Cidade do México",
+    "alternativas_erradas": [
+      "Guadalajara",
+      "Monterrey",
+      "Cancún"
+    ]
+  },
+  {
+    "id": 81,
+    "categoria": "Geografia",
+    "dificuldade": "medio",
+    "pergunta": "Qual cordilheira percorre a costa oeste da América do Sul?",
+    "resposta_correta": "Cordilheira dos Andes",
+    "alternativas_erradas": [
+      "Himalaia",
+      "Montanhas Rochosas",
+      "Alpes"
+    ]
+  },
+  {
+    "id": 82,
+    "categoria": "Geografia",
+    "dificuldade": "dificil",
+    "pergunta": "Qual é o maior lago de água doce do mundo em área?",
+    "resposta_correta": "Lago Superior",
+    "alternativas_erradas": [
+      "Lago Vitória",
+      "Mar Cáspio",
+      "Lago Baikal"
+    ]
+  },
+  {
+    "id": 83,
+    "categoria": "Geografia",
+    "dificuldade": "facil",
+    "pergunta": "Qual país tem formato de bota na Europa?",
+    "resposta_correta": "Itália",
+    "alternativas_erradas": [
+      "Grécia",
+      "Portugal",
+      "Croácia"
+    ]
+  },
+  {
+    "id": 84,
+    "categoria": "Geografia",
+    "dificuldade": "facil",
+    "pergunta": "Qual é a capital de Portugal?",
+    "resposta_correta": "Lisboa",
+    "alternativas_erradas": [
+      "Porto",
+      "Faro",
+      "Braga"
+    ]
+  },
+  {
+    "id": 85,
+    "categoria": "Geografia",
+    "dificuldade": "medio",
+    "pergunta": "Em qual continente está o deserto do Atacama?",
+    "resposta_correta": "América do Sul",
+    "alternativas_erradas": [
+      "África",
+      "Ásia",
+      "América do Norte"
+    ]
+  },
+  {
+    "id": 86,
+    "categoria": "Geografia",
+    "dificuldade": "facil",
+    "pergunta": "Qual é o país mais extenso da América do Sul?",
+    "resposta_correta": "Brasil",
+    "alternativas_erradas": [
+      "Argentina",
+      "Peru",
+      "Colômbia"
+    ]
+  },
+  {
+    "id": 87,
+    "categoria": "Geografia",
+    "dificuldade": "dificil",
+    "pergunta": "Qual estreito separa a Europa da África no ponto mais próximo?",
+    "resposta_correta": "Estreito de Gibraltar",
+    "alternativas_erradas": [
+      "Canal da Mancha",
+      "Estreito de Bósforo",
+      "Canal do Panamá"
+    ]
+  },
+  {
+    "id": 88,
+    "categoria": "Geografia",
+    "dificuldade": "facil",
+    "pergunta": "Qual é a capital da Alemanha?",
+    "resposta_correta": "Berlim",
+    "alternativas_erradas": [
+      "Munique",
+      "Frankfurt",
+      "Hamburgo"
+    ]
+  },
+  {
+    "id": 89,
+    "categoria": "Geografia",
+    "dificuldade": "medio",
+    "pergunta": "Qual rio banha a cidade do Cairo, no Egito?",
+    "resposta_correta": "Rio Nilo",
+    "alternativas_erradas": [
+      "Rio Tigre",
+      "Rio Eufrates",
+      "Rio Congo"
+    ]
+  },
+  {
+    "id": 90,
+    "categoria": "Geografia",
+    "dificuldade": "medio",
+    "pergunta": "Qual é o nome do fenômeno associado ao degelo das calotas polares e ao aumento da temperatura média do planeta?",
+    "resposta_correta": "Aquecimento global",
+    "alternativas_erradas": [
+      "El Niño",
+      "La Niña",
+      "Efeito Coriolis"
+    ]
+  },
+  {
+    "id": 91,
+    "categoria": "Geografia",
+    "dificuldade": "facil",
+    "pergunta": "Qual é a capital da Espanha?",
+    "resposta_correta": "Madrid",
+    "alternativas_erradas": [
+      "Barcelona",
+      "Sevilha",
+      "Valência"
+    ]
+  },
+  {
+    "id": 92,
+    "categoria": "Geografia",
+    "dificuldade": "facil",
+    "pergunta": "Qual país é conhecido como terra do sol nascente?",
+    "resposta_correta": "Japão",
+    "alternativas_erradas": [
+      "China",
+      "Coreia do Sul",
+      "Tailândia"
+    ]
+  },
+  {
+    "id": 93,
+    "categoria": "Geografia",
+    "dificuldade": "medio",
+    "pergunta": "Qual canal artificial liga o Oceano Atlântico ao Pacífico na América Central?",
+    "resposta_correta": "Canal do Panamá",
+    "alternativas_erradas": [
+      "Canal de Suez",
+      "Estreito de Magalhães",
+      "Canal da Mancha"
+    ]
+  },
+  {
+    "id": 94,
+    "categoria": "Geografia",
+    "dificuldade": "medio",
+    "pergunta": "Em qual país fica o Monte Kilimanjaro, ponto mais alto da África?",
+    "resposta_correta": "Tanzânia",
+    "alternativas_erradas": [
+      "Quênia",
+      "Etiópia",
+      "África do Sul"
+    ]
+  },
+  {
+    "id": 95,
+    "categoria": "Geografia",
+    "dificuldade": "facil",
+    "pergunta": "Qual é a capital da China?",
+    "resposta_correta": "Pequim",
+    "alternativas_erradas": [
+      "Xangai",
+      "Hong Kong",
+      "Cantão"
+    ]
+  },
+  {
+    "id": 96,
+    "categoria": "Geografia",
+    "dificuldade": "dificil",
+    "pergunta": "Qual é o fosso oceânico mais profundo do planeta?",
+    "resposta_correta": "Fossa das Marianas",
+    "alternativas_erradas": [
+      "Fossa de Porto Rico",
+      "Fossa do Peru-Chile",
+      "Fossa das Tonga"
+    ]
+  },
+  {
+    "id": 97,
+    "categoria": "Geografia",
+    "dificuldade": "facil",
+    "pergunta": "Em qual país fica Machu Picchu?",
+    "resposta_correta": "Peru",
+    "alternativas_erradas": [
+      "Bolívia",
+      "Equador",
+      "Chile"
+    ]
+  },
+  {
+    "id": 98,
+    "categoria": "Geografia",
+    "dificuldade": "medio",
+    "pergunta": "Qual é a capital da Coreia do Sul?",
+    "resposta_correta": "Seul",
+    "alternativas_erradas": [
+      "Busan",
+      "Incheon",
+      "Daegu"
+    ]
+  },
+  {
+    "id": 99,
+    "categoria": "Geografia",
+    "dificuldade": "dificil",
+    "pergunta": "Qual estreito separa a Ásia da América do Norte?",
+    "resposta_correta": "Estreito de Bering",
+    "alternativas_erradas": [
+      "Estreito de Gibraltar",
+      "Canal do Panamá",
+      "Estreito de Málaca"
+    ]
+  },
+  {
+    "id": 100,
+    "categoria": "História",
+    "dificuldade": "facil",
+    "pergunta": "Em que ano terminou a Segunda Guerra Mundial?",
+    "resposta_correta": "1945",
+    "alternativas_erradas": [
+      "1943",
+      "1948",
+      "1939"
+    ]
+  },
+  {
+    "id": 101,
+    "categoria": "História",
+    "dificuldade": "medio",
+    "pergunta": "Quem foi o primeiro presidente do Brasil?",
+    "resposta_correta": "Deodoro da Fonseca",
+    "alternativas_erradas": [
+      "Getúlio Vargas",
+      "Prudente de Morais",
+      "Floriano Peixoto"
+    ]
+  },
+  {
+    "id": 102,
+    "categoria": "História",
+    "dificuldade": "medio",
+    "pergunta": "Em que século ocorreu a Revolução Francesa?",
+    "resposta_correta": "Século XVIII",
+    "alternativas_erradas": [
+      "Século XVII",
+      "Século XIX",
+      "Século XVI"
+    ]
+  },
+  {
+    "id": 103,
+    "categoria": "História",
+    "dificuldade": "facil",
+    "pergunta": "Qual navegador chegou à América em 1492?",
+    "resposta_correta": "Cristóvão Colombo",
+    "alternativas_erradas": [
+      "Vasco da Gama",
+      "Fernão de Magalhães",
+      "Pedro Álvares Cabral"
+    ]
+  },
+  {
+    "id": 104,
+    "categoria": "História",
+    "dificuldade": "facil",
+    "pergunta": "Qual muro dividia a cidade de Berlim durante a Guerra Fria?",
+    "resposta_correta": "Muro de Berlim",
+    "alternativas_erradas": [
+      "Muralha da China",
+      "Linha Maginot",
+      "Cortina de Ferro"
+    ]
+  },
+  {
+    "id": 105,
+    "categoria": "História",
+    "dificuldade": "facil",
+    "pergunta": "Em que ano o homem pisou na Lua pela primeira vez?",
+    "resposta_correta": "1969",
+    "alternativas_erradas": [
+      "1965",
+      "1972",
+      "1959"
+    ]
+  },
+  {
+    "id": 106,
+    "categoria": "História",
+    "dificuldade": "facil",
+    "pergunta": "Quem foi o líder nazista da Alemanha durante a Segunda Guerra Mundial?",
+    "resposta_correta": "Adolf Hitler",
+    "alternativas_erradas": [
+      "Joseph Stalin",
+      "Benito Mussolini",
+      "Winston Churchill"
+    ]
+  },
+  {
+    "id": 107,
+    "categoria": "História",
+    "dificuldade": "facil",
+    "pergunta": "Qual navio afundou em 1912 após colidir com um iceberg?",
+    "resposta_correta": "Titanic",
+    "alternativas_erradas": [
+      "Lusitania",
+      "Britannic",
+      "Queen Mary"
+    ]
+  },
+  {
+    "id": 108,
+    "categoria": "História",
+    "dificuldade": "medio",
+    "pergunta": "Em que ano foi assinada a Lei Áurea, que aboliu a escravidão no Brasil?",
+    "resposta_correta": "1888",
+    "alternativas_erradas": [
+      "1889",
+      "1822",
+      "1850"
+    ]
+  },
+  {
+    "id": 109,
+    "categoria": "História",
+    "dificuldade": "medio",
+    "pergunta": "Em que década Getúlio Vargas iniciou seu primeiro governo no Brasil, por meio da Revolução de 1930?",
+    "resposta_correta": "1930",
+    "alternativas_erradas": [
+      "1920",
+      "1940",
+      "1950"
+    ]
+  },
+  {
+    "id": 110,
+    "categoria": "História",
+    "dificuldade": "facil",
+    "pergunta": "Qual civilização antiga construiu o Coliseu?",
+    "resposta_correta": "Romana",
+    "alternativas_erradas": [
+      "Grega",
+      "Egípcia",
+      "Persa"
+    ]
+  },
+  {
+    "id": 111,
+    "categoria": "História",
+    "dificuldade": "facil",
+    "pergunta": "Em que ano ocorreram os atentados de 11 de setembro nos Estados Unidos?",
+    "resposta_correta": "2001",
+    "alternativas_erradas": [
+      "1999",
+      "2003",
+      "1998"
+    ]
+  },
+  {
+    "id": 112,
+    "categoria": "História",
+    "dificuldade": "medio",
+    "pergunta": "Joana d'Arc foi heroína de qual país durante a Guerra dos Cem Anos?",
+    "resposta_correta": "França",
+    "alternativas_erradas": [
+      "Inglaterra",
+      "Espanha",
+      "Portugal"
+    ]
+  },
+  {
+    "id": 113,
+    "categoria": "História",
+    "dificuldade": "dificil",
+    "pergunta": "Quem comandou a expedição que teria sido a primeira a dar a volta ao mundo, apesar de morrer antes de completá-la?",
+    "resposta_correta": "Fernão de Magalhães",
+    "alternativas_erradas": [
+      "Vasco da Gama",
+      "Cristóvão Colombo",
+      "Américo Vespúcio"
+    ]
+  },
+  {
+    "id": 114,
+    "categoria": "História",
+    "dificuldade": "facil",
+    "pergunta": "Em que ano começou a Primeira Guerra Mundial?",
+    "resposta_correta": "1914",
+    "alternativas_erradas": [
+      "1917",
+      "1912",
+      "1918"
+    ]
+  },
+  {
+    "id": 115,
+    "categoria": "História",
+    "dificuldade": "facil",
+    "pergunta": "Quem foi o primeiro presidente dos Estados Unidos?",
+    "resposta_correta": "George Washington",
+    "alternativas_erradas": [
+      "Thomas Jefferson",
+      "Abraham Lincoln",
+      "Benjamin Franklin"
+    ]
+  },
+  {
+    "id": 116,
+    "categoria": "História",
+    "dificuldade": "medio",
+    "pergunta": "Qual evento histórico é marcado pela queda da Bastilha, em Paris?",
+    "resposta_correta": "Revolução Francesa",
+    "alternativas_erradas": [
+      "Revolução Industrial",
+      "Revolução Russa",
+      "Guerra dos Cem Anos"
+    ]
+  },
+  {
+    "id": 117,
+    "categoria": "História",
+    "dificuldade": "facil",
+    "pergunta": "Em que ano foi proclamada a independência do Brasil?",
+    "resposta_correta": "1822",
+    "alternativas_erradas": [
+      "1808",
+      "1889",
+      "1500"
+    ]
+  },
+  {
+    "id": 118,
+    "categoria": "História",
+    "dificuldade": "medio",
+    "pergunta": "Qual imperador romano teria incendiado Roma, segundo a lenda?",
+    "resposta_correta": "Nero",
+    "alternativas_erradas": [
+      "Júlio César",
+      "Augusto",
+      "Calígula"
+    ]
+  },
+  {
+    "id": 119,
+    "categoria": "História",
+    "dificuldade": "medio",
+    "pergunta": "Como ficou conhecida a pandemia medieval que matou milhões de pessoas na Europa?",
+    "resposta_correta": "Peste Bubônica",
+    "alternativas_erradas": [
+      "Gripe Espanhola",
+      "Cólera",
+      "Varíola"
+    ]
+  },
+  {
+    "id": 120,
+    "categoria": "História",
+    "dificuldade": "medio",
+    "pergunta": "Em que século teve início a Revolução Industrial, na Inglaterra?",
+    "resposta_correta": "Século XVIII",
+    "alternativas_erradas": [
+      "Século XVI",
+      "Século XIX",
+      "Século XX"
+    ]
+  },
+  {
+    "id": 121,
+    "categoria": "História",
+    "dificuldade": "medio",
+    "pergunta": "Che Guevara, símbolo da Revolução Cubana, era de qual nacionalidade?",
+    "resposta_correta": "Argentino",
+    "alternativas_erradas": [
+      "Cubano",
+      "Chileno",
+      "Boliviano"
+    ]
+  },
+  {
+    "id": 122,
+    "categoria": "História",
+    "dificuldade": "facil",
+    "pergunta": "Em que ano ocorreu a independência dos Estados Unidos?",
+    "resposta_correta": "1776",
+    "alternativas_erradas": [
+      "1789",
+      "1800",
+      "1750"
+    ]
+  },
+  {
+    "id": 123,
+    "categoria": "História",
+    "dificuldade": "medio",
+    "pergunta": "Qual civilização pré-colombiana tinha sua capital na cidade de Tenochtitlán, no atual México?",
+    "resposta_correta": "Astecas",
+    "alternativas_erradas": [
+      "Maias",
+      "Incas",
+      "Olmecas"
+    ]
+  },
+  {
+    "id": 124,
+    "categoria": "História",
+    "dificuldade": "facil",
+    "pergunta": "Nelson Mandela foi o principal líder da luta contra qual sistema segregacionista?",
+    "resposta_correta": "Apartheid",
+    "alternativas_erradas": [
+      "Colonialismo",
+      "Escravidão",
+      "Ditadura militar"
+    ]
+  },
+  {
+    "id": 125,
+    "categoria": "História",
+    "dificuldade": "medio",
+    "pergunta": "Em que ano ocorreram as primeiras eleições democráticas que marcaram o fim oficial do apartheid na África do Sul?",
+    "resposta_correta": "1994",
+    "alternativas_erradas": [
+      "1990",
+      "1985",
+      "2000"
+    ]
+  },
+  {
+    "id": 126,
+    "categoria": "História",
+    "dificuldade": "medio",
+    "pergunta": "Como é chamado o conflito entre Estados Unidos e Vietnã que durou até 1975?",
+    "resposta_correta": "Guerra do Vietnã",
+    "alternativas_erradas": [
+      "Guerra da Coreia",
+      "Guerra do Golfo",
+      "Guerra Fria"
+    ]
+  },
+  {
+    "id": 127,
+    "categoria": "História",
+    "dificuldade": "facil",
+    "pergunta": "Quem foi a última rainha do Egito Antigo?",
+    "resposta_correta": "Cleópatra",
+    "alternativas_erradas": [
+      "Nefertiti",
+      "Hatshepsut",
+      "Ísis"
+    ]
+  },
+  {
+    "id": 128,
+    "categoria": "História",
+    "dificuldade": "medio",
+    "pergunta": "Em que ano ocorreu a Revolução Russa que levou os bolcheviques ao poder?",
+    "resposta_correta": "1917",
+    "alternativas_erradas": [
+      "1905",
+      "1921",
+      "1929"
+    ]
+  },
+  {
+    "id": 129,
+    "categoria": "História",
+    "dificuldade": "medio",
+    "pergunta": "Qual movimento nos Estados Unidos foi liderado por Martin Luther King Jr.?",
+    "resposta_correta": "Movimento pelos Direitos Civis",
+    "alternativas_erradas": [
+      "Movimento Sufragista",
+      "Movimento Abolicionista",
+      "Movimento Trabalhista"
+    ]
+  },
+  {
+    "id": 130,
+    "categoria": "História",
+    "dificuldade": "dificil",
+    "pergunta": "Em qual país está localizado o território onde nasceu o Império Otomano?",
+    "resposta_correta": "Turquia",
+    "alternativas_erradas": [
+      "Grécia",
+      "Egito",
+      "Irã"
+    ]
+  },
+  {
+    "id": 131,
+    "categoria": "História",
+    "dificuldade": "facil",
+    "pergunta": "Zumbi dos Palmares foi um símbolo de resistência a qual sistema no Brasil colonial?",
+    "resposta_correta": "Escravidão",
+    "alternativas_erradas": [
+      "Monarquia",
+      "Colonialismo espanhol",
+      "Inquisição"
+    ]
+  },
+  {
+    "id": 132,
+    "categoria": "História",
+    "dificuldade": "medio",
+    "pergunta": "Em que ano foi fundada Brasília, a capital do Brasil?",
+    "resposta_correta": "1960",
+    "alternativas_erradas": [
+      "1950",
+      "1970",
+      "1889"
+    ]
+  },
+  {
+    "id": 133,
+    "categoria": "História",
+    "dificuldade": "facil",
+    "pergunta": "Qual civilização é conhecida por ter construído Machu Picchu?",
+    "resposta_correta": "Inca",
+    "alternativas_erradas": [
+      "Maia",
+      "Asteca",
+      "Olmeca"
+    ]
+  },
+  {
+    "id": 134,
+    "categoria": "História",
+    "dificuldade": "dificil",
+    "pergunta": "Em que ano caiu Constantinopla para os turcos otomanos, evento usado para marcar o fim da Idade Média?",
+    "resposta_correta": "1453",
+    "alternativas_erradas": [
+      "1492",
+      "1517",
+      "1400"
+    ]
+  },
+  {
+    "id": 135,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "facil",
+    "pergunta": "Qual é o símbolo químico do ouro?",
+    "resposta_correta": "Au",
+    "alternativas_erradas": [
+      "Ag",
+      "Or",
+      "Go"
+    ]
+  },
+  {
+    "id": 136,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "facil",
+    "pergunta": "Qual é o osso mais longo do corpo humano?",
+    "resposta_correta": "Fêmur",
+    "alternativas_erradas": [
+      "Tíbia",
+      "Úmero",
+      "Fíbula"
+    ]
+  },
+  {
+    "id": 137,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "medio",
+    "pergunta": "Quantos corações tem um polvo?",
+    "resposta_correta": "3",
+    "alternativas_erradas": [
+      "1",
+      "2",
+      "4"
+    ]
+  },
+  {
+    "id": 138,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "facil",
+    "pergunta": "Qual é o planeta mais próximo do Sol?",
+    "resposta_correta": "Mercúrio",
+    "alternativas_erradas": [
+      "Vênus",
+      "Terra",
+      "Marte"
+    ]
+  },
+  {
+    "id": 139,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "facil",
+    "pergunta": "Qual é a unidade básica da vida?",
+    "resposta_correta": "Célula",
+    "alternativas_erradas": [
+      "Átomo",
+      "Molécula",
+      "Tecido"
+    ]
+  },
+  {
+    "id": 140,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "facil",
+    "pergunta": "Qual gás é essencial à respiração humana e compõe cerca de 21% da atmosfera terrestre?",
+    "resposta_correta": "Oxigênio",
+    "alternativas_erradas": [
+      "Nitrogênio",
+      "Dióxido de carbono",
+      "Hidrogênio"
+    ]
+  },
+  {
+    "id": 141,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "facil",
+    "pergunta": "Qual é o maior órgão do corpo humano?",
+    "resposta_correta": "Pele",
+    "alternativas_erradas": [
+      "Fígado",
+      "Pulmão",
+      "Cérebro"
+    ]
+  },
+  {
+    "id": 142,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "medio",
+    "pergunta": "Qual é o único mamífero capaz de voar de verdade?",
+    "resposta_correta": "Morcego",
+    "alternativas_erradas": [
+      "Esquilo-voador",
+      "Pinguim",
+      "Avestruz"
+    ]
+  },
+  {
+    "id": 143,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "medio",
+    "pergunta": "Quantos pares de cromossomos tem o ser humano?",
+    "resposta_correta": "23",
+    "alternativas_erradas": [
+      "22",
+      "24",
+      "21"
+    ]
+  },
+  {
+    "id": 144,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "facil",
+    "pergunta": "Qual é o processo pelo qual as plantas produzem seu próprio alimento usando luz solar?",
+    "resposta_correta": "Fotossíntese",
+    "alternativas_erradas": [
+      "Respiração celular",
+      "Fermentação",
+      "Osmose"
+    ]
+  },
+  {
+    "id": 145,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "facil",
+    "pergunta": "Qual planeta é conhecido como planeta vermelho?",
+    "resposta_correta": "Marte",
+    "alternativas_erradas": [
+      "Vênus",
+      "Júpiter",
+      "Mercúrio"
+    ]
+  },
+  {
+    "id": 146,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "medio",
+    "pergunta": "Qual é o metal que se mantém líquido à temperatura ambiente?",
+    "resposta_correta": "Mercúrio",
+    "alternativas_erradas": [
+      "Ferro",
+      "Chumbo",
+      "Alumínio"
+    ]
+  },
+  {
+    "id": 147,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "medio",
+    "pergunta": "Qual é o maior réptil vivo do mundo atualmente?",
+    "resposta_correta": "Crocodilo-de-água-salgada",
+    "alternativas_erradas": [
+      "Jacaré",
+      "Dragão-de-Komodo",
+      "Tartaruga-de-Galápagos"
+    ]
+  },
+  {
+    "id": 148,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "medio",
+    "pergunta": "Em média, quantos litros de sangue tem o corpo de um adulto?",
+    "resposta_correta": "Cerca de 5 litros",
+    "alternativas_erradas": [
+      "Cerca de 2 litros",
+      "Cerca de 10 litros",
+      "Cerca de 8 litros"
+    ]
+  },
+  {
+    "id": 149,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "medio",
+    "pergunta": "Qual é o nome da camada da atmosfera onde ocorrem os fenômenos climáticos?",
+    "resposta_correta": "Troposfera",
+    "alternativas_erradas": [
+      "Estratosfera",
+      "Mesosfera",
+      "Ionosfera"
+    ]
+  },
+  {
+    "id": 150,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "facil",
+    "pergunta": "Qual é considerado o maior animal que já existiu no planeta?",
+    "resposta_correta": "Baleia-azul",
+    "alternativas_erradas": [
+      "Tiranossauro Rex",
+      "Elefante-africano",
+      "Megalodonte"
+    ]
+  },
+  {
+    "id": 151,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "facil",
+    "pergunta": "Qual vitamina o corpo humano produz quando exposto ao sol?",
+    "resposta_correta": "Vitamina D",
+    "alternativas_erradas": [
+      "Vitamina C",
+      "Vitamina A",
+      "Vitamina B12"
+    ]
+  },
+  {
+    "id": 152,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "facil",
+    "pergunta": "Qual cientista formulou a teoria da relatividade?",
+    "resposta_correta": "Albert Einstein",
+    "alternativas_erradas": [
+      "Isaac Newton",
+      "Galileu Galilei",
+      "Nikola Tesla"
+    ]
+  },
+  {
+    "id": 153,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "medio",
+    "pergunta": "Qual inseto morre logo após picar, por causa do próprio ferrão?",
+    "resposta_correta": "Abelha",
+    "alternativas_erradas": [
+      "Vespa",
+      "Marimbondo",
+      "Mosquito"
+    ]
+  },
+  {
+    "id": 154,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "dificil",
+    "pergunta": "Qual é o menor osso do corpo humano, localizado no ouvido?",
+    "resposta_correta": "Estribo",
+    "alternativas_erradas": [
+      "Fêmur",
+      "Costela",
+      "Falange"
+    ]
+  },
+  {
+    "id": 155,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "facil",
+    "pergunta": "Qual planeta do sistema solar tem os anéis mais visíveis e famosos?",
+    "resposta_correta": "Saturno",
+    "alternativas_erradas": [
+      "Júpiter",
+      "Urano",
+      "Netuno"
+    ]
+  },
+  {
+    "id": 156,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "facil",
+    "pergunta": "Qual gás nobre é usado em balões que flutuam por ser mais leve que o ar?",
+    "resposta_correta": "Hélio",
+    "alternativas_erradas": [
+      "Neônio",
+      "Argônio",
+      "Hidrogênio"
+    ]
+  },
+  {
+    "id": 157,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "dificil",
+    "pergunta": "Qual é o nome do processo de divisão celular que forma óvulos e espermatozoides?",
+    "resposta_correta": "Meiose",
+    "alternativas_erradas": [
+      "Mitose",
+      "Fecundação",
+      "Fotossíntese"
+    ]
+  },
+  {
+    "id": 158,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "medio",
+    "pergunta": "Qual animal é considerado o mais venenoso do mundo?",
+    "resposta_correta": "Água-viva-caixa",
+    "alternativas_erradas": [
+      "Cobra-coral",
+      "Escorpião",
+      "Viúva-negra"
+    ]
+  },
+  {
+    "id": 159,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "medio",
+    "pergunta": "Qual é, aproximadamente, a velocidade da luz em quilômetros por segundo?",
+    "resposta_correta": "300 mil km/s",
+    "alternativas_erradas": [
+      "150 mil km/s",
+      "1 milhão km/s",
+      "30 mil km/s"
+    ]
+  },
+  {
+    "id": 160,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "facil",
+    "pergunta": "Qual é o nome do fenômeno óptico que forma um arco colorido no céu após a chuva?",
+    "resposta_correta": "Arco-íris",
+    "alternativas_erradas": [
+      "Aurora boreal",
+      "Eclipse",
+      "Miragem"
+    ]
+  },
+  {
+    "id": 161,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "medio",
+    "pergunta": "Qual parte da célula é responsável por produzir energia?",
+    "resposta_correta": "Mitocôndria",
+    "alternativas_erradas": [
+      "Núcleo",
+      "Ribossomo",
+      "Retículo endoplasmático"
+    ]
+  },
+  {
+    "id": 162,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "facil",
+    "pergunta": "Qual órgão do sistema digestivo é responsável pela produção de bile?",
+    "resposta_correta": "Fígado",
+    "alternativas_erradas": [
+      "Pâncreas",
+      "Estômago",
+      "Baço"
+    ]
+  },
+  {
+    "id": 163,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "facil",
+    "pergunta": "Qual cientista é considerado o pai da teoria da evolução das espécies?",
+    "resposta_correta": "Charles Darwin",
+    "alternativas_erradas": [
+      "Gregor Mendel",
+      "Louis Pasteur",
+      "Isaac Newton"
+    ]
+  },
+  {
+    "id": 164,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "dificil",
+    "pergunta": "Quantas vértebras compõem a coluna vertebral humana, incluindo sacro e cóccix?",
+    "resposta_correta": "33",
+    "alternativas_erradas": [
+      "26",
+      "40",
+      "20"
+    ]
+  },
+  {
+    "id": 165,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "medio",
+    "pergunta": "Qual é o maior deserto de gelo do planeta?",
+    "resposta_correta": "Antártida",
+    "alternativas_erradas": [
+      "Ártico",
+      "Saara",
+      "Gobi"
+    ]
+  },
+  {
+    "id": 166,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "medio",
+    "pergunta": "Qual gás forma a camada que protege a Terra da radiação ultravioleta do Sol?",
+    "resposta_correta": "Ozônio",
+    "alternativas_erradas": [
+      "Oxigênio",
+      "Nitrogênio",
+      "Hidrogênio"
+    ]
+  },
+  {
+    "id": 167,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "facil",
+    "pergunta": "Qual fenômeno causa as marés altas e baixas nos oceanos?",
+    "resposta_correta": "Atração gravitacional da Lua",
+    "alternativas_erradas": [
+      "Rotação da Terra",
+      "Correntes marítimas",
+      "Aquecimento global"
+    ]
+  },
+  {
+    "id": 168,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "facil",
+    "pergunta": "Qual animal é conhecido por mudar de cor para se camuflar no ambiente?",
+    "resposta_correta": "Camaleão",
+    "alternativas_erradas": [
+      "Zebra",
+      "Rato",
+      "Coelho"
+    ]
+  },
+  {
+    "id": 169,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "medio",
+    "pergunta": "Qual substância é responsável por transportar oxigênio no sangue?",
+    "resposta_correta": "Hemoglobina",
+    "alternativas_erradas": [
+      "Insulina",
+      "Colágeno",
+      "Melanina"
+    ]
+  },
+  {
+    "id": 170,
+    "categoria": "Esportes",
+    "dificuldade": "facil",
+    "pergunta": "Em qual país nasceu o futebol moderno?",
+    "resposta_correta": "Inglaterra",
+    "alternativas_erradas": [
+      "Brasil",
+      "Itália",
+      "Espanha"
+    ]
+  },
+  {
+    "id": 171,
+    "categoria": "Esportes",
+    "dificuldade": "medio",
+    "pergunta": "Qual é o número máximo de sets que uma partida de vôlei pode ter?",
+    "resposta_correta": "5",
+    "alternativas_erradas": [
+      "3",
+      "7",
+      "4"
+    ]
+  },
+  {
+    "id": 172,
+    "categoria": "Esportes",
+    "dificuldade": "facil",
+    "pergunta": "Quantos jogadores de uma equipe de basquete ficam em quadra por vez?",
+    "resposta_correta": "5",
+    "alternativas_erradas": [
+      "6",
+      "4",
+      "7"
+    ]
+  },
+  {
+    "id": 173,
+    "categoria": "Esportes",
+    "dificuldade": "medio",
+    "pergunta": "Em qual esporte se disputa o Grand Slam, que inclui Wimbledon, Roland Garros, US Open e Australian Open?",
+    "resposta_correta": "Tênis",
+    "alternativas_erradas": [
+      "Golfe",
+      "Vôlei",
+      "Badminton"
+    ]
+  },
+  {
+    "id": 174,
+    "categoria": "Esportes",
+    "dificuldade": "medio",
+    "pergunta": "Qual país tem mais medalhas de ouro na história dos Jogos Olímpicos de Verão?",
+    "resposta_correta": "Estados Unidos",
+    "alternativas_erradas": [
+      "União Soviética",
+      "China",
+      "Reino Unido"
+    ]
+  },
+  {
+    "id": 175,
+    "categoria": "Esportes",
+    "dificuldade": "facil",
+    "pergunta": "Em que ano o Brasil sediou os Jogos Olímpicos pela primeira vez?",
+    "resposta_correta": "2016",
+    "alternativas_erradas": [
+      "2012",
+      "2008",
+      "2004"
+    ]
+  },
+  {
+    "id": 176,
+    "categoria": "Esportes",
+    "dificuldade": "facil",
+    "pergunta": "Qual é a posição do jogador de futebol responsável por defender o gol?",
+    "resposta_correta": "Goleiro",
+    "alternativas_erradas": [
+      "Zagueiro",
+      "Lateral",
+      "Atacante"
+    ]
+  },
+  {
+    "id": 177,
+    "categoria": "Esportes",
+    "dificuldade": "facil",
+    "pergunta": "Quantos minutos dura uma partida de futebol no tempo regulamentar?",
+    "resposta_correta": "90 minutos",
+    "alternativas_erradas": [
+      "80 minutos",
+      "100 minutos",
+      "120 minutos"
+    ]
+  },
+  {
+    "id": 178,
+    "categoria": "Esportes",
+    "dificuldade": "medio",
+    "pergunta": "Em qual esporte olímpico os atletas competem em uma mesa, com raquetes pequenas e uma bolinha leve?",
+    "resposta_correta": "Tênis de mesa",
+    "alternativas_erradas": [
+      "Badminton",
+      "Squash",
+      "Tênis"
+    ]
+  },
+  {
+    "id": 179,
+    "categoria": "Esportes",
+    "dificuldade": "medio",
+    "pergunta": "Qual país domina historicamente o vôlei de praia ao lado do Brasil?",
+    "resposta_correta": "Estados Unidos",
+    "alternativas_erradas": [
+      "Argentina",
+      "México",
+      "Canadá"
+    ]
+  },
+  {
+    "id": 180,
+    "categoria": "Esportes",
+    "dificuldade": "medio",
+    "pergunta": "Quantos jogadores compõem uma equipe de handebol em quadra, incluindo o goleiro?",
+    "resposta_correta": "7",
+    "alternativas_erradas": [
+      "6",
+      "8",
+      "5"
+    ]
+  },
+  {
+    "id": 181,
+    "categoria": "Esportes",
+    "dificuldade": "facil",
+    "pergunta": "Como é chamada a habilidade de manter a bola no ar sem deixá-la cair, muito associada ao futebol brasileiro?",
+    "resposta_correta": "Embaixadinha",
+    "alternativas_erradas": [
+      "Bicicleta",
+      "Drible",
+      "Chapéu"
+    ]
+  },
+  {
+    "id": 182,
+    "categoria": "Esportes",
+    "dificuldade": "medio",
+    "pergunta": "Qual é o nome da modalidade olímpica de corrida disputada com obstáculos e barreiras?",
+    "resposta_correta": "Corrida com barreiras",
+    "alternativas_erradas": [
+      "Salto em distância",
+      "Salto triplo",
+      "Maratona"
+    ]
+  },
+  {
+    "id": 183,
+    "categoria": "Esportes",
+    "dificuldade": "facil",
+    "pergunta": "Como é chamado o lance cobrado no basquete após uma falta?",
+    "resposta_correta": "Lance livre",
+    "alternativas_erradas": [
+      "Escanteio",
+      "Pênalti",
+      "Bandeirinha"
+    ]
+  },
+  {
+    "id": 184,
+    "categoria": "Esportes",
+    "dificuldade": "medio",
+    "pergunta": "Em qual esporte a quadra é dividida por uma rede e cada equipe pode dar no máximo 3 toques na bola?",
+    "resposta_correta": "Vôlei",
+    "alternativas_erradas": [
+      "Tênis",
+      "Badminton",
+      "Squash"
+    ]
+  },
+  {
+    "id": 185,
+    "categoria": "Esportes",
+    "dificuldade": "facil",
+    "pergunta": "Quantos jogadores titulares uma equipe de futebol de campo coloca em jogo, incluindo o goleiro?",
+    "resposta_correta": "11",
+    "alternativas_erradas": [
+      "10",
+      "12",
+      "9"
+    ]
+  },
+  {
+    "id": 186,
+    "categoria": "Esportes",
+    "dificuldade": "medio",
+    "pergunta": "Em qual país nasceu o Judô como arte marcial e esporte?",
+    "resposta_correta": "Japão",
+    "alternativas_erradas": [
+      "China",
+      "Coreia do Sul",
+      "Tailândia"
+    ]
+  },
+  {
+    "id": 187,
+    "categoria": "Esportes",
+    "dificuldade": "medio",
+    "pergunta": "Como é chamado o ataque no vôlei em que o jogador acerta a bola com força por cima da rede?",
+    "resposta_correta": "Cortada",
+    "alternativas_erradas": [
+      "Levantada",
+      "Saque",
+      "Bloqueio"
+    ]
+  },
+  {
+    "id": 188,
+    "categoria": "Esportes",
+    "dificuldade": "medio",
+    "pergunta": "Quantos jogadores em campo compõem uma equipe de rúgbi união?",
+    "resposta_correta": "15",
+    "alternativas_erradas": [
+      "13",
+      "11",
+      "7"
+    ]
+  },
+  {
+    "id": 189,
+    "categoria": "Esportes",
+    "dificuldade": "facil",
+    "pergunta": "Como é chamado o movimento em que o jogador de futebol chuta a bola por cima da própria cabeça, de costas para o gol?",
+    "resposta_correta": "Bicicleta",
+    "alternativas_erradas": [
+      "Carrinho",
+      "Chapéu",
+      "Voleio"
+    ]
+  },
+  {
+    "id": 190,
+    "categoria": "Esportes",
+    "dificuldade": "facil",
+    "pergunta": "Em qual esporte as lutas ocorrem em rounds, com juízes pontuando golpes certeiros?",
+    "resposta_correta": "Boxe",
+    "alternativas_erradas": [
+      "Esgrima",
+      "Luta livre",
+      "Karatê"
+    ]
+  },
+  {
+    "id": 191,
+    "categoria": "Esportes",
+    "dificuldade": "medio",
+    "pergunta": "Em que ano ocorreu a primeira edição dos Jogos Olímpicos modernos, em Atenas?",
+    "resposta_correta": "1896",
+    "alternativas_erradas": [
+      "1900",
+      "1924",
+      "1912"
+    ]
+  },
+  {
+    "id": 192,
+    "categoria": "Esportes",
+    "dificuldade": "facil",
+    "pergunta": "Em qual esporte os atletas usam patins e tacos para acertar um disco sobre uma pista de gelo?",
+    "resposta_correta": "Hóquei no gelo",
+    "alternativas_erradas": [
+      "Curling",
+      "Patinação artística",
+      "Bobsled"
+    ]
+  },
+  {
+    "id": 193,
+    "categoria": "Esportes",
+    "dificuldade": "medio",
+    "pergunta": "Como é chamado o movimento defensivo do vôlei feito com os antebraços unidos para receber a bola?",
+    "resposta_correta": "Manchete",
+    "alternativas_erradas": [
+      "Toque",
+      "Saque",
+      "Cortada"
+    ]
+  },
+  {
+    "id": 194,
+    "categoria": "Esportes",
+    "dificuldade": "facil",
+    "pergunta": "Quantos aros compõem o símbolo olímpico?",
+    "resposta_correta": "5",
+    "alternativas_erradas": [
+      "4",
+      "6",
+      "3"
+    ]
+  },
+  {
+    "id": 195,
+    "categoria": "Esportes",
+    "dificuldade": "facil",
+    "pergunta": "Em qual esporte a pontuação segue a sequência 15-30-40-jogo?",
+    "resposta_correta": "Tênis",
+    "alternativas_erradas": [
+      "Badminton",
+      "Squash",
+      "Vôlei"
+    ]
+  },
+  {
+    "id": 196,
+    "categoria": "Esportes",
+    "dificuldade": "facil",
+    "pergunta": "Como é chamado o gol marcado com a cabeça no futebol?",
+    "resposta_correta": "Gol de cabeça",
+    "alternativas_erradas": [
+      "Carrinho",
+      "Chapéu",
+      "Voleio"
+    ]
+  },
+  {
+    "id": 197,
+    "categoria": "Esportes",
+    "dificuldade": "dificil",
+    "pergunta": "Em qual esporte olímpico de inverno o atleta desce a pista de gelo deitado de costas em um trenó?",
+    "resposta_correta": "Luge",
+    "alternativas_erradas": [
+      "Bobsled",
+      "Skeleton",
+      "Patinação de velocidade"
+    ]
+  },
+  {
+    "id": 198,
+    "categoria": "Esportes",
+    "dificuldade": "medio",
+    "pergunta": "Quantos jogadores uma equipe de beisebol coloca em campo na defesa?",
+    "resposta_correta": "9",
+    "alternativas_erradas": [
+      "10",
+      "8",
+      "11"
+    ]
+  },
+  {
+    "id": 199,
+    "categoria": "Esportes",
+    "dificuldade": "facil",
+    "pergunta": "Como é chamado o movimento em que um jogador de futebol desarma o adversário deslizando no chão?",
+    "resposta_correta": "Carrinho",
+    "alternativas_erradas": [
+      "Bicicleta",
+      "Chapéu",
+      "Voleio"
+    ]
+  },
+  {
+    "id": 200,
+    "categoria": "Esportes",
+    "dificuldade": "medio",
+    "pergunta": "Em qual esporte se disputa a prova dos 100 metros rasos, uma corrida em pista?",
+    "resposta_correta": "Atletismo",
+    "alternativas_erradas": [
+      "Natação",
+      "Ciclismo",
+      "Patinação de velocidade"
+    ]
+  },
+  {
+    "id": 201,
+    "categoria": "Esportes",
+    "dificuldade": "facil",
+    "pergunta": "Quantos toques, no máximo, cada equipe pode dar na bola antes de mandá-la para o lado adversário no vôlei?",
+    "resposta_correta": "3",
+    "alternativas_erradas": [
+      "2",
+      "4",
+      "1"
+    ]
+  },
+  {
+    "id": 202,
+    "categoria": "Esportes",
+    "dificuldade": "medio",
+    "pergunta": "Em qual esporte se disputa a Stanley Cup, principal troféu da liga norte-americana?",
+    "resposta_correta": "Hóquei no gelo",
+    "alternativas_erradas": [
+      "Basquete",
+      "Beisebol",
+      "Futebol americano"
+    ]
+  },
+  {
+    "id": 203,
+    "categoria": "Esportes",
+    "dificuldade": "medio",
+    "pergunta": "Como é chamado o arremesso do basquete em que o jogador salta perto da cesta para encaçapar a bola com força?",
+    "resposta_correta": "Enterrada",
+    "alternativas_erradas": [
+      "Bandeja",
+      "Arremesso livre",
+      "Lance de três"
+    ]
+  },
+  {
+    "id": 204,
+    "categoria": "Esportes",
+    "dificuldade": "facil",
+    "pergunta": "Qual é o nome da principal competição de clubes de futebol da Europa, disputada anualmente?",
+    "resposta_correta": "Liga dos Campeões da UEFA",
+    "alternativas_erradas": [
+      "Copa do Mundo",
+      "Eurocopa",
+      "Copa Libertadores"
+    ]
+  },
+  {
+    "id": 205,
+    "categoria": "Cinema e TV",
+    "dificuldade": "medio",
+    "pergunta": "Qual ator venceu o Oscar de Melhor Ator pelo papel do Coringa, no filme de 2019?",
+    "resposta_correta": "Joaquin Phoenix",
+    "alternativas_erradas": [
+      "Heath Ledger",
+      "Jared Leto",
+      "Jack Nicholson"
+    ]
+  },
+  {
+    "id": 206,
+    "categoria": "Cinema e TV",
+    "dificuldade": "dificil",
+    "pergunta": "Qual diretor mexicano é responsável pelos filmes Gravidade e Roma?",
+    "resposta_correta": "Alfonso Cuarón",
+    "alternativas_erradas": [
+      "Guillermo del Toro",
+      "Alejandro González Iñárritu",
+      "Pedro Almodóvar"
+    ]
+  },
+  {
+    "id": 207,
+    "categoria": "Cinema e TV",
+    "dificuldade": "facil",
+    "pergunta": "Qual é o nome do protagonista de Breaking Bad, um professor de química que passa a fabricar metanfetamina?",
+    "resposta_correta": "Walter White",
+    "alternativas_erradas": [
+      "Jesse Pinkman",
+      "Gustavo Fring",
+      "Hank Schrader"
+    ]
+  },
+  {
+    "id": 208,
+    "categoria": "Cinema e TV",
+    "dificuldade": "facil",
+    "pergunta": "Em qual trilogia de ficção científica aparece o personagem Darth Vader?",
+    "resposta_correta": "Star Wars",
+    "alternativas_erradas": [
+      "Star Trek",
+      "Duna",
+      "Blade Runner"
+    ]
+  },
+  {
+    "id": 209,
+    "categoria": "Cinema e TV",
+    "dificuldade": "medio",
+    "pergunta": "Quem faz a voz original, em inglês, da personagem Elsa, do filme Frozen?",
+    "resposta_correta": "Idina Menzel",
+    "alternativas_erradas": [
+      "Kristen Bell",
+      "Demi Lovato",
+      "Ariana Grande"
+    ]
+  },
+  {
+    "id": 210,
+    "categoria": "Cinema e TV",
+    "dificuldade": "facil",
+    "pergunta": "Qual seriado brasileiro, ambientado em um colégio, é exibido pela Globo desde os anos 1990 e acompanha o cotidiano de adolescentes?",
+    "resposta_correta": "Malhação",
+    "alternativas_erradas": [
+      "Sandy & Junior",
+      "Chiquititas",
+      "Caça-Talentos"
+    ]
+  },
+  {
+    "id": 211,
+    "categoria": "Cinema e TV",
+    "dificuldade": "facil",
+    "pergunta": "Quem dirigiu a trilogia original de O Senhor dos Anéis?",
+    "resposta_correta": "Peter Jackson",
+    "alternativas_erradas": [
+      "James Cameron",
+      "Christopher Nolan",
+      "Ridley Scott"
+    ]
+  },
+  {
+    "id": 212,
+    "categoria": "Cinema e TV",
+    "dificuldade": "facil",
+    "pergunta": "Qual personagem Johnny Depp interpreta na franquia Piratas do Caribe?",
+    "resposta_correta": "Jack Sparrow",
+    "alternativas_erradas": [
+      "Will Turner",
+      "Hector Barbossa",
+      "Davy Jones"
+    ]
+  },
+  {
+    "id": 213,
+    "categoria": "Cinema e TV",
+    "dificuldade": "medio",
+    "pergunta": "Em que ano foi lançado o primeiro filme de Star Wars?",
+    "resposta_correta": "1977",
+    "alternativas_erradas": [
+      "1980",
+      "1975",
+      "1983"
+    ]
+  },
+  {
+    "id": 214,
+    "categoria": "Cinema e TV",
+    "dificuldade": "facil",
+    "pergunta": "Qual atriz interpretou Katniss Everdeen na franquia Jogos Vorazes?",
+    "resposta_correta": "Jennifer Lawrence",
+    "alternativas_erradas": [
+      "Emma Stone",
+      "Kristen Stewart",
+      "Shailene Woodley"
+    ]
+  },
+  {
+    "id": 215,
+    "categoria": "Cinema e TV",
+    "dificuldade": "facil",
+    "pergunta": "Qual é o vilão do Batman conhecido pela maquiagem branca e sorriso permanente?",
+    "resposta_correta": "Coringa",
+    "alternativas_erradas": [
+      "Pinguim",
+      "Charada",
+      "Duas-Caras"
+    ]
+  },
+  {
+    "id": 216,
+    "categoria": "Cinema e TV",
+    "dificuldade": "medio",
+    "pergunta": "Qual atriz interpreta Daenerys Targaryen na série Game of Thrones?",
+    "resposta_correta": "Emilia Clarke",
+    "alternativas_erradas": [
+      "Sophie Turner",
+      "Maisie Williams",
+      "Lena Headey"
+    ]
+  },
+  {
+    "id": 217,
+    "categoria": "Cinema e TV",
+    "dificuldade": "medio",
+    "pergunta": "Qual diretor é conhecido por filmes com reviravoltas complexas como A Origem e Interestelar?",
+    "resposta_correta": "Christopher Nolan",
+    "alternativas_erradas": [
+      "Denis Villeneuve",
+      "David Fincher",
+      "Ridley Scott"
+    ]
+  },
+  {
+    "id": 218,
+    "categoria": "Cinema e TV",
+    "dificuldade": "facil",
+    "pergunta": "Qual é o nome do robô protagonista do filme de animação WALL-E?",
+    "resposta_correta": "WALL-E",
+    "alternativas_erradas": [
+      "EVE",
+      "R2-D2",
+      "Baymax"
+    ]
+  },
+  {
+    "id": 219,
+    "categoria": "Cinema e TV",
+    "dificuldade": "facil",
+    "pergunta": "Em qual cidade se passa a maior parte da série Friends?",
+    "resposta_correta": "Nova York",
+    "alternativas_erradas": [
+      "Los Angeles",
+      "Chicago",
+      "Boston"
+    ]
+  },
+  {
+    "id": 220,
+    "categoria": "Cinema e TV",
+    "dificuldade": "facil",
+    "pergunta": "Qual ator interpreta Jack Dawson no filme Titanic, de 1997?",
+    "resposta_correta": "Leonardo DiCaprio",
+    "alternativas_erradas": [
+      "Brad Pitt",
+      "Matt Damon",
+      "Tom Cruise"
+    ]
+  },
+  {
+    "id": 221,
+    "categoria": "Cinema e TV",
+    "dificuldade": "facil",
+    "pergunta": "Qual atriz brasileira foi indicada ao Oscar de Melhor Atriz por Ainda Estou Aqui?",
+    "resposta_correta": "Fernanda Torres",
+    "alternativas_erradas": [
+      "Fernanda Montenegro",
+      "Sônia Braga",
+      "Camila Pitanga"
+    ]
+  },
+  {
+    "id": 222,
+    "categoria": "Cinema e TV",
+    "dificuldade": "facil",
+    "pergunta": "Qual diretor brasileiro assina Ainda Estou Aqui e também Central do Brasil?",
+    "resposta_correta": "Walter Salles",
+    "alternativas_erradas": [
+      "Fernando Meirelles",
+      "José Padilha",
+      "Kleber Mendonça Filho"
+    ]
+  },
+  {
+    "id": 223,
+    "categoria": "Cinema e TV",
+    "dificuldade": "facil",
+    "pergunta": "Qual desenho clássico da Hanna-Barbera acompanha um gato e um rato que vivem se perseguindo?",
+    "resposta_correta": "Tom e Jerry",
+    "alternativas_erradas": [
+      "Pernalonga",
+      "Scooby-Doo",
+      "Pica-Pau"
+    ]
+  },
+  {
+    "id": 224,
+    "categoria": "Cinema e TV",
+    "dificuldade": "facil",
+    "pergunta": "Qual é o nome do físico brilhante e socialmente estranho, protagonista de The Big Bang Theory?",
+    "resposta_correta": "Sheldon Cooper",
+    "alternativas_erradas": [
+      "Leonard Hofstadter",
+      "Howard Wolowitz",
+      "Raj Koothrappali"
+    ]
+  },
+  {
+    "id": 225,
+    "categoria": "Cinema e TV",
+    "dificuldade": "medio",
+    "pergunta": "Qual atriz interpreta a Mulher-Maravilha nos filmes recentes da DC?",
+    "resposta_correta": "Gal Gadot",
+    "alternativas_erradas": [
+      "Scarlett Johansson",
+      "Margot Robbie",
+      "Brie Larson"
+    ]
+  },
+  {
+    "id": 226,
+    "categoria": "Cinema e TV",
+    "dificuldade": "medio",
+    "pergunta": "Qual filme de terror é conhecido pela frase Estou vendo gente morta?",
+    "resposta_correta": "O Sexto Sentido",
+    "alternativas_erradas": [
+      "O Iluminado",
+      "O Exorcista",
+      "Invocação do Mal"
+    ]
+  },
+  {
+    "id": 227,
+    "categoria": "Cinema e TV",
+    "dificuldade": "facil",
+    "pergunta": "Qual é o nome do personagem interpretado por Tom Hanks no filme Forrest Gump?",
+    "resposta_correta": "Forrest Gump",
+    "alternativas_erradas": [
+      "Lieutenant Dan",
+      "Bubba",
+      "Jenny"
+    ]
+  },
+  {
+    "id": 228,
+    "categoria": "Cinema e TV",
+    "dificuldade": "dificil",
+    "pergunta": "Qual atriz interpretou a Bruxa Má do Oeste no clássico O Mágico de Oz, de 1939?",
+    "resposta_correta": "Margaret Hamilton",
+    "alternativas_erradas": [
+      "Judy Garland",
+      "Billie Burke",
+      "Bette Davis"
+    ]
+  },
+  {
+    "id": 229,
+    "categoria": "Cinema e TV",
+    "dificuldade": "facil",
+    "pergunta": "Qual estúdio de animação é responsável por Toy Story e Procurando Nemo?",
+    "resposta_correta": "Pixar",
+    "alternativas_erradas": [
+      "DreamWorks",
+      "Illumination",
+      "Studio Ghibli"
+    ]
+  },
+  {
+    "id": 230,
+    "categoria": "Cinema e TV",
+    "dificuldade": "medio",
+    "pergunta": "Em qual país foi fundado o Studio Ghibli, famoso por animações como A Viagem de Chihiro?",
+    "resposta_correta": "Japão",
+    "alternativas_erradas": [
+      "Coreia do Sul",
+      "China",
+      "Estados Unidos"
+    ]
+  },
+  {
+    "id": 231,
+    "categoria": "Cinema e TV",
+    "dificuldade": "medio",
+    "pergunta": "Qual apresentador comandou o Domingão do Faustão na TV Globo por muitos anos?",
+    "resposta_correta": "Fausto Silva",
+    "alternativas_erradas": [
+      "Gugu Liberato",
+      "Silvio Santos",
+      "Luciano Huck"
+    ]
+  },
+  {
+    "id": 232,
+    "categoria": "Cinema e TV",
+    "dificuldade": "facil",
+    "pergunta": "Qual é o vilão principal da saga Harry Potter, também chamado de Aquele-Que-Não-Deve-Ser-Nomeado?",
+    "resposta_correta": "Voldemort",
+    "alternativas_erradas": [
+      "Draco Malfoy",
+      "Snape",
+      "Grindelwald"
+    ]
+  },
+  {
+    "id": 233,
+    "categoria": "Cinema e TV",
+    "dificuldade": "facil",
+    "pergunta": "Qual ator interpreta Neo no filme Matrix?",
+    "resposta_correta": "Keanu Reeves",
+    "alternativas_erradas": [
+      "Will Smith",
+      "Tom Cruise",
+      "Brad Pitt"
+    ]
+  },
+  {
+    "id": 234,
+    "categoria": "Cinema e TV",
+    "dificuldade": "medio",
+    "pergunta": "Qual série sobre sobreviventes de um apocalipse zumbi, baseada em quadrinhos, é exibida pela AMC?",
+    "resposta_correta": "The Walking Dead",
+    "alternativas_erradas": [
+      "Fear the Walking Dead",
+      "Z Nation",
+      "The Last of Us"
+    ]
+  },
+  {
+    "id": 235,
+    "categoria": "Cinema e TV",
+    "dificuldade": "medio",
+    "pergunta": "Qual atriz interpreta a Capitã Marvel nos filmes da Marvel?",
+    "resposta_correta": "Brie Larson",
+    "alternativas_erradas": [
+      "Scarlett Johansson",
+      "Elizabeth Olsen",
+      "Zendaya"
+    ]
+  },
+  {
+    "id": 236,
+    "categoria": "Cinema e TV",
+    "dificuldade": "facil",
+    "pergunta": "Qual é o bairro fictício onde vive a família Simpson?",
+    "resposta_correta": "Springfield",
+    "alternativas_erradas": [
+      "Quahog",
+      "South Park",
+      "Bedrock"
+    ]
+  },
+  {
+    "id": 237,
+    "categoria": "Cinema e TV",
+    "dificuldade": "medio",
+    "pergunta": "Quem dirigiu a trilogia De Volta para o Futuro?",
+    "resposta_correta": "Robert Zemeckis",
+    "alternativas_erradas": [
+      "Steven Spielberg",
+      "George Lucas",
+      "Ivan Reitman"
+    ]
+  },
+  {
+    "id": 238,
+    "categoria": "Cinema e TV",
+    "dificuldade": "facil",
+    "pergunta": "Qual é o nome do protagonista, um jovem bruxo, da saga Harry Potter?",
+    "resposta_correta": "Harry Potter",
+    "alternativas_erradas": [
+      "Ron Weasley",
+      "Neville Longbottom",
+      "Cedrico Diggory"
+    ]
+  },
+  {
+    "id": 239,
+    "categoria": "Cinema e TV",
+    "dificuldade": "medio",
+    "pergunta": "Qual seriado é ambientado no reino fictício de Westeros, baseado nos livros de George R. R. Martin?",
+    "resposta_correta": "Game of Thrones",
+    "alternativas_erradas": [
+      "The Witcher",
+      "Vikings",
+      "The Last Kingdom"
+    ]
+  },
+  {
+    "id": 240,
+    "categoria": "Música",
+    "dificuldade": "medio",
+    "pergunta": "Qual cantora brasileira é conhecida como Rainha do Rock Brasileiro?",
+    "resposta_correta": "Rita Lee",
+    "alternativas_erradas": [
+      "Cássia Eller",
+      "Pitty",
+      "Fernanda Abreu"
+    ]
+  },
+  {
+    "id": 241,
+    "categoria": "Música",
+    "dificuldade": "facil",
+    "pergunta": "Qual banda brasileira de rock é famosa pela música Tempo Perdido?",
+    "resposta_correta": "Legião Urbana",
+    "alternativas_erradas": [
+      "Titãs",
+      "Capital Inicial",
+      "Engenheiros do Hawaii"
+    ]
+  },
+  {
+    "id": 242,
+    "categoria": "Música",
+    "dificuldade": "dificil",
+    "pergunta": "Quem compôs a ópera A Flauta Mágica?",
+    "resposta_correta": "Mozart",
+    "alternativas_erradas": [
+      "Beethoven",
+      "Verdi",
+      "Wagner"
+    ]
+  },
+  {
+    "id": 243,
+    "categoria": "Música",
+    "dificuldade": "facil",
+    "pergunta": "Qual cantor é conhecido como O Rei, ícone do rock and roll dos anos 1950?",
+    "resposta_correta": "Elvis Presley",
+    "alternativas_erradas": [
+      "Chuck Berry",
+      "Buddy Holly",
+      "Little Richard"
+    ]
+  },
+  {
+    "id": 244,
+    "categoria": "Música",
+    "dificuldade": "medio",
+    "pergunta": "Qual é o maior instrumento de corda friccionada de uma orquestra?",
+    "resposta_correta": "Contrabaixo",
+    "alternativas_erradas": [
+      "Violino",
+      "Viola",
+      "Violoncelo"
+    ]
+  },
+  {
+    "id": 245,
+    "categoria": "Música",
+    "dificuldade": "facil",
+    "pergunta": "Qual cantora é autora de Rolling in the Deep e do álbum 21?",
+    "resposta_correta": "Adele",
+    "alternativas_erradas": [
+      "Beyoncé",
+      "Taylor Swift",
+      "Amy Winehouse"
+    ]
+  },
+  {
+    "id": 246,
+    "categoria": "Música",
+    "dificuldade": "facil",
+    "pergunta": "Qual banda britânica é famosa por Bohemian Rhapsody, com Freddie Mercury como vocalista?",
+    "resposta_correta": "Queen",
+    "alternativas_erradas": [
+      "The Beatles",
+      "Led Zeppelin",
+      "The Rolling Stones"
+    ]
+  },
+  {
+    "id": 247,
+    "categoria": "Música",
+    "dificuldade": "medio",
+    "pergunta": "Qual gênero musical afro-americano do início do século XX é considerado a base do rock and roll?",
+    "resposta_correta": "Blues",
+    "alternativas_erradas": [
+      "Jazz",
+      "Gospel",
+      "Reggae"
+    ]
+  },
+  {
+    "id": 248,
+    "categoria": "Música",
+    "dificuldade": "medio",
+    "pergunta": "Quem compôs a música Garota de Ipanema?",
+    "resposta_correta": "Tom Jobim e Vinícius de Moraes",
+    "alternativas_erradas": [
+      "Chico Buarque",
+      "Caetano Veloso",
+      "Gilberto Gil"
+    ]
+  },
+  {
+    "id": 249,
+    "categoria": "Música",
+    "dificuldade": "facil",
+    "pergunta": "Qual é o nome do festival de música brasileiro, um dos maiores do mundo, criado em 1985?",
+    "resposta_correta": "Rock in Rio",
+    "alternativas_erradas": [
+      "Lollapalooza Brasil",
+      "Villa Mix",
+      "Festival de Verão"
+    ]
+  },
+  {
+    "id": 250,
+    "categoria": "Música",
+    "dificuldade": "facil",
+    "pergunta": "Qual cantor forma dupla sertaneja com Zezé Di Camargo?",
+    "resposta_correta": "Luciano",
+    "alternativas_erradas": [
+      "Leonardo",
+      "Chitãozinho",
+      "Bruno"
+    ]
+  },
+  {
+    "id": 251,
+    "categoria": "Música",
+    "dificuldade": "facil",
+    "pergunta": "Qual cantora americana é autora de Shake It Off e Blank Space?",
+    "resposta_correta": "Taylor Swift",
+    "alternativas_erradas": [
+      "Katy Perry",
+      "Miley Cyrus",
+      "Selena Gomez"
+    ]
+  },
+  {
+    "id": 252,
+    "categoria": "Música",
+    "dificuldade": "dificil",
+    "pergunta": "Qual instrumento de sopro tem palheta dupla e timbre nasalado, comum em orquestras?",
+    "resposta_correta": "Oboé",
+    "alternativas_erradas": [
+      "Clarinete",
+      "Flauta",
+      "Trompete"
+    ]
+  },
+  {
+    "id": 253,
+    "categoria": "Música",
+    "dificuldade": "medio",
+    "pergunta": "Qual movimento musical brasileiro dos anos 1960 uniu samba e jazz, criado por João Gilberto e Tom Jobim?",
+    "resposta_correta": "Bossa Nova",
+    "alternativas_erradas": [
+      "Tropicália",
+      "MPB",
+      "Axé"
+    ]
+  },
+  {
+    "id": 254,
+    "categoria": "Música",
+    "dificuldade": "medio",
+    "pergunta": "Qual grupo de rap paulista foi formado por Mano Brown, Edi Rock, Ice Blue e KL Jay?",
+    "resposta_correta": "Racionais MC's",
+    "alternativas_erradas": [
+      "RZO",
+      "Facção Central",
+      "Thaíde e DJ Hum"
+    ]
+  },
+  {
+    "id": 255,
+    "categoria": "Música",
+    "dificuldade": "medio",
+    "pergunta": "Qual movimento cultural brasileiro dos anos 1960 foi liderado por Caetano Veloso e Gilberto Gil?",
+    "resposta_correta": "Tropicália",
+    "alternativas_erradas": [
+      "Bossa Nova",
+      "MPB",
+      "Jovem Guarda"
+    ]
+  },
+  {
+    "id": 256,
+    "categoria": "Música",
+    "dificuldade": "facil",
+    "pergunta": "Qual banda de rock americana lançou Sweet Child O' Mine, com o vocalista Axl Rose?",
+    "resposta_correta": "Guns N' Roses",
+    "alternativas_erradas": [
+      "Aerosmith",
+      "Bon Jovi",
+      "Metallica"
+    ]
+  },
+  {
+    "id": 257,
+    "categoria": "Música",
+    "dificuldade": "dificil",
+    "pergunta": "Qual instrumento de percussão do samba, um tambor grande, é responsável pelo grave da bateria de escola de samba?",
+    "resposta_correta": "Surdo",
+    "alternativas_erradas": [
+      "Pandeiro",
+      "Cuíca",
+      "Tamborim"
+    ]
+  },
+  {
+    "id": 258,
+    "categoria": "Música",
+    "dificuldade": "medio",
+    "pergunta": "Qual cantora, falecida em 1982, é considerada uma das maiores intérpretes da MPB, com o álbum Elis & Tom?",
+    "resposta_correta": "Elis Regina",
+    "alternativas_erradas": [
+      "Gal Costa",
+      "Maria Bethânia",
+      "Rita Lee"
+    ]
+  },
+  {
+    "id": 259,
+    "categoria": "Música",
+    "dificuldade": "facil",
+    "pergunta": "Qual DJ brasileiro é autor do hit mundial Hear Me Now?",
+    "resposta_correta": "Alok",
+    "alternativas_erradas": [
+      "Vintage Culture",
+      "KVSH",
+      "Cat Dealers"
+    ]
+  },
+  {
+    "id": 260,
+    "categoria": "Música",
+    "dificuldade": "dificil",
+    "pergunta": "Quem é considerado o criador do estilo de violão que se tornou a marca registrada da Bossa Nova?",
+    "resposta_correta": "João Gilberto",
+    "alternativas_erradas": [
+      "Tom Jobim",
+      "Vinícius de Moraes",
+      "Baden Powell"
+    ]
+  },
+  {
+    "id": 261,
+    "categoria": "Música",
+    "dificuldade": "medio",
+    "pergunta": "Qual baixista dos Beatles também é autor de Yesterday?",
+    "resposta_correta": "Paul McCartney",
+    "alternativas_erradas": [
+      "John Lennon",
+      "George Harrison",
+      "Ringo Starr"
+    ]
+  },
+  {
+    "id": 262,
+    "categoria": "Música",
+    "dificuldade": "facil",
+    "pergunta": "Quem foi o baterista da banda The Beatles?",
+    "resposta_correta": "Ringo Starr",
+    "alternativas_erradas": [
+      "John Lennon",
+      "Paul McCartney",
+      "George Harrison"
+    ]
+  },
+  {
+    "id": 263,
+    "categoria": "Música",
+    "dificuldade": "facil",
+    "pergunta": "Qual gênero musical jamaicano, associado a Bob Marley, tem batida no contratempo?",
+    "resposta_correta": "Reggae",
+    "alternativas_erradas": [
+      "Ska",
+      "Reggaeton",
+      "Calypso"
+    ]
+  },
+  {
+    "id": 264,
+    "categoria": "Música",
+    "dificuldade": "medio",
+    "pergunta": "Qual cantor e compositor brasileiro é autor de Construção e A Banda?",
+    "resposta_correta": "Chico Buarque",
+    "alternativas_erradas": [
+      "Caetano Veloso",
+      "Gilberto Gil",
+      "Milton Nascimento"
+    ]
+  },
+  {
+    "id": 265,
+    "categoria": "Música",
+    "dificuldade": "facil",
+    "pergunta": "Qual gênero musical clássico italiano combina canto, orquestra e teatro, como em A Traviata?",
+    "resposta_correta": "Ópera",
+    "alternativas_erradas": [
+      "Balé",
+      "Sinfonia",
+      "Concerto"
+    ]
+  },
+  {
+    "id": 266,
+    "categoria": "Música",
+    "dificuldade": "medio",
+    "pergunta": "Qual dupla sertaneja ficou famosa com a música Evidências?",
+    "resposta_correta": "Chitãozinho & Xororó",
+    "alternativas_erradas": [
+      "Zezé Di Camargo & Luciano",
+      "Leandro & Leonardo",
+      "Bruno & Marrone"
+    ]
+  },
+  {
+    "id": 267,
+    "categoria": "Música",
+    "dificuldade": "medio",
+    "pergunta": "Qual compositor austríaco, criança prodígio, escreveu mais de 600 obras antes de morrer aos 35 anos?",
+    "resposta_correta": "Wolfgang Amadeus Mozart",
+    "alternativas_erradas": [
+      "Ludwig van Beethoven",
+      "Johann Sebastian Bach",
+      "Franz Schubert"
+    ]
+  },
+  {
+    "id": 268,
+    "categoria": "Música",
+    "dificuldade": "facil",
+    "pergunta": "Qual é o nome do gênero musical eletrônico com batidas repetitivas e subgêneros como house e techno?",
+    "resposta_correta": "Música eletrônica",
+    "alternativas_erradas": [
+      "Rock",
+      "Jazz",
+      "Bossa Nova"
+    ]
+  },
+  {
+    "id": 269,
+    "categoria": "Música",
+    "dificuldade": "medio",
+    "pergunta": "Qual cantora popularizou o samba nos Estados Unidos nas décadas de 1930-40, atuando também em Hollywood?",
+    "resposta_correta": "Carmen Miranda",
+    "alternativas_erradas": [
+      "Elza Soares",
+      "Clara Nunes",
+      "Beth Carvalho"
+    ]
+  },
+  {
+    "id": 270,
+    "categoria": "Música",
+    "dificuldade": "dificil",
+    "pergunta": "Qual instrumento de cordas do samba e do choro brasileiro, pequeno e com quatro cordas duplas, lembra um ukulele?",
+    "resposta_correta": "Cavaquinho",
+    "alternativas_erradas": [
+      "Violão",
+      "Bandolim",
+      "Viola caipira"
+    ]
+  },
+  {
+    "id": 271,
+    "categoria": "Música",
+    "dificuldade": "facil",
+    "pergunta": "Qual cantor britânico é autor de Rocket Man e Your Song?",
+    "resposta_correta": "Elton John",
+    "alternativas_erradas": [
+      "David Bowie",
+      "Freddie Mercury",
+      "Rod Stewart"
+    ]
+  },
+  {
+    "id": 272,
+    "categoria": "Música",
+    "dificuldade": "facil",
+    "pergunta": "Qual grupo vocal sueco lançou Dancing Queen e Mamma Mia nos anos 1970?",
+    "resposta_correta": "ABBA",
+    "alternativas_erradas": [
+      "Bee Gees",
+      "Boney M",
+      "Modern Talking"
+    ]
+  },
+  {
+    "id": 273,
+    "categoria": "Música",
+    "dificuldade": "medio",
+    "pergunta": "Qual gênero musical, criado nos guetos de Nova York nos anos 1970, inclui rap, DJing, breakdance e grafite?",
+    "resposta_correta": "Hip-hop",
+    "alternativas_erradas": [
+      "Funk",
+      "Reggae",
+      "R&B"
+    ]
+  },
+  {
+    "id": 274,
+    "categoria": "Música",
+    "dificuldade": "facil",
+    "pergunta": "Qual músico jamaicano, símbolo mundial do reggae, é autor de No Woman, No Cry?",
+    "resposta_correta": "Bob Marley",
+    "alternativas_erradas": [
+      "Peter Tosh",
+      "Jimmy Cliff",
+      "Toots Hibbert"
+    ]
+  },
+  {
+    "id": 275,
+    "categoria": "Games",
+    "dificuldade": "facil",
+    "pergunta": "Qual é o nome do dinossauro verde que serve de montaria para Mario em vários jogos?",
+    "resposta_correta": "Yoshi",
+    "alternativas_erradas": [
+      "Toad",
+      "Wario",
+      "Birdo"
+    ]
+  },
+  {
+    "id": 276,
+    "categoria": "Games",
+    "dificuldade": "facil",
+    "pergunta": "Qual empresa é criadora e detentora da franquia The Legend of Zelda?",
+    "resposta_correta": "Nintendo",
+    "alternativas_erradas": [
+      "Sony",
+      "Sega",
+      "Capcom"
+    ]
+  },
+  {
+    "id": 277,
+    "categoria": "Games",
+    "dificuldade": "medio",
+    "pergunta": "Qual jogo de construção e sobrevivência em blocos ultrapassou 300 milhões de cópias vendidas?",
+    "resposta_correta": "Minecraft",
+    "alternativas_erradas": [
+      "Tetris",
+      "GTA V",
+      "Fortnite"
+    ]
+  },
+  {
+    "id": 278,
+    "categoria": "Games",
+    "dificuldade": "facil",
+    "pergunta": "Qual é o nome da protagonista caçadora de tesouros da série Tomb Raider?",
+    "resposta_correta": "Lara Croft",
+    "alternativas_erradas": [
+      "Jill Valentine",
+      "Chun-Li",
+      "Samus Aran"
+    ]
+  },
+  {
+    "id": 279,
+    "categoria": "Games",
+    "dificuldade": "medio",
+    "pergunta": "Qual empresa japonesa é dona das franquias Final Fantasy e Dragon Quest?",
+    "resposta_correta": "Square Enix",
+    "alternativas_erradas": [
+      "Capcom",
+      "Konami",
+      "Bandai Namco"
+    ]
+  },
+  {
+    "id": 280,
+    "categoria": "Games",
+    "dificuldade": "facil",
+    "pergunta": "Qual é o nome do antagonista principal da franquia Mario, um rei tartaruga?",
+    "resposta_correta": "Bowser",
+    "alternativas_erradas": [
+      "Wario",
+      "King K. Rool",
+      "Ganondorf"
+    ]
+  },
+  {
+    "id": 281,
+    "categoria": "Games",
+    "dificuldade": "medio",
+    "pergunta": "Em que ano foi lançado o primeiro console PlayStation, no Japão?",
+    "resposta_correta": "1994",
+    "alternativas_erradas": [
+      "1990",
+      "1998",
+      "2000"
+    ]
+  },
+  {
+    "id": 282,
+    "categoria": "Games",
+    "dificuldade": "facil",
+    "pergunta": "Qual é o nome do jogo de tiro em primeira pessoa ambientado em guerras reais, uma das franquias mais lucrativas da indústria?",
+    "resposta_correta": "Call of Duty",
+    "alternativas_erradas": [
+      "Battlefield",
+      "Medal of Honor",
+      "Halo"
+    ]
+  },
+  {
+    "id": 283,
+    "categoria": "Games",
+    "dificuldade": "facil",
+    "pergunta": "Qual é o nome do ouriço azul veloz criado pela Sega?",
+    "resposta_correta": "Sonic",
+    "alternativas_erradas": [
+      "Tails",
+      "Knuckles",
+      "Shadow"
+    ]
+  },
+  {
+    "id": 284,
+    "categoria": "Games",
+    "dificuldade": "facil",
+    "pergunta": "Qual jogo de simulação de vida permite controlar pessoas virtuais chamadas Sims?",
+    "resposta_correta": "The Sims",
+    "alternativas_erradas": [
+      "Animal Crossing",
+      "Stardew Valley",
+      "Second Life"
+    ]
+  },
+  {
+    "id": 285,
+    "categoria": "Games",
+    "dificuldade": "medio",
+    "pergunta": "Qual empresa desenvolve e publica a franquia Assassin's Creed?",
+    "resposta_correta": "Ubisoft",
+    "alternativas_erradas": [
+      "Electronic Arts",
+      "Activision",
+      "Rockstar Games"
+    ]
+  },
+  {
+    "id": 286,
+    "categoria": "Games",
+    "dificuldade": "dificil",
+    "pergunta": "Qual é o nome do protagonista silencioso da franquia Half-Life?",
+    "resposta_correta": "Gordon Freeman",
+    "alternativas_erradas": [
+      "Master Chief",
+      "Duke Nukem",
+      "Doomguy"
+    ]
+  },
+  {
+    "id": 287,
+    "categoria": "Games",
+    "dificuldade": "medio",
+    "pergunta": "Qual jogo é conhecido como pioneiro dos battle royale, com o nome abreviado PUBG?",
+    "resposta_correta": "PlayerUnknown's Battlegrounds",
+    "alternativas_erradas": [
+      "Fortnite",
+      "Apex Legends",
+      "Warzone"
+    ]
+  },
+  {
+    "id": 288,
+    "categoria": "Games",
+    "dificuldade": "facil",
+    "pergunta": "Qual empresa é desenvolvedora da franquia Grand Theft Auto?",
+    "resposta_correta": "Rockstar Games",
+    "alternativas_erradas": [
+      "Ubisoft",
+      "EA",
+      "Activision"
+    ]
+  },
+  {
+    "id": 289,
+    "categoria": "Games",
+    "dificuldade": "medio",
+    "pergunta": "Qual é o nome do protagonista de God of War, um guerreiro movido pela vingança?",
+    "resposta_correta": "Kratos",
+    "alternativas_erradas": [
+      "Atreus",
+      "Zeus",
+      "Hades"
+    ]
+  },
+  {
+    "id": 290,
+    "categoria": "Games",
+    "dificuldade": "medio",
+    "pergunta": "Qual personagem é o mascote da Nintendo que apareceu pela primeira vez no jogo Donkey Kong, de 1981?",
+    "resposta_correta": "Mario",
+    "alternativas_erradas": [
+      "Luigi",
+      "Donkey Kong",
+      "Diddy Kong"
+    ]
+  },
+  {
+    "id": 291,
+    "categoria": "Games",
+    "dificuldade": "medio",
+    "pergunta": "Qual linha de consoles portáteis da Nintendo, lançada em 1989, trouxe o clássico jogo Tetris?",
+    "resposta_correta": "Game Boy",
+    "alternativas_erradas": [
+      "Game Gear",
+      "PSP",
+      "Nintendo DS"
+    ]
+  },
+  {
+    "id": 292,
+    "categoria": "Games",
+    "dificuldade": "medio",
+    "pergunta": "Qual é o vilão principal da franquia Legend of Zelda, que busca a Triforce?",
+    "resposta_correta": "Ganon",
+    "alternativas_erradas": [
+      "Bowser",
+      "Vaati",
+      "Zant"
+    ]
+  },
+  {
+    "id": 293,
+    "categoria": "Games",
+    "dificuldade": "facil",
+    "pergunta": "Qual empresa é criadora e publicadora da franquia Pokémon, em parceria com a Game Freak?",
+    "resposta_correta": "Nintendo",
+    "alternativas_erradas": [
+      "Sega",
+      "Sony",
+      "Capcom"
+    ]
+  },
+  {
+    "id": 294,
+    "categoria": "Games",
+    "dificuldade": "facil",
+    "pergunta": "Qual jogo de simulação agrícola, lançado em 2016, foi criado por um único desenvolvedor?",
+    "resposta_correta": "Stardew Valley",
+    "alternativas_erradas": [
+      "Harvest Moon",
+      "Animal Crossing",
+      "Terraria"
+    ]
+  },
+  {
+    "id": 295,
+    "categoria": "Games",
+    "dificuldade": "dificil",
+    "pergunta": "Qual é o nome do primeiro jogo eletrônico comercialmente bem-sucedido, um simulador de tênis de mesa lançado pela Atari em 1972?",
+    "resposta_correta": "Pong",
+    "alternativas_erradas": [
+      "Pac-Man",
+      "Space Invaders",
+      "Tetris"
+    ]
+  },
+  {
+    "id": 296,
+    "categoria": "Games",
+    "dificuldade": "facil",
+    "pergunta": "Qual é o nome do fantasma amarelo que come pontos e foge de fantasmas coloridos em um labirinto?",
+    "resposta_correta": "Pac-Man",
+    "alternativas_erradas": [
+      "Sonic",
+      "Mario",
+      "Kirby"
+    ]
+  },
+  {
+    "id": 297,
+    "categoria": "Games",
+    "dificuldade": "medio",
+    "pergunta": "Qual é o nome da bola rosa que copia habilidades dos inimigos que engole, mascote da HAL Laboratory?",
+    "resposta_correta": "Kirby",
+    "alternativas_erradas": [
+      "Yoshi",
+      "Pac-Man",
+      "Waddle Dee"
+    ]
+  },
+  {
+    "id": 298,
+    "categoria": "Games",
+    "dificuldade": "medio",
+    "pergunta": "Qual é o nome do jogo eletrônico competitivo do gênero MOBA desenvolvido pela Riot Games?",
+    "resposta_correta": "League of Legends",
+    "alternativas_erradas": [
+      "Dota 2",
+      "Valorant",
+      "Overwatch"
+    ]
+  },
+  {
+    "id": 299,
+    "categoria": "Games",
+    "dificuldade": "medio",
+    "pergunta": "Qual empresa desenvolveu o jogo Minecraft originalmente, antes de ser comprada pela Microsoft?",
+    "resposta_correta": "Mojang",
+    "alternativas_erradas": [
+      "Microsoft",
+      "Epic Games",
+      "Valve"
+    ]
+  },
+  {
+    "id": 300,
+    "categoria": "Games",
+    "dificuldade": "dificil",
+    "pergunta": "Qual empresa desenvolveu o jogo de cartas colecionáveis digital Hearthstone?",
+    "resposta_correta": "Blizzard Entertainment",
+    "alternativas_erradas": [
+      "Riot Games",
+      "Valve",
+      "Ubisoft"
+    ]
+  },
+  {
+    "id": 301,
+    "categoria": "Games",
+    "dificuldade": "facil",
+    "pergunta": "Como é chamado o modo de jogo em que cerca de 100 jogadores lutam até restar apenas um?",
+    "resposta_correta": "Battle royale",
+    "alternativas_erradas": [
+      "Deathmatch",
+      "Captura de bandeira",
+      "Modo campanha"
+    ]
+  },
+  {
+    "id": 302,
+    "categoria": "Games",
+    "dificuldade": "medio",
+    "pergunta": "Qual jogo de terror de sobrevivência, protagonizado por Joel e Ellie, foi adaptado em série pela HBO?",
+    "resposta_correta": "The Last of Us",
+    "alternativas_erradas": [
+      "Resident Evil",
+      "Silent Hill",
+      "Days Gone"
+    ]
+  },
+  {
+    "id": 303,
+    "categoria": "Games",
+    "dificuldade": "facil",
+    "pergunta": "Qual empresa é criadora do console Xbox?",
+    "resposta_correta": "Microsoft",
+    "alternativas_erradas": [
+      "Sony",
+      "Nintendo",
+      "Sega"
+    ]
+  },
+  {
+    "id": 304,
+    "categoria": "Games",
+    "dificuldade": "medio",
+    "pergunta": "Qual foi o primeiro jogo da franquia Resident Evil, lançado em 1996?",
+    "resposta_correta": "Resident Evil",
+    "alternativas_erradas": [
+      "Silent Hill",
+      "Dino Crisis",
+      "Parasite Eve"
+    ]
+  },
+  {
+    "id": 305,
+    "categoria": "Games",
+    "dificuldade": "facil",
+    "pergunta": "Qual jogo da Nintendo simula a vida social em uma ilha e tem o personagem Tom Nook?",
+    "resposta_correta": "Animal Crossing",
+    "alternativas_erradas": [
+      "Stardew Valley",
+      "The Sims",
+      "Harvest Moon"
+    ]
+  },
+  {
+    "id": 306,
+    "categoria": "Games",
+    "dificuldade": "medio",
+    "pergunta": "Qual é o nome do jogo tático competitivo em primeira pessoa com agentes, desenvolvido pela Riot Games?",
+    "resposta_correta": "Valorant",
+    "alternativas_erradas": [
+      "Overwatch",
+      "Apex Legends",
+      "Counter-Strike"
+    ]
+  },
+  {
+    "id": 307,
+    "categoria": "Games",
+    "dificuldade": "facil",
+    "pergunta": "Em qual jogo de plataforma um encanador resgata a Princesa Peach do vilão Bowser?",
+    "resposta_correta": "Super Mario Bros.",
+    "alternativas_erradas": [
+      "Sonic the Hedgehog",
+      "Donkey Kong",
+      "Mega Man"
+    ]
+  },
+  {
+    "id": 308,
+    "categoria": "Games",
+    "dificuldade": "medio",
+    "pergunta": "Qual é o nome do protagonista caçador de tesouros da série Uncharted, da Naughty Dog?",
+    "resposta_correta": "Nathan Drake",
+    "alternativas_erradas": [
+      "Lara Croft",
+      "Indiana Jones",
+      "Sam Fisher"
+    ]
+  },
+  {
+    "id": 309,
+    "categoria": "Games",
+    "dificuldade": "facil",
+    "pergunta": "Como são chamados os torneios profissionais de videogame com premiações milionárias?",
+    "resposta_correta": "eSports",
+    "alternativas_erradas": [
+      "LAN house",
+      "Streaming",
+      "Speedrun"
+    ]
+  },
+  {
+    "id": 310,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "medio",
+    "pergunta": "Quem escreveu Memórias Póstumas de Brás Cubas?",
+    "resposta_correta": "Machado de Assis",
+    "alternativas_erradas": [
+      "José de Alencar",
+      "Aluísio Azevedo",
+      "Lima Barreto"
+    ]
+  },
+  {
+    "id": 311,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "medio",
+    "pergunta": "Qual pintor espanhol, ligado ao cubismo, é autor de Guernica?",
+    "resposta_correta": "Pablo Picasso",
+    "alternativas_erradas": [
+      "Salvador Dalí",
+      "Joan Miró",
+      "Diego Velázquez"
+    ]
+  },
+  {
+    "id": 312,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "facil",
+    "pergunta": "Quem escreveu a peça Romeu e Julieta?",
+    "resposta_correta": "William Shakespeare",
+    "alternativas_erradas": [
+      "Molière",
+      "Victor Hugo",
+      "Oscar Wilde"
+    ]
+  },
+  {
+    "id": 313,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "medio",
+    "pergunta": "Qual escritor brasileiro escreveu Vidas Secas, sobre a seca no sertão nordestino?",
+    "resposta_correta": "Graciliano Ramos",
+    "alternativas_erradas": [
+      "Jorge Amado",
+      "José Lins do Rego",
+      "Euclides da Cunha"
+    ]
+  },
+  {
+    "id": 314,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "medio",
+    "pergunta": "Qual movimento artístico, com formas geométricas e fragmentação de objetos, foi liderado por Picasso e Braque?",
+    "resposta_correta": "Cubismo",
+    "alternativas_erradas": [
+      "Surrealismo",
+      "Impressionismo",
+      "Expressionismo"
+    ]
+  },
+  {
+    "id": 315,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "facil",
+    "pergunta": "Quem escreveu o livro 1984, uma distopia sobre vigilância totalitária?",
+    "resposta_correta": "George Orwell",
+    "alternativas_erradas": [
+      "Aldous Huxley",
+      "Ray Bradbury",
+      "Franz Kafka"
+    ]
+  },
+  {
+    "id": 316,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "medio",
+    "pergunta": "Qual escultor renascentista italiano esculpiu a estátua de Davi?",
+    "resposta_correta": "Michelangelo",
+    "alternativas_erradas": [
+      "Donatello",
+      "Bernini",
+      "Leonardo da Vinci"
+    ]
+  },
+  {
+    "id": 317,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "medio",
+    "pergunta": "Quem escreveu Cem Anos de Solidão, marco do realismo mágico latino-americano?",
+    "resposta_correta": "Gabriel García Márquez",
+    "alternativas_erradas": [
+      "Jorge Luis Borges",
+      "Mario Vargas Llosa",
+      "Pablo Neruda"
+    ]
+  },
+  {
+    "id": 318,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "medio",
+    "pergunta": "Qual escritora brasileira escreveu A Hora da Estrela?",
+    "resposta_correta": "Clarice Lispector",
+    "alternativas_erradas": [
+      "Cecília Meireles",
+      "Rachel de Queiroz",
+      "Lygia Fagundes Telles"
+    ]
+  },
+  {
+    "id": 319,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "facil",
+    "pergunta": "Qual pintor holandês é autor de Os Girassóis?",
+    "resposta_correta": "Vincent van Gogh",
+    "alternativas_erradas": [
+      "Rembrandt",
+      "Johannes Vermeer",
+      "Piet Mondrian"
+    ]
+  },
+  {
+    "id": 320,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "facil",
+    "pergunta": "Quem escreveu O Pequeno Príncipe?",
+    "resposta_correta": "Antoine de Saint-Exupéry",
+    "alternativas_erradas": [
+      "Victor Hugo",
+      "Jules Verne",
+      "Albert Camus"
+    ]
+  },
+  {
+    "id": 321,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "medio",
+    "pergunta": "Qual movimento literário brasileiro do século XIX é marcado por Iracema e O Guarani?",
+    "resposta_correta": "Romantismo",
+    "alternativas_erradas": [
+      "Realismo",
+      "Barroco",
+      "Parnasianismo"
+    ]
+  },
+  {
+    "id": 322,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "dificil",
+    "pergunta": "Quem pintou O Grito, um dos quadros mais reconhecidos da arte expressionista?",
+    "resposta_correta": "Edvard Munch",
+    "alternativas_erradas": [
+      "Gustav Klimt",
+      "Egon Schiele",
+      "Wassily Kandinsky"
+    ]
+  },
+  {
+    "id": 323,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "dificil",
+    "pergunta": "Qual escritor português escreveu Os Lusíadas, poema épico sobre as grandes navegações?",
+    "resposta_correta": "Luís de Camões",
+    "alternativas_erradas": [
+      "Fernando Pessoa",
+      "José Saramago",
+      "Eça de Queirós"
+    ]
+  },
+  {
+    "id": 324,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "facil",
+    "pergunta": "Quem escreveu a saga de fantasia O Senhor dos Anéis?",
+    "resposta_correta": "J.R.R. Tolkien",
+    "alternativas_erradas": [
+      "C.S. Lewis",
+      "George R. R. Martin",
+      "J.K. Rowling"
+    ]
+  },
+  {
+    "id": 325,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "dificil",
+    "pergunta": "Qual artista renascentista pintou A Escola de Atenas, afresco no Vaticano?",
+    "resposta_correta": "Rafael",
+    "alternativas_erradas": [
+      "Michelangelo",
+      "Leonardo da Vinci",
+      "Ticiano"
+    ]
+  },
+  {
+    "id": 326,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "medio",
+    "pergunta": "Qual escritor brasileiro escreveu Capitães da Areia, sobre meninos de rua em Salvador?",
+    "resposta_correta": "Jorge Amado",
+    "alternativas_erradas": [
+      "Graciliano Ramos",
+      "Rubem Fonseca",
+      "Ariano Suassuna"
+    ]
+  },
+  {
+    "id": 327,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "medio",
+    "pergunta": "Quem escreveu A Divina Comédia, dividida em Inferno, Purgatório e Paraíso?",
+    "resposta_correta": "Dante Alighieri",
+    "alternativas_erradas": [
+      "Petrarca",
+      "Boccaccio",
+      "Ariosto"
+    ]
+  },
+  {
+    "id": 328,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "dificil",
+    "pergunta": "Qual poeta brasileiro é autor de Canção do Exílio, com o verso Minha terra tem palmeiras?",
+    "resposta_correta": "Gonçalves Dias",
+    "alternativas_erradas": [
+      "Casimiro de Abreu",
+      "Álvares de Azevedo",
+      "Castro Alves"
+    ]
+  },
+  {
+    "id": 329,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "medio",
+    "pergunta": "Qual pintor renascentista italiano é autor de O Nascimento de Vênus?",
+    "resposta_correta": "Sandro Botticelli",
+    "alternativas_erradas": [
+      "Leonardo da Vinci",
+      "Rafael",
+      "Ticiano"
+    ]
+  },
+  {
+    "id": 330,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "facil",
+    "pergunta": "Quem escreveu o romance Orgulho e Preconceito?",
+    "resposta_correta": "Jane Austen",
+    "alternativas_erradas": [
+      "Charlotte Brontë",
+      "Virginia Woolf",
+      "Emily Brontë"
+    ]
+  },
+  {
+    "id": 331,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "medio",
+    "pergunta": "Qual poeta português, autor de Mensagem, escrevia sob heterônimos?",
+    "resposta_correta": "Fernando Pessoa",
+    "alternativas_erradas": [
+      "Luís de Camões",
+      "José Saramago",
+      "Eça de Queirós"
+    ]
+  },
+  {
+    "id": 332,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "medio",
+    "pergunta": "Qual movimento artístico, com pinceladas soltas e luz natural, teve Monet como principal nome?",
+    "resposta_correta": "Impressionismo",
+    "alternativas_erradas": [
+      "Expressionismo",
+      "Surrealismo",
+      "Cubismo"
+    ]
+  },
+  {
+    "id": 333,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "medio",
+    "pergunta": "Qual escritor russo é autor de Crime e Castigo e Os Irmãos Karamázov?",
+    "resposta_correta": "Fiódor Dostoiévski",
+    "alternativas_erradas": [
+      "Liev Tolstói",
+      "Anton Tchekhov",
+      "Ivan Turgueniev"
+    ]
+  },
+  {
+    "id": 334,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "facil",
+    "pergunta": "Qual artista surrealista espanhol pintou A Persistência da Memória, com os relógios derretidos?",
+    "resposta_correta": "Salvador Dalí",
+    "alternativas_erradas": [
+      "Pablo Picasso",
+      "Joan Miró",
+      "René Magritte"
+    ]
+  },
+  {
+    "id": 335,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "medio",
+    "pergunta": "Qual dramaturgo brasileiro escreveu O Auto da Compadecida?",
+    "resposta_correta": "Ariano Suassuna",
+    "alternativas_erradas": [
+      "Nelson Rodrigues",
+      "Chico Buarque",
+      "Dias Gomes"
+    ]
+  },
+  {
+    "id": 336,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "medio",
+    "pergunta": "Qual escritor russo é autor de Guerra e Paz e Anna Kariênina?",
+    "resposta_correta": "Liev Tolstói",
+    "alternativas_erradas": [
+      "Fiódor Dostoiévski",
+      "Anton Tchekhov",
+      "Máximo Górki"
+    ]
+  },
+  {
+    "id": 337,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "medio",
+    "pergunta": "Qual é o principal nome do Impressionismo francês, autor da série Nenúfares?",
+    "resposta_correta": "Claude Monet",
+    "alternativas_erradas": [
+      "Édouard Manet",
+      "Edgar Degas",
+      "Pierre-Auguste Renoir"
+    ]
+  },
+  {
+    "id": 338,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "medio",
+    "pergunta": "Qual escritora inglesa criou o detetive Hercule Poirot?",
+    "resposta_correta": "Agatha Christie",
+    "alternativas_erradas": [
+      "Arthur Conan Doyle",
+      "Patricia Highsmith",
+      "P.D. James"
+    ]
+  },
+  {
+    "id": 339,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "facil",
+    "pergunta": "Qual escritor criou o detetive Sherlock Holmes?",
+    "resposta_correta": "Arthur Conan Doyle",
+    "alternativas_erradas": [
+      "Agatha Christie",
+      "Edgar Allan Poe",
+      "Charles Dickens"
+    ]
+  },
+  {
+    "id": 340,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "medio",
+    "pergunta": "Qual romancista inglês do século XIX escreveu Oliver Twist e Grandes Esperanças?",
+    "resposta_correta": "Charles Dickens",
+    "alternativas_erradas": [
+      "Jane Austen",
+      "Thomas Hardy",
+      "William Thackeray"
+    ]
+  },
+  {
+    "id": 341,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "dificil",
+    "pergunta": "Qual movimento artístico do século XVII, marcado por dramaticidade e contrastes de luz e sombra, teve Caravaggio como um dos principais nomes?",
+    "resposta_correta": "Barroco",
+    "alternativas_erradas": [
+      "Renascimento",
+      "Rococó",
+      "Neoclassicismo"
+    ]
+  },
+  {
+    "id": 342,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "medio",
+    "pergunta": "Qual escritor norte-americano é autor de contos de terror como O Corvo e A Queda da Casa de Usher?",
+    "resposta_correta": "Edgar Allan Poe",
+    "alternativas_erradas": [
+      "H.P. Lovecraft",
+      "Stephen King",
+      "Nathaniel Hawthorne"
+    ]
+  },
+  {
+    "id": 343,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "medio",
+    "pergunta": "Qual escritor brasileiro é autor de Os Sertões, sobre a Guerra de Canudos?",
+    "resposta_correta": "Euclides da Cunha",
+    "alternativas_erradas": [
+      "Graciliano Ramos",
+      "Lima Barreto",
+      "Monteiro Lobato"
+    ]
+  },
+  {
+    "id": 344,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "facil",
+    "pergunta": "Qual escritor brasileiro criou o Sítio do Picapau Amarelo?",
+    "resposta_correta": "Monteiro Lobato",
+    "alternativas_erradas": [
+      "Jorge Amado",
+      "Machado de Assis",
+      "Erico Verissimo"
+    ]
+  }
+]

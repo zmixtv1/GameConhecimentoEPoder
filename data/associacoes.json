@@ -1,0 +1,68 @@
+[
+  {
+    "id": 1,
+    "tema": "Capitais e Países",
+    "pares": [
+      { "esquerda": "Brasil", "direita": "Brasília" },
+      { "esquerda": "França", "direita": "Paris" },
+      { "esquerda": "Japão", "direita": "Tóquio" },
+      { "esquerda": "Egito", "direita": "Cairo" },
+      { "esquerda": "Austrália", "direita": "Camberra" }
+    ]
+  },
+  {
+    "id": 2,
+    "tema": "Autores e Obras",
+    "pares": [
+      { "esquerda": "Machado de Assis", "direita": "Dom Casmurro" },
+      { "esquerda": "J.K. Rowling", "direita": "Harry Potter" },
+      { "esquerda": "Miguel de Cervantes", "direita": "Dom Quixote" },
+      { "esquerda": "George Orwell", "direita": "1984" },
+      { "esquerda": "Gabriel García Márquez", "direita": "Cem Anos de Solidão" }
+    ]
+  },
+  {
+    "id": 3,
+    "tema": "Bandas e Vocalistas",
+    "pares": [
+      { "esquerda": "Queen", "direita": "Freddie Mercury" },
+      { "esquerda": "Nirvana", "direita": "Kurt Cobain" },
+      { "esquerda": "Guns N' Roses", "direita": "Axl Rose" },
+      { "esquerda": "U2", "direita": "Bono" },
+      { "esquerda": "Aerosmith", "direita": "Steven Tyler" }
+    ]
+  },
+  {
+    "id": 4,
+    "tema": "Personagem e Ator/Atriz",
+    "pares": [
+      { "esquerda": "Homem de Ferro", "direita": "Robert Downey Jr." },
+      { "esquerda": "Hermione Granger", "direita": "Emma Watson" },
+      { "esquerda": "Jack Sparrow", "direita": "Johnny Depp" },
+      { "esquerda": "Katniss Everdeen", "direita": "Jennifer Lawrence" },
+      { "esquerda": "Neo", "direita": "Keanu Reeves" }
+    ]
+  },
+  {
+    "id": 5,
+    "tema": "Elementos Químicos e Símbolos",
+    "pares": [
+      { "esquerda": "Ouro", "direita": "Au" },
+      { "esquerda": "Prata", "direita": "Ag" },
+      { "esquerda": "Ferro", "direita": "Fe" },
+      { "esquerda": "Hidrogênio", "direita": "H" },
+      { "esquerda": "Oxigênio", "direita": "O" }
+    ]
+  },
+  {
+    "id": 6,
+    "tema": "Pinturas e Pintores",
+    "pares": [
+      { "esquerda": "Mona Lisa", "direita": "Leonardo da Vinci" },
+      { "esquerda": "A Noite Estrelada", "direita": "Vincent van Gogh" },
+      { "esquerda": "Guernica", "direita": "Pablo Picasso" },
+      { "esquerda": "O Grito", "direita": "Edvard Munch" },
+      { "esquerda": "A Persistência da Memória", "direita": "Salvador Dalí" }
+    ]
+  }
+]

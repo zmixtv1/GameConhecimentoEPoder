@@ -1,0 +1,16 @@
+{
+  "name": "conhecimento-e-poder-servidor",
+  "version": "0.1.0",
+  "description": "Servidor do jogo Conhecimento e Poder - roda no Raspberry Pi",
+  "private": true,
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "ws": "^8.18.0"
+  }
+}

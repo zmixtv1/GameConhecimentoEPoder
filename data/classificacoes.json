@@ -1,0 +1,92 @@
+[
+  {
+    "id": 1,
+    "categoriaA": "Marvel",
+    "categoriaB": "DC",
+    "itens": [
+      { "nome": "Homem-Aranha", "categoria": "A" },
+      { "nome": "Batman", "categoria": "B" },
+      { "nome": "Homem de Ferro", "categoria": "A" },
+      { "nome": "Superman", "categoria": "B" },
+      { "nome": "Hulk", "categoria": "A" },
+      { "nome": "Mulher-Maravilha", "categoria": "B" },
+      { "nome": "Thor", "categoria": "A" },
+      { "nome": "Flash", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 2,
+    "categoriaA": "Animal",
+    "categoriaB": "Planta",
+    "itens": [
+      { "nome": "Guepardo", "categoria": "A" },
+      { "nome": "Girassol", "categoria": "B" },
+      { "nome": "Baleia-azul", "categoria": "A" },
+      { "nome": "Samambaia", "categoria": "B" },
+      { "nome": "Águia", "categoria": "A" },
+      { "nome": "Cacto", "categoria": "B" },
+      { "nome": "Polvo", "categoria": "A" },
+      { "nome": "Orquídea", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 3,
+    "categoriaA": "País da Europa",
+    "categoriaB": "País da América do Sul",
+    "itens": [
+      { "nome": "França", "categoria": "A" },
+      { "nome": "Brasil", "categoria": "B" },
+      { "nome": "Itália", "categoria": "A" },
+      { "nome": "Argentina", "categoria": "B" },
+      { "nome": "Alemanha", "categoria": "A" },
+      { "nome": "Peru", "categoria": "B" },
+      { "nome": "Portugal", "categoria": "A" },
+      { "nome": "Colômbia", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 4,
+    "categoriaA": "Instrumento de Corda",
+    "categoriaB": "Instrumento de Sopro",
+    "itens": [
+      { "nome": "Violão", "categoria": "A" },
+      { "nome": "Flauta", "categoria": "B" },
+      { "nome": "Violino", "categoria": "A" },
+      { "nome": "Trompete", "categoria": "B" },
+      { "nome": "Contrabaixo", "categoria": "A" },
+      { "nome": "Clarinete", "categoria": "B" },
+      { "nome": "Harpa", "categoria": "A" },
+      { "nome": "Saxofone", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 5,
+    "categoriaA": "Time de Futebol Brasileiro",
+    "categoriaB": "Time de Futebol Europeu",
+    "itens": [
+      { "nome": "Flamengo", "categoria": "A" },
+      { "nome": "Real Madrid", "categoria": "B" },
+      { "nome": "Palmeiras", "categoria": "A" },
+      { "nome": "Barcelona", "categoria": "B" },
+      { "nome": "Corinthians", "categoria": "A" },
+      { "nome": "Manchester United", "categoria": "B" },
+      { "nome": "São Paulo", "categoria": "A" },
+      { "nome": "Bayern de Munique", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 6,
+    "categoriaA": "Personagem de Harry Potter",
+    "categoriaB": "Personagem de O Senhor dos Anéis",
+    "itens": [
+      { "nome": "Harry Potter", "categoria": "A" },
+      { "nome": "Frodo Bolseiro", "categoria": "B" },
+      { "nome": "Hermione Granger", "categoria": "A" },
+      { "nome": "Gandalf", "categoria": "B" },
+      { "nome": "Draco Malfoy", "categoria": "A" },
+      { "nome": "Legolas", "categoria": "B" },
+      { "nome": "Rony Weasley", "categoria": "A" },
+      { "nome": "Aragorn", "categoria": "B" }
+    ]
+  }
+]

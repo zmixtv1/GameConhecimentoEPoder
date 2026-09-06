@@ -1,0 +1,329 @@
+:root {
+  color-scheme: dark;
+  --bg: #14172e;
+  --surface: #1c2140;
+  --ink: #f2efe4;
+  --ink-soft: #a9adc9;
+  --gold: #e8bf5c;
+  --violet: #8462c9;
+  --verde: #4caf7d;
+  --vermelho: #d16060;
+  font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.oculto { display: none !important; }
+
+.tela {
+  width: 100%;
+  max-width: 1000px;
+  text-align: center;
+}
+
+h1 { font-size: 3.2rem; margin: 0 0 20px; color: var(--gold); }
+h2 { font-size: 2rem; margin: 30px 0 16px; }
+
+.rotulo {
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--ink-soft);
+  margin-bottom: 6px;
+}
+
+.codigo {
+  font-size: 5rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--gold);
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 20px 40px;
+  display: inline-block;
+}
+
+.instrucao {
+  color: var(--ink-soft);
+  max-width: 60ch;
+  margin: 20px auto;
+}
+
+.lista-jogadores {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+
+.lista-jogadores li {
+  background: var(--surface);
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 1.3rem;
+}
+
+.lista-jogadores li.anfitriao::after {
+  content: " 👑";
+}
+
+.categoria {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--violet);
+  font-weight: 600;
+}
+
+.portas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 30px;
+}
+
+.porta {
+  background: var(--surface);
+  padding: 30px;
+  border-radius: 14px;
+  font-size: 1.6rem;
+  position: relative;
+}
+
+.porta .contagem {
+  display: block;
+  margin-top: 10px;
+  font-size: 1rem;
+  color: var(--gold);
+  letter-spacing: 0.05em;
+}
+
+#categoria-escolhida {
+  color: var(--gold);
+  font-size: 4rem;
+}
+
+#placar-final {
+  list-style: none;
+  counter-reset: pos;
+  padding: 0;
+  max-width: 500px;
+  margin: 20px auto;
+}
+
+#placar-final li {
+  background: var(--surface);
+  margin-bottom: 8px;
+  padding: 16px 24px;
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.6rem;
+}
+
+#placar-final li:first-child {
+  border: 3px solid var(--gold);
+}
+
+#placar-final li:first-child::before {
+  content: "👑 ";
+}
+
+.barra-tempo-fundo {
+  width: 100%;
+  height: 10px;
+  background: var(--surface);
+  border-radius: 6px;
+  overflow: hidden;
+  margin: 20px 0;
+}
+
+.barra-tempo {
+  height: 100%;
+  background: var(--gold);
+  width: 100%;
+  transition: width 0.1s linear;
+}
+
+.alternativas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 24px 0;
+}
+
+.alternativa {
+  background: var(--surface);
+  padding: 22px;
+  border-radius: 12px;
+  font-size: 1.5rem;
+  border: 3px solid transparent;
+}
+
+.alternativa.correta { border-color: var(--verde); background: #1f3a2c; }
+.alternativa.incorreta-destaque { border-color: var(--vermelho); }
+
+.progresso { color: var(--ink-soft); font-size: 1.2rem; }
+
+.fase-leitura {
+  color: var(--gold);
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin: 20px 0;
+}
+
+.log-poderes {
+  list-style: none;
+  padding: 0;
+  margin: 16px auto 0;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.log-poderes li {
+  background: var(--surface);
+  border-left: 3px solid var(--violet);
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 1rem;
+  text-align: left;
+}
+
+#placar {
+  list-style: none;
+  counter-reset: pos;
+  padding: 0;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+#placar li {
+  background: var(--surface);
+  margin-bottom: 8px;
+  padding: 14px 20px;
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.4rem;
+}
+
+.progresso-jogadores {
+  list-style: none;
+  padding: 0;
+  margin: 24px auto 0;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.progresso-jogadores li {
+  background: var(--surface);
+  padding: 14px 20px;
+  border-radius: 10px;
+  font-size: 1.3rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+.progresso-jogadores li.completou {
+  border: 2px solid var(--verde);
+}
+
+.gabarito-lista {
+  list-style: none;
+  padding: 0;
+  margin: 16px auto;
+  max-width: 600px;
+  display: grid;
+  gap: 8px;
+}
+
+.gabarito-lista li {
+  background: var(--surface);
+  padding: 12px 18px;
+  border-radius: 8px;
+  font-size: 1.15rem;
+  text-align: left;
+}
+
+/* ---------- Pirâmide do Conhecimento ---------- */
+.piramide-corrida {
+  list-style: none;
+  padding: 0;
+  margin: 24px auto 0;
+  max-width: 700px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.piramide-jogador {
+  display: grid;
+  grid-template-columns: 140px 1fr 90px;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+}
+
+.piramide-nome { font-size: 1.2rem; }
+
+.piramide-barra-fundo {
+  height: 22px;
+  background: var(--surface);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.piramide-barra {
+  height: 100%;
+  background: linear-gradient(90deg, var(--violet), var(--gold));
+  transition: width 0.3s ease-out;
+}
+
+.piramide-degrau-texto {
+  font-family: inherit;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+  text-align: right;
+}
+
+#piramide-posicoes-finais {
+  list-style: none;
+  counter-reset: pos;
+  padding: 0;
+  max-width: 500px;
+  margin: 20px auto;
+}
+
+#piramide-posicoes-finais li {
+  background: var(--surface);
+  margin-bottom: 8px;
+  padding: 14px 24px;
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.4rem;
+}
+
+#piramide-posicoes-finais li.vencedor {
+  border: 3px solid var(--gold);
+  color: var(--gold);
+}
+
+#piramide-posicoes-finais li.vencedor::before {
+  content: "👑 ";
+}
