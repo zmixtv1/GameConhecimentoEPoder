@@ -1,3 +1,4 @@
+const QRCode = require("qrcode");
 const { sortearPergunta, sortearPortas } = require("./perguntas");
 const { sortearConjuntoAssociacao, embaralharParaJogador: embaralharAssociacaoParaJogador } = require("./associacoes");
 const { sortearConjuntoClassificacao, embaralharParaJogador: embaralharClassificacaoParaJogador } = require("./classificacoes");
@@ -7,6 +8,20 @@ const { sortearConjuntoClassificacao, embaralharParaJogador: embaralharClassific
 // nenhuma fonte pública que encontramos, então preferi não inventar uma
 // regra e ter que desfazer depois.
 const TIPOS_DE_PODER = ["congelamento", "gosma", "bombolha", "mordicadores"];
+
+// cada jogador recebe um desses (emoji + cor) na ordem em que entra na sala -
+// não tem escolha de personagem ainda, é só pra dar identidade visual (pod
+// na TV, destaque da própria resposta no celular).
+const AVATARES_JOGADOR = [
+  { emoji: "🦊", cor: "#ff4757" },
+  { emoji: "🐼", cor: "#1e90ff" },
+  { emoji: "🐸", cor: "#2ed573" },
+  { emoji: "🦁", cor: "#ffa502" },
+  { emoji: "🦄", cor: "#9b59b6" },
+  { emoji: "🐧", cor: "#00d2d3" },
+  { emoji: "🐙", cor: "#ff6b81" },
+  { emoji: "🐯", cor: "#ff7f50" },
+];
 
 // Valores usados numa partida de verdade. Testes automatizados passam um
 // objeto de opções menor pro construtor, pra não precisar esperar segundos
@@ -57,6 +72,8 @@ class Sala {
     // | piramide | revelacao_piramide | fim
     this.estado = "lobby";
     this.tvWs = null;
+    this.linkControlador = null; // definido de fora (index.js), quando o IP local é conhecido
+    this.qrCodeDataUrl = null;
     this._proximoIdJogador = 1;
 
     // progressão da partida
@@ -68,6 +85,10 @@ class Sala {
     // fase de escolha de porta
     this.portasAtuais = [];
     this.escolhasPorta = new Map(); // jogadorId -> indice da porta
+    this.garantiasPorta = []; // [{ jogadorId, indice, nome }] - de quem usou o poder nesta rodada
+    // quem já usou o poder de "garantir minha porta" - só 1x por jogador
+    // na partida inteira, então isso NÃO é resetado por rodada.
+    this.jogadoresQueUsaramPoderPorta = new Set();
     this._timeoutPorta = null;
 
     // fase de pergunta
@@ -110,6 +131,21 @@ class Sala {
     this._enviar(ws, "estadoSala", this._resumoParaTv());
   }
 
+  // chamado de fora (index.js) assim que o IP local é conhecido - gera o
+  // QR code (100% offline, a lib desenha localmente) e reenvia o estado
+  // pra TV caso ela já esteja conectada.
+  async definirLinkControlador(link) {
+    this.linkControlador = link;
+    try {
+      this.qrCodeDataUrl = await QRCode.toDataURL(link, { margin: 1, width: 260 });
+    } catch {
+      this.qrCodeDataUrl = null;
+    }
+    if (this.tvWs) {
+      this._enviar(this.tvWs, "estadoSala", this._resumoParaTv());
+    }
+  }
+
   adicionarJogador(nome, codigoSala, ws) {
     if (String(codigoSala || "").toUpperCase() !== this.codigo) {
       return { erro: "Código da sala inválido." };
@@ -123,7 +159,8 @@ class Sala {
 
     const id = String(this._proximoIdJogador++);
     const ehAnfitriao = this.jogadores.size === 0;
-    this.jogadores.set(id, { id, nome, pontos: 0, ehAnfitriao, ws });
+    const avatar = AVATARES_JOGADOR[this.jogadores.size % AVATARES_JOGADOR.length];
+    this.jogadores.set(id, { id, nome, pontos: 0, ehAnfitriao, avatar, ws });
 
     this._enviar(ws, "entrouComSucesso", {
       jogadorId: id,
@@ -166,13 +203,6 @@ class Sala {
           clearTimeout(this._timeoutProximo);
           this._aguardandoConfirmacao = false;
           this._avancarAposResultado();
-        } else if (
-          this.jogadores.size > 0 &&
-          this.estado === "escolha_porta" &&
-          this.escolhasPorta.size >= this.jogadores.size
-        ) {
-          clearTimeout(this._timeoutPorta);
-          this._resolverPorta();
         } else if (
           this.jogadores.size > 0 &&
           this.estado === "escolha_poder" &&
@@ -234,12 +264,20 @@ class Sala {
     return { ok: true };
   }
 
-  registrarEscolhaPorta(jogadorId, indice) {
+  registrarEscolhaPorta(jogadorId, indice, garantir) {
     if (this.estado !== "escolha_porta") {
       return { erro: "Não há escolha de porta em aberto no momento." };
     }
     if (indice < 0 || indice >= this.portasAtuais.length) {
       return { erro: "Porta inválida." };
+    }
+    if (garantir) {
+      if (this.jogadoresQueUsaramPoderPorta.has(jogadorId)) {
+        return { erro: "Você já usou seu poder de garantir a porta nesta partida." };
+      }
+      this.jogadoresQueUsaramPoderPorta.add(jogadorId);
+      const jogador = this.jogadores.get(jogadorId);
+      this.garantiasPorta.push({ jogadorId, indice, nome: jogador.nome });
     }
     this.escolhasPorta.set(jogadorId, indice);
 
@@ -247,11 +285,9 @@ class Sala {
       contagens: this._contarVotosPorta(),
     });
 
-    if (this.escolhasPorta.size >= this.jogadores.size) {
-      clearTimeout(this._timeoutPorta);
-      this._resolverPorta();
-    }
-
+    // a revelação só acontece quando o tempo da votação realmente acabar -
+    // mesmo que todo mundo já tenha escolhido antes disso, propositalmente
+    // não resolve na hora (é o que dá a demora/suspense do sorteio).
     return { ok: true };
   }
 
@@ -275,6 +311,7 @@ class Sala {
     this._enviarParaTv("progressoRespostas", {
       respondidos: this.perguntaAtual.respostas.size,
       total: this.jogadores.size,
+      jogadoresQueResponderam: [...this.perguntaAtual.respostas.keys()],
     });
 
     if (this.perguntaAtual.respostas.size >= this.jogadores.size) {
@@ -510,15 +547,23 @@ class Sala {
     this.categoriaRodadaAtual = null;
     this.portasAtuais = sortearPortas(4);
     this.escolhasPorta = new Map();
+    this.garantiasPorta = [];
 
-    const payload = {
+    const payloadBase = {
       rodadaAtual: this.rodadaAtual,
       totalRodadas: this.cfg.totalRodadas,
       portas: this.portasAtuais,
       tempoLimiteMs: this.cfg.tempoLimitePortaMs,
     };
-    this._transmitirParaTodos("escolhaPorta", payload);
-    this._enviarParaTv("escolhaPorta", payload);
+    // "poderPortaDisponivel" é por jogador (só pode ser usado 1x na
+    // partida inteira), por isso manda individual em vez de transmitir.
+    for (const [id, jogador] of this.jogadores) {
+      this._enviar(jogador.ws, "escolhaPorta", {
+        ...payloadBase,
+        poderPortaDisponivel: !this.jogadoresQueUsaramPoderPorta.has(id),
+      });
+    }
+    this._enviarParaTv("escolhaPorta", payloadBase);
 
     this._timeoutPorta = setTimeout(() => {
       if (this.estado === "escolha_porta") this._resolverPorta();
@@ -535,16 +580,28 @@ class Sala {
     if (this.estado !== "escolha_porta") return;
 
     const contagens = this._contarVotosPorta();
-    const maiorVotos = Math.max(...contagens);
-    const vencedoras =
-      maiorVotos > 0
-        ? contagens.reduce((acc, v, i) => (v === maiorVotos ? [...acc, i] : acc), [])
-        : this.portasAtuais.map((_, i) => i); // ninguém escolheu: sorteia entre todas
-    const indiceVencedor = vencedoras[Math.floor(Math.random() * vencedoras.length)];
+    let indiceVencedor;
+    let garantidaPorNome = null;
+
+    if (this.garantiasPorta.length > 0) {
+      // alguém usou o poder de garantir a própria porta - ela vence
+      // mesmo se tiver menos votos que as outras. Se mais de um jogador
+      // usou o poder na mesma rodada (raro), vale a primeira ativação.
+      const escolhida = this.garantiasPorta[0];
+      indiceVencedor = escolhida.indice;
+      garantidaPorNome = escolhida.nome;
+    } else {
+      const maiorVotos = Math.max(...contagens);
+      const vencedoras =
+        maiorVotos > 0
+          ? contagens.reduce((acc, v, i) => (v === maiorVotos ? [...acc, i] : acc), [])
+          : this.portasAtuais.map((_, i) => i); // ninguém escolheu: sorteia entre todas
+      indiceVencedor = vencedoras[Math.floor(Math.random() * vencedoras.length)];
+    }
 
     this.categoriaRodadaAtual = this.portasAtuais[indiceVencedor];
 
-    const payload = { categoria: this.categoriaRodadaAtual, contagens };
+    const payload = { categoria: this.categoriaRodadaAtual, contagens, garantidaPorNome };
     this._transmitirParaTodos("portaEscolhida", payload);
     this._enviarParaTv("portaEscolhida", payload);
 
@@ -700,6 +757,10 @@ class Sala {
 
     this._enviarParaTv("resultadoPergunta", {
       respostaCorretaIndex: indiceCorreto,
+      respostasPorJogador: [...this.jogadores.values()].map((j) => {
+        const resposta = respostas.get(j.id);
+        return { id: j.id, nome: j.nome, alternativaIndex: resposta ? resposta.alternativaIndex : null };
+      }),
       placar: this._placar(),
     });
 
@@ -1019,6 +1080,7 @@ class Sala {
       nome: j.nome,
       ehAnfitriao: j.ehAnfitriao,
       pontos: j.pontos,
+      avatar: j.avatar,
     }));
   }
 
@@ -1027,6 +1089,8 @@ class Sala {
       codigo: this.codigo,
       estado: this.estado,
       jogadores: this._listaJogadoresPublica(),
+      linkControlador: this.linkControlador,
+      qrCodeDataUrl: this.qrCodeDataUrl,
     };
   }
 

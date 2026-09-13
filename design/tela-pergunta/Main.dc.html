@@ -1,0 +1,458 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;800&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap">
+  <style>
+    :root {
+      --bg: oklch(97% 0.005 260);
+      --surface: oklch(99% 0.002 260);
+      --ink: oklch(20% 0.012 260);
+      --ink-soft: oklch(52% 0.016 260);
+      --line: oklch(89% 0.008 260);
+      --accent: oklch(58% 0.15 75);
+      --accent-dim: oklch(58% 0.15 75 / 0.12);
+      --verde: oklch(60% 0.14 145);
+      --verde-bg: oklch(94% 0.035 145);
+      font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    a { color: var(--accent); }
+    a:hover { color: var(--ink); }
+    .tela {
+      position: relative;
+      width: 1440px;
+      height: 900px;
+      overflow: hidden;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--ink);
+    }
+    .fundo-vivo {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .orbe {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(70px);
+    }
+    .orbe-1 {
+      width: 640px; height: 640px;
+      top: -260px; left: -160px;
+      background: radial-gradient(closest-side, oklch(58% 0.15 75 / 0.16), transparent 70%);
+      animation: deriva-a 22s ease-in-out infinite;
+    }
+    .orbe-2 {
+      width: 560px; height: 560px;
+      top: -220px; right: -180px;
+      background: radial-gradient(closest-side, oklch(58% 0.15 75 / 0.12), transparent 70%);
+      animation: deriva-b 26s ease-in-out infinite;
+    }
+    .orbe-3 {
+      width: 480px; height: 480px;
+      bottom: -260px; left: 34%;
+      background: radial-gradient(closest-side, oklch(58% 0.15 75 / 0.10), transparent 70%);
+      animation: deriva-a 30s ease-in-out infinite reverse;
+    }
+    @keyframes deriva-a {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(60px, 30px) scale(1.06); }
+    }
+    @keyframes deriva-b {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(-50px, 40px) scale(0.96); }
+    }
+    .feixe {
+      position: absolute;
+      inset: -20% -60%;
+      background: linear-gradient(100deg,
+        transparent 42%,
+        oklch(58% 0.15 75 / 0.07) 50%,
+        transparent 58%);
+      animation: varre 9s linear infinite;
+    }
+    @keyframes varre {
+      0% { transform: translateX(-20%); }
+      100% { transform: translateX(20%); }
+    }
+
+    @keyframes revela {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .anim {
+      opacity: 0;
+      animation: revela 0.55s cubic-bezier(.2,.8,.25,1) forwards;
+    }
+
+    .conteudo {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 900px;
+      text-align: center;
+    }
+    .topo {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .rotulo {
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+    }
+    .ponto-sep {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--line);
+    }
+    .categoria {
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+    h2 {
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 700;
+      font-size: 2.9rem;
+      line-height: 1.15;
+      margin: 22px 0 36px;
+      text-wrap: pretty;
+    }
+    .timer-redondo {
+      position: absolute;
+      z-index: 3;
+      right: 68px;
+      top: 50%;
+      width: 168px;
+      height: 168px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.4s ease, transform 0.4s cubic-bezier(.34,1.56,.64,1);
+    }
+    .timer-halo {
+      position: absolute;
+      inset: -18px;
+      border-radius: 50%;
+      background: radial-gradient(closest-side, var(--accent-dim), transparent 75%);
+      animation: pulso-halo 1.8s ease-in-out infinite;
+    }
+    @keyframes pulso-halo {
+      0%, 100% { opacity: 0.6; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.08); }
+    }
+    .timer-anel {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+    .anel-fundo {
+      fill: none;
+      stroke: var(--line);
+      stroke-width: 8;
+    }
+    .anel-progresso {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 8;
+      stroke-linecap: round;
+      stroke-dasharray: 326.7;
+    }
+    .timer-centro {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .timer-numero {
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 800;
+      font-size: 2.6rem;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+      color: var(--ink);
+    }
+    .timer-label {
+      margin-top: 4px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+    }
+    .area-baixo {
+      min-height: 262px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .progresso-linha {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: var(--ink-soft);
+      font-size: 1.05rem;
+      font-weight: 500;
+    }
+    .avatares { display: flex; gap: 6px; }
+    .avatar {
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: transparent;
+      border: 1.5px solid var(--line);
+    }
+    @keyframes pop-avatar {
+      from { opacity: 0; transform: scale(0); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .avatar.on {
+      background: var(--accent);
+      border-color: var(--accent);
+      opacity: 0;
+      animation: pop-avatar 0.35s cubic-bezier(.34,1.56,.64,1) forwards;
+    }
+    .avatar.on:nth-child(1) { animation-delay: 2s; }
+    .avatar.on:nth-child(2) { animation-delay: 4.2s; }
+    .avatar.on:nth-child(3) { animation-delay: 6s; }
+    .alternativas {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      width: 100%;
+    }
+    @keyframes flip-in {
+      from { opacity: 0; transform: perspective(900px) rotateY(-90deg); }
+      to { opacity: 1; transform: perspective(900px) rotateY(0deg); }
+    }
+    .alternativa {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      padding: 20px 24px;
+      border-radius: 14px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      box-shadow: 0 1px 2px oklch(20% 0.01 260 / 0.04), 0 8px 20px oklch(20% 0.01 260 / 0.05);
+      font-size: 1.4rem;
+      font-weight: 500;
+      text-align: left;
+      transform-origin: left center;
+      opacity: 0;
+      animation: flip-in 0.6s cubic-bezier(.175,.885,.32,1.275) forwards;
+    }
+    .alt-a { animation-delay: 0s; }
+    .alt-b { animation-delay: 0.08s; }
+    .alt-c { animation-delay: 0.08s; }
+    .alt-d { animation-delay: 0.16s; }
+    @keyframes pop-letra {
+      from { opacity: 0; transform: scale(0.5); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .letra {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: transparent;
+      border: 1.5px solid var(--line);
+      color: var(--ink-soft);
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 700;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+      opacity: 0;
+      animation: pop-letra 0.4s cubic-bezier(.34,1.56,.64,1) forwards;
+    }
+    .alt-a .letra { animation-delay: 0.34s; }
+    .alt-b .letra { animation-delay: 0.42s; }
+    .alt-c .letra { animation-delay: 0.42s; }
+    .alt-d .letra { animation-delay: 0.50s; }
+    .avatares-card {
+      display: flex;
+      gap: 6px;
+      margin-left: auto;
+    }
+    .avatar-chip {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--line);
+      border: 1.5px solid var(--line);
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 700;
+      font-size: 0.78rem;
+      color: var(--ink-soft);
+      flex-shrink: 0;
+      opacity: 0;
+      animation: pop-letra 0.3s cubic-bezier(.34,1.56,.64,1) forwards;
+    }
+    .icone-check {
+      color: var(--verde);
+      flex-shrink: 0;
+      margin-left: 4px;
+      opacity: 0;
+      animation: pop-letra 0.35s cubic-bezier(.34,1.56,.64,1) forwards 1.35s;
+    }
+    @keyframes acerto {
+      from { background: var(--surface); border-color: var(--line); }
+      to { background: var(--verde-bg); border-color: var(--verde); }
+    }
+    .alternativa.correta {
+      animation: flip-in 0.6s cubic-bezier(.175,.885,.32,1.275) 0.08s forwards,
+                 acerto 0.5s ease forwards 1.3s;
+    }
+    .alternativa.correta .avatar-chip {
+      background: var(--verde);
+      border-color: var(--verde);
+      color: #fff;
+    }
+  </style>
+</helmet>
+<div class="tela">
+  <div class="fundo-vivo">
+    <div class="orbe orbe-1"></div>
+    <div class="orbe orbe-2"></div>
+    <div class="orbe orbe-3"></div>
+    <div class="feixe"></div>
+  </div>
+  <div class="timer-redondo" style="opacity: {{timerOpacity}}; transform: translateY(-50%) scale({{timerScale}})">
+    <div class="timer-halo"></div>
+    <svg class="timer-anel" viewBox="0 0 120 120">
+      <circle class="anel-fundo" cx="60" cy="60" r="52"></circle>
+      <circle class="anel-progresso" cx="60" cy="60" r="52" style="stroke-dashoffset: {{offset}}"></circle>
+    </svg>
+    <div class="timer-centro">
+      <span class="timer-numero">{{numero}}</span>
+      <span class="timer-label">segundos</span>
+    </div>
+  </div>
+  <div class="conteudo">
+    <div class="topo anim" style="animation-delay:0.05s">
+      <span class="rotulo">Rodada 2 de 3 · Pergunta 2 de 3</span>
+      <span class="ponto-sep"></span>
+      <span class="categoria">Geografia</span>
+    </div>
+    <h2 class="anim" style="animation-delay:0.14s">Qual é o maior país do mundo em extensão territorial?</h2>
+    <div class="area-baixo">
+      <sc-if value="{{emAguardando}}" hint-placeholder-val="{{true}}">
+        <div class="progresso-linha anim" style="animation-delay:0.3s">
+          <div class="avatares">
+            <span class="avatar on"></span>
+            <span class="avatar on"></span>
+            <span class="avatar on"></span>
+            <span class="avatar"></span>
+            <span class="avatar"></span>
+          </div>
+          3 de 5 jogadores já responderam
+        </div>
+      </sc-if>
+      <sc-if value="{{emRevelacao}}" hint-placeholder-val="{{false}}">
+        <div class="alternativas">
+          <div class="alternativa alt-a">
+            <span class="letra">A</span>Canadá
+            <div class="avatares-card">
+              <span class="avatar-chip" style="animation-delay:1.5s">J</span>
+            </div>
+          </div>
+          <div class="alternativa alt-b correta">
+            <span class="letra">B</span>Rússia
+            <div class="avatares-card">
+              <span class="avatar-chip" style="animation-delay:1.5s">R</span>
+              <span class="avatar-chip" style="animation-delay:1.58s">L</span>
+              <span class="avatar-chip" style="animation-delay:1.66s">M</span>
+            </div>
+            <svg class="icone-check" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M8 12.5l2.5 2.5L16 9"></path>
+            </svg>
+          </div>
+          <div class="alternativa alt-c">
+            <span class="letra">C</span>China
+            <div class="avatares-card"></div>
+          </div>
+          <div class="alternativa alt-d">
+            <span class="letra">D</span>Estados Unidos
+            <div class="avatares-card">
+              <span class="avatar-chip" style="animation-delay:1.5s">A</span>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.esperaMs = 8000;
+    this.revelacaoMs = 5000;
+    this.duracaoMs = this.esperaMs + this.revelacaoMs;
+    this.circunferencia = 326.7;
+    this.state = { fase: "aguardando", offset: 0, numero: "08" };
+  }
+  componentDidMount() {
+    this.inicio = performance.now();
+    this.tick = () => {
+      const decorrido = (performance.now() - this.inicio) % this.duracaoMs;
+      if (decorrido < this.esperaMs) {
+        this.setState({
+          fase: "aguardando",
+          offset: (this.circunferencia * (decorrido / this.esperaMs)).toFixed(1),
+          numero: String(Math.max(1, Math.ceil((this.esperaMs - decorrido) / 1000))).padStart(2, "0"),
+        });
+      } else if (this.state.fase !== "revelacao") {
+        this.setState({ fase: "revelacao" });
+      }
+      this.raf = requestAnimationFrame(this.tick);
+    };
+    this.raf = requestAnimationFrame(this.tick);
+  }
+  componentWillUnmount() {
+    if (this.raf) cancelAnimationFrame(this.raf);
+  }
+  renderVals() {
+    const emRevelacao = this.state.fase === "revelacao";
+    return {
+      emAguardando: !emRevelacao,
+      emRevelacao,
+      offset: this.state.offset,
+      numero: this.state.numero,
+      timerOpacity: emRevelacao ? 0 : 1,
+      timerScale: emRevelacao ? 0.7 : 1,
+    };
+  }
+}
+</script>
+</body>
+</html>

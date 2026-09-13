@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Tamanho da tela</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      min-height: 100dvh;
+      background: #14172e;
+      color: #f2efe4;
+      font-family: system-ui, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .cartao {
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+    }
+    h1 { font-size: 1.3rem; margin: 0 0 20px; }
+    .linha {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #1c2140;
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin-bottom: 10px;
+      font-size: 1rem;
+    }
+    .linha span:first-child { color: #a9adc9; }
+    .linha span:last-child {
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: #e8bf5c;
+    }
+    .grande {
+      font-size: 2.4rem;
+      font-weight: 800;
+      margin: 10px 0 24px;
+      font-variant-numeric: tabular-nums;
+    }
+    .ajuda { color: #a9adc9; font-size: 0.85rem; margin-top: 20px; }
+    button {
+      width: 100%;
+      padding: 14px;
+      font-size: 1rem;
+      font-weight: 700;
+      border-radius: 10px;
+      border: none;
+      background: #e8bf5c;
+      color: #1c1608;
+      margin-top: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="cartao">
+    <h1>Tamanho real da sua tela</h1>
+    <div class="grande" id="tamanho-grande">-- x --</div>
+
+    <div class="linha"><span>Viewport (largura)</span><span id="vp-largura"></span></div>
+    <div class="linha"><span>Viewport (altura)</span><span id="vp-altura"></span></div>
+    <div class="linha"><span>Pixel ratio (DPR)</span><span id="dpr"></span></div>
+    <div class="linha"><span>Físico (largura x DPR)</span><span id="fisico-largura"></span></div>
+    <div class="linha"><span>Físico (altura x DPR)</span><span id="fisico-altura"></span></div>
+    <div class="linha"><span>Orientação</span><span id="orientacao"></span></div>
+    <div class="linha"><span>Safe-area (topo/baixo)</span><span id="safe-area"></span></div>
+
+    <button id="botao-copiar">Copiar tudo</button>
+    <p class="ajuda">Gire o celular e os números atualizam sozinhos. Me manda o texto (ou um print) que eu ajusto o tamanho certinho pro seu aparelho.</p>
+  </div>
+
+  <div style="position:fixed; top:0; left:0; right:0; height:1px; background:red;" id="marcador-topo"></div>
+  <div style="position:fixed; bottom:0; left:0; right:0; height:1px; background:red;" id="marcador-baixo"></div>
+
+  <script>
+    const vpLarguraEl = document.getElementById("vp-largura");
+    const vpAlturaEl = document.getElementById("vp-altura");
+    const dprEl = document.getElementById("dpr");
+    const fisicoLarguraEl = document.getElementById("fisico-largura");
+    const fisicoAlturaEl = document.getElementById("fisico-altura");
+    const orientacaoEl = document.getElementById("orientacao");
+    const safeAreaEl = document.getElementById("safe-area");
+    const tamanhoGrandeEl = document.getElementById("tamanho-grande");
+    const botaoCopiar = document.getElementById("botao-copiar");
+
+    function medirSafeArea() {
+      const sonda = document.createElement("div");
+      sonda.style.position = "fixed";
+      sonda.style.top = "env(safe-area-inset-top, 0px)";
+      sonda.style.left = "0";
+      document.body.appendChild(sonda);
+      const topo = sonda.getBoundingClientRect().top;
+      sonda.style.top = "auto";
+      sonda.style.bottom = "env(safe-area-inset-bottom, 0px)";
+      const baixoDoFundo = window.innerHeight - sonda.getBoundingClientRect().bottom;
+      sonda.remove();
+      return { topo: Math.round(topo), baixo: Math.round(baixoDoFundo) };
+    }
+
+    function atualizar() {
+      const largura = window.innerWidth;
+      const altura = window.innerHeight;
+      const dpr = window.devicePixelRatio || 1;
+      const safe = medirSafeArea();
+
+      tamanhoGrandeEl.textContent = `${largura} x ${altura}`;
+      vpLarguraEl.textContent = `${largura}px`;
+      vpAlturaEl.textContent = `${altura}px`;
+      dprEl.textContent = dpr;
+      fisicoLarguraEl.textContent = `${Math.round(largura * dpr)}px`;
+      fisicoAlturaEl.textContent = `${Math.round(altura * dpr)}px`;
+      orientacaoEl.textContent = largura > altura ? "horizontal" : "vertical";
+      safeAreaEl.textContent = `${safe.topo}px / ${safe.baixo}px`;
+    }
+
+    function textoParaCopiar() {
+      return [
+        `Viewport: ${vpLarguraEl.textContent} x ${vpAlturaEl.textContent}`,
+        `DPR: ${dprEl.textContent}`,
+        `Físico: ${fisicoLarguraEl.textContent} x ${fisicoAlturaEl.textContent}`,
+        `Orientação: ${orientacaoEl.textContent}`,
+        `Safe-area (topo/baixo): ${safeAreaEl.textContent}`,
+      ].join("\n");
+    }
+
+    botaoCopiar.addEventListener("click", async () => {
+      const texto = textoParaCopiar();
+      try {
+        await navigator.clipboard.writeText(texto);
+        botaoCopiar.textContent = "Copiado!";
+        setTimeout(() => (botaoCopiar.textContent = "Copiar tudo"), 1500);
+      } catch {
+        alert(texto);
+      }
+    });
+
+    window.addEventListener("resize", atualizar);
+    window.addEventListener("orientationchange", () => setTimeout(atualizar, 200));
+    atualizar();
+  </script>
+</body>
+</html>

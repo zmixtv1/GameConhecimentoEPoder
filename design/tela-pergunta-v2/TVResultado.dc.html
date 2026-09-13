@@ -1,0 +1,170 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;800&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap">
+  <style>
+    :root {
+      --pq-bg: oklch(97% 0.005 260);
+      --pq-surface: oklch(99% 0.002 260);
+      --pq-ink: oklch(20% 0.012 260);
+      --pq-ink-soft: oklch(52% 0.016 260);
+      --pq-line: oklch(89% 0.008 260);
+      --pq-accent: oklch(58% 0.15 75);
+      --pq-verde: oklch(60% 0.14 145);
+      --pq-verde-bg: oklch(94% 0.035 145);
+      font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    a { color: var(--pq-accent); }
+    a:hover { color: var(--pq-ink); }
+    .tela {
+      position: relative;
+      width: 1440px;
+      height: 900px;
+      overflow: hidden;
+      background: var(--pq-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--pq-ink);
+    }
+    .fundo-vivo { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+    .orbe { position: absolute; border-radius: 50%; filter: blur(70px); }
+    .orbe-1 {
+      width: 640px; height: 640px; top: -260px; left: -160px;
+      background: radial-gradient(closest-side, oklch(58% 0.15 75 / 0.16), transparent 70%);
+    }
+    .orbe-2 {
+      width: 560px; height: 560px; top: -220px; right: -180px;
+      background: radial-gradient(closest-side, oklch(58% 0.15 75 / 0.12), transparent 70%);
+    }
+    .orbe-3 {
+      width: 480px; height: 480px; bottom: -260px; left: 34%;
+      background: radial-gradient(closest-side, oklch(58% 0.15 75 / 0.10), transparent 70%);
+      opacity: 0.35;
+    }
+    .feixe {
+      position: absolute;
+      inset: -20% -60%;
+      background: linear-gradient(100deg, transparent 42%, oklch(58% 0.15 75 / 0.07) 50%, transparent 58%);
+    }
+
+    .conteudo { position: relative; z-index: 2; width: 100%; max-width: 900px; text-align: center; }
+    h2 {
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 700;
+      font-size: 2.9rem;
+      line-height: 1.15;
+      margin: 0 0 30px;
+    }
+    h3 { font-family: "Space Grotesk", sans-serif; font-weight: 700; font-size: 1.4rem; margin: 26px 0 10px; }
+
+    .alternativas { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 100%; }
+    .alternativa {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      padding: 20px 24px;
+      border-radius: 14px;
+      background: var(--pq-surface);
+      border: 1px solid var(--pq-line);
+      box-shadow: 0 1px 2px oklch(20% 0.01 260 / 0.04), 0 8px 20px oklch(20% 0.01 260 / 0.05);
+      font-size: 1.4rem;
+      font-weight: 500;
+      text-align: left;
+    }
+    .letra {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 40px; height: 40px; border-radius: 10px;
+      background: transparent; border: 1.5px solid var(--pq-line);
+      color: var(--pq-ink-soft);
+      font-family: "Space Grotesk", sans-serif; font-weight: 700; font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+    .avatares-card { display: flex; gap: 6px; margin-left: auto; }
+    .avatar-chip {
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--pq-line); border: 1.5px solid var(--pq-line);
+      font-family: "Space Grotesk", sans-serif; font-weight: 700; font-size: 0.78rem;
+      color: var(--pq-ink-soft);
+      flex-shrink: 0;
+    }
+    .icone-check { color: var(--pq-verde); flex-shrink: 0; margin-left: 4px; }
+    .alternativa.correta { background: var(--pq-verde-bg); border-color: var(--pq-verde); }
+    .alternativa.correta .avatar-chip { background: var(--pq-verde); border-color: var(--pq-verde); color: #fff; }
+
+    #placar {
+      list-style: none; counter-reset: pos; padding: 0; max-width: 500px; margin: 0 auto;
+    }
+    #placar li {
+      background: var(--pq-surface);
+      border: 1px solid var(--pq-line);
+      color: var(--pq-ink);
+      margin-bottom: 8px;
+      padding: 14px 20px;
+      border-radius: 10px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 1.4rem;
+      box-shadow: 0 1px 2px oklch(20% 0.01 260 / 0.04);
+    }
+    .progresso { color: var(--pq-ink-soft); font-size: 1.2rem; margin-top: 16px; }
+  </style>
+</helmet>
+<div class="tela">
+  <div class="fundo-vivo">
+    <div class="orbe orbe-1"></div>
+    <div class="orbe orbe-2"></div>
+    <div class="orbe orbe-3"></div>
+    <div class="feixe"></div>
+  </div>
+  <div class="conteudo">
+    <h2>Resposta certa!</h2>
+    <div class="alternativas">
+      <div class="alternativa">
+        <span class="letra">A</span>Canadá
+        <div class="avatares-card"><span class="avatar-chip">J</span></div>
+      </div>
+      <div class="alternativa correta">
+        <span class="letra">B</span>Rússia
+        <div class="avatares-card">
+          <span class="avatar-chip">R</span>
+          <span class="avatar-chip">L</span>
+          <span class="avatar-chip">M</span>
+        </div>
+        <svg class="icone-check" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="M8 12.5l2.5 2.5L16 9"></path>
+        </svg>
+      </div>
+      <div class="alternativa">
+        <span class="letra">C</span>China
+        <div class="avatares-card"></div>
+      </div>
+      <div class="alternativa">
+        <span class="letra">D</span>Estados Unidos
+        <div class="avatares-card"><span class="avatar-chip">A</span></div>
+      </div>
+    </div>
+    <h3>Placar</h3>
+    <ol id="placar">
+      <li><span>Rodrigo</span><span>320 pts</span></li>
+      <li><span>Ana</span><span>280 pts</span></li>
+      <li><span>Lucas</span><span>210 pts</span></li>
+      <li><span>Maria</span><span>190 pts</span></li>
+      <li><span>João</span><span>140 pts</span></li>
+    </ol>
+    <p class="progresso">Aguardando jogadores confirmarem...</p>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

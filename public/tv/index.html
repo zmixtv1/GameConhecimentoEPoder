@@ -3,19 +3,40 @@
 <head>
   <meta charset="utf-8" />
   <title>Conhecimento é Poder — TV</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap" />
   <link rel="stylesheet" href="tv.css" />
 </head>
 <body>
+  <div class="ambient-light light-1"></div>
+  <div class="ambient-light light-2"></div>
+  <div class="ambient-light light-3"></div>
+  <div class="ambient-light light-4"></div>
+
   <div id="tela-lobby" class="tela">
-    <h1>Conhecimento é Poder</h1>
-    <p class="rotulo">Código da sala</p>
-    <div id="codigo-sala" class="codigo">----</div>
-    <p class="instrucao">
-      No celular, entre na mesma rede Wi-Fi e acesse o endereço do controle
-      mostrado pelo servidor, depois digite este código.
-    </p>
-    <h2>Jogadores conectados</h2>
-    <ul id="lista-jogadores" class="lista-jogadores"></ul>
+    <div class="conteudo-lobby">
+      <h1>Conhecimento é Poder</h1>
+
+      <div class="cartao-entrada">
+        <div class="entrada-codigo">
+          <p class="rotulo">Código da sala</p>
+          <div id="codigo-sala" class="codigo">----</div>
+          <p class="instrucao">
+            No celular, entre na mesma rede Wi-Fi e acesse o endereço do
+            controle mostrado pelo servidor, depois digite este código.
+          </p>
+        </div>
+        <div class="entrada-divisor oculto" id="entrada-divisor"><span>ou</span></div>
+        <div class="entrada-qrcode oculto" id="bloco-qrcode">
+          <div class="qrcode-moldura">
+            <img id="qrcode-imagem" class="qrcode-imagem" alt="QR code para entrar na sala" />
+          </div>
+          <p class="rotulo">escaneie pra entrar direto</p>
+        </div>
+      </div>
+
+      <h2>Jogadores conectados</h2>
+      <ul id="lista-jogadores" class="lista-jogadores"></ul>
+    </div>
   </div>
 
   <div id="tela-escolha-porta" class="tela oculto">
@@ -28,6 +49,7 @@
     <p class="rotulo" id="rodada-rotulo-2"></p>
     <p class="categoria">O tema desta rodada é</p>
     <h1 id="categoria-escolhida"></h1>
+    <p class="rotulo oculto" id="garantida-por-mensagem"></p>
   </div>
 
   <div id="tela-escolha-poder" class="tela oculto">
@@ -43,25 +65,43 @@
   </div>
 
   <div id="tela-pergunta" class="tela oculto">
-    <p class="rotulo" id="progresso-rodada"></p>
-    <p class="categoria" id="pergunta-categoria"></p>
-    <h2 id="pergunta-texto"></h2>
+    <div class="tv-screen">
+      <div class="header-bar">
+        <div class="info-pill glass-panel">
+          <span class="round-text" id="progresso-rodada"></span>
+          <div class="divider"></div>
+          <span class="category-text" id="pergunta-categoria"></span>
+        </div>
+        <div class="timer-module glass-panel oculto" id="timer-redondo">
+          <svg class="timer-svg" viewBox="0 0 150 150">
+            <circle class="timer-bg" cx="75" cy="75" r="65"></circle>
+            <circle class="timer-ring" id="anel-progresso" cx="75" cy="75" r="65"></circle>
+          </svg>
+          <span class="timer-value" id="timer-numero"></span>
+        </div>
+      </div>
 
-    <p class="fase-leitura" id="fase-leitura">Preparem-se... <span id="contagem-leitura"></span></p>
+      <div class="question-stage">
+        <div class="question-card glass-panel">
+          <h1 class="question-text" id="pergunta-texto"></h1>
+          <p class="fase-leitura" id="fase-leitura">Preparem-se... <span id="contagem-leitura"></span></p>
+        </div>
+      </div>
 
-    <div class="barra-tempo-fundo oculto" id="barra-tempo-fundo">
-      <div class="barra-tempo" id="barra-tempo"></div>
+      <div class="players-dock oculto" id="players-dock"></div>
     </div>
-    <div class="alternativas" id="alternativas"></div>
-    <p class="progresso" id="progresso-respostas"></p>
   </div>
 
   <div id="tela-resultado" class="tela oculto">
-    <h2>Resultado</h2>
-    <div class="alternativas" id="alternativas-resultado"></div>
-    <h3>Placar</h3>
-    <ol id="placar"></ol>
-    <p class="progresso" id="progresso-proximo"></p>
+    <div class="tv-screen">
+      <h1 class="question-text resultado-titulo">Resposta certa!</h1>
+      <div class="alternativas-resultado" id="alternativas-resultado"></div>
+      <div class="resultado-rodape">
+        <h3>Placar</h3>
+        <ol id="placar"></ol>
+        <p class="progresso" id="progresso-proximo"></p>
+      </div>
+    </div>
   </div>
 
   <div id="tela-linking" class="tela oculto">

@@ -2,8 +2,9 @@
 <html lang="pt-br">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
   <title>Conhecimento é Poder — Controle</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;800&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" />
   <link rel="stylesheet" href="controlador.css" />
 </head>
 <body>
@@ -28,11 +29,31 @@
     <p class="ajuda">Aguardando o anfitrião iniciar a partida...</p>
     <ul id="lista-jogadores"></ul>
     <button id="botao-iniciar" class="oculto">Iniciar partida</button>
+
+    <div class="card-girar-tela">
+      <svg class="icone-girar" viewBox="0 0 100 100" width="56" height="56" fill="none">
+        <rect x="30" y="8" width="40" height="68" rx="8" stroke="currentColor" stroke-width="5"></rect>
+        <line x1="50" y1="66" x2="50" y2="66" stroke="currentColor" stroke-width="5" stroke-linecap="round"></line>
+      </svg>
+      <p>Gire o celular na horizontal para uma jogabilidade melhor!</p>
+    </div>
   </div>
 
   <div id="tela-escolha-porta" class="tela oculto">
     <p class="ajuda" id="rodada-rotulo"></p>
     <h2>Escolha uma porta</h2>
+    <div class="timer-redondo-mini">
+      <svg class="timer-anel-mini" viewBox="0 0 120 120">
+        <circle class="anel-fundo-mini" cx="60" cy="60" r="52"></circle>
+        <circle class="anel-progresso-mini" id="anel-porta" cx="60" cy="60" r="52"></circle>
+      </svg>
+      <span class="timer-numero-mini" id="numero-porta"></span>
+    </div>
+    <label class="opcao-garantir-porta" id="opcao-garantir-porta">
+      <input type="checkbox" id="checkbox-garantir-porta" />
+      🔒 Usar meu poder pra garantir a porta que eu escolher (só posso usar isso 1x em toda a partida!)
+    </label>
+    <p class="ajuda oculto" id="poder-porta-usado-msg">Você já usou seu poder de garantir a porta nesta partida.</p>
     <div class="alternativas" id="portas"></div>
   </div>
 
@@ -44,32 +65,43 @@
   <div id="tela-escolha-poder" class="tela oculto">
     <p class="ajuda" id="poder-rodada-rotulo"></p>
     <h2>Escolha um poder</h2>
-    <p class="ajuda" id="poder-tempo"></p>
+    <div class="timer-redondo-mini">
+      <svg class="timer-anel-mini" viewBox="0 0 120 120">
+        <circle class="anel-fundo-mini" cx="60" cy="60" r="52"></circle>
+        <circle class="anel-progresso-mini" id="anel-poder" cx="60" cy="60" r="52"></circle>
+      </svg>
+      <span class="timer-numero-mini" id="numero-poder"></span>
+    </div>
     <div class="alternativas" id="poder-tipos"></div>
   </div>
 
   <div id="tela-escolha-alvo" class="tela oculto">
     <h2 id="alvo-titulo"></h2>
-    <p class="ajuda" id="alvo-tempo"></p>
+    <div class="timer-redondo-mini">
+      <svg class="timer-anel-mini" viewBox="0 0 120 120">
+        <circle class="anel-fundo-mini" cx="60" cy="60" r="52"></circle>
+        <circle class="anel-progresso-mini" id="anel-alvo" cx="60" cy="60" r="52"></circle>
+      </svg>
+      <span class="timer-numero-mini" id="numero-alvo"></span>
+    </div>
     <div class="poder-alvos" id="alvo-lista"></div>
     <p class="ajuda oculto" id="alvo-usado-msg"></p>
   </div>
 
   <div id="tela-pergunta" class="tela oculto">
+    <div class="player-identity glass-panel">
+      <span class="player-avatar" id="player-identity-avatar"></span>
+      <span class="player-name" id="player-identity-nome"></span>
+    </div>
     <p class="ajuda" id="progresso-rodada"></p>
     <p class="categoria" id="pergunta-categoria"></p>
     <h2 id="pergunta-texto"></h2>
     <p class="ajuda oculto" id="fase-leitura">Leia com atenção... <span id="contagem-leitura"></span></p>
 
-    <div class="area-alternativas">
+    <div class="area-alternativas oculto" id="area-alternativas">
       <div class="alternativas" id="alternativas"></div>
       <div id="obstrucao" class="obstrucao oculto"></div>
     </div>
-  </div>
-
-  <div id="tela-aguardando-outros" class="tela oculto">
-    <h2>Resposta enviada!</h2>
-    <p class="ajuda">Aguardando os outros jogadores...</p>
   </div>
 
   <div id="tela-resultado" class="tela oculto">
@@ -77,14 +109,24 @@
     <p id="resultado-pontos" class="pontos"></p>
     <h3>Placar</h3>
     <ol id="placar"></ol>
-    <button id="botao-proxima">Próxima pergunta</button>
-    <p class="ajuda oculto" id="status-proximo"></p>
+    <div class="overlay-continuar">
+      <div class="card-continuar">
+        <button id="botao-proxima">Próxima pergunta</button>
+        <p class="ajuda oculto" id="status-proximo"></p>
+      </div>
+    </div>
   </div>
 
   <div id="tela-linking" class="tela oculto">
     <p class="categoria" id="linking-tema"></p>
     <h2 id="linking-titulo">Ligue os pares!</h2>
-    <p class="ajuda" id="linking-tempo"></p>
+    <div class="timer-redondo-mini">
+      <svg class="timer-anel-mini" viewBox="0 0 120 120">
+        <circle class="anel-fundo-mini" cx="60" cy="60" r="52"></circle>
+        <circle class="anel-progresso-mini" id="anel-linking" cx="60" cy="60" r="52"></circle>
+      </svg>
+      <span class="timer-numero-mini" id="numero-linking"></span>
+    </div>
     <p class="ajuda" id="linking-progresso"></p>
     <div class="linking-lista" id="linking-lista"></div>
   </div>
@@ -95,13 +137,23 @@
     <ol id="linking-gabarito" class="gabarito-lista"></ol>
     <h3>Placar</h3>
     <ol id="placar-linking"></ol>
-    <button id="botao-continuar-linking">Continuar</button>
-    <p class="ajuda oculto" id="status-continuar-linking"></p>
+    <div class="overlay-continuar">
+      <div class="card-continuar">
+        <button id="botao-continuar-linking">Continuar</button>
+        <p class="ajuda oculto" id="status-continuar-linking"></p>
+      </div>
+    </div>
   </div>
 
   <div id="tela-sorting" class="tela oculto">
     <h2>Classifique!</h2>
-    <p class="ajuda" id="sorting-tempo"></p>
+    <div class="timer-redondo-mini">
+      <svg class="timer-anel-mini" viewBox="0 0 120 120">
+        <circle class="anel-fundo-mini" cx="60" cy="60" r="52"></circle>
+        <circle class="anel-progresso-mini" id="anel-sorting" cx="60" cy="60" r="52"></circle>
+      </svg>
+      <span class="timer-numero-mini" id="numero-sorting"></span>
+    </div>
     <p class="categoria" id="sorting-categorias"></p>
     <div id="sorting-itens" class="sorting-itens"></div>
     <p class="ajuda" id="sorting-progresso"></p>
@@ -113,8 +165,12 @@
     <ol id="sorting-gabarito" class="gabarito-lista"></ol>
     <h3>Placar</h3>
     <ol id="placar-sorting"></ol>
-    <button id="botao-continuar-sorting">Continuar</button>
-    <p class="ajuda oculto" id="status-continuar-sorting"></p>
+    <div class="overlay-continuar">
+      <div class="card-continuar">
+        <button id="botao-continuar-sorting">Continuar</button>
+        <p class="ajuda oculto" id="status-continuar-sorting"></p>
+      </div>
+    </div>
   </div>
 
   <div id="tela-piramide" class="tela oculto">
@@ -129,8 +185,12 @@
     <h1 id="piramide-vencedor-titulo"></h1>
     <h3>Posições finais</h3>
     <ol id="piramide-posicoes-finais"></ol>
-    <button id="botao-continuar-piramide">Continuar</button>
-    <p class="ajuda oculto" id="status-continuar-piramide"></p>
+    <div class="overlay-continuar">
+      <div class="card-continuar">
+        <button id="botao-continuar-piramide">Continuar</button>
+        <p class="ajuda oculto" id="status-continuar-piramide"></p>
+      </div>
+    </div>
   </div>
 
   <div id="tela-fim" class="tela oculto">

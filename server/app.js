@@ -83,7 +83,7 @@ function criarServidor(opcoesSala = {}) {
         }
 
         case "escolherPorta": {
-          const resultado = sala.registrarEscolhaPorta(ws.jogadorId, mensagem.indice);
+          const resultado = sala.registrarEscolhaPorta(ws.jogadorId, mensagem.indice, mensagem.garantir);
           if (resultado.erro) {
             ws.send(JSON.stringify({ type: "erroAcao", mensagem: resultado.erro }));
           }

@@ -1,0 +1,360 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;800&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap">
+  <style>
+    :root {
+      --bg: oklch(97% 0.005 260);
+      --surface: oklch(99% 0.002 260);
+      --ink: oklch(20% 0.012 260);
+      --ink-soft: oklch(52% 0.016 260);
+      --line: oklch(89% 0.008 260);
+      --accent: oklch(58% 0.15 75);
+      --accent-dim: oklch(58% 0.15 75 / 0.12);
+      --verde: oklch(60% 0.14 145);
+      --verde-dim: oklch(60% 0.14 145 / 0.14);
+      font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { margin: 0; }
+    a { color: var(--accent); }
+    a:hover { color: var(--ink); }
+    .tela {
+      position: relative;
+      width: 844px;
+      height: 390px;
+      overflow: hidden;
+      background: var(--bg);
+      display: flex;
+      padding: 22px 30px;
+      color: var(--ink);
+    }
+    .fundo-vivo {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .orbe {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(50px);
+    }
+    .orbe-1 {
+      width: 360px; height: 360px;
+      top: -190px; left: -140px;
+      background: radial-gradient(closest-side, oklch(58% 0.15 75 / 0.16), transparent 70%);
+      animation: deriva-a 20s ease-in-out infinite;
+    }
+    .orbe-2 {
+      width: 300px; height: 300px;
+      bottom: -170px; right: -120px;
+      background: radial-gradient(closest-side, oklch(58% 0.15 75 / 0.12), transparent 70%);
+      animation: deriva-b 24s ease-in-out infinite;
+    }
+    @keyframes deriva-a {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(24px, 12px) scale(1.05); }
+    }
+    @keyframes deriva-b {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(-20px, -14px) scale(0.96); }
+    }
+    .feixe {
+      position: absolute;
+      inset: -40% -80%;
+      background: linear-gradient(100deg,
+        transparent 42%,
+        oklch(58% 0.15 75 / 0.07) 50%,
+        transparent 58%);
+      animation: varre 9s linear infinite;
+    }
+    @keyframes varre {
+      0% { transform: translateX(-20%); }
+      100% { transform: translateX(20%); }
+    }
+
+    @keyframes revela {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .anim {
+      opacity: 0;
+      animation: revela 0.5s cubic-bezier(.2,.8,.25,1) forwards;
+    }
+
+    .conteudo {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .coluna-pergunta {
+      flex: 0 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      max-width: 620px;
+    }
+    .rotulo {
+      font-size: 0.66rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+    }
+    .categoria {
+      display: inline-block;
+      margin-top: 4px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+    h2 {
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 700;
+      font-size: 1.22rem;
+      line-height: 1.22;
+      margin: 8px 0 0;
+      text-wrap: pretty;
+    }
+    .leitura-placeholder {
+      flex: 1;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .leitura-texto {
+      font-size: 0.86rem;
+      font-weight: 600;
+      color: var(--ink-soft);
+    }
+    .pontos-leitura { display: flex; gap: 8px; }
+    .pontos-leitura span {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      opacity: 0.3;
+      animation: pulso-ponto-leitura 1.1s ease-in-out infinite;
+    }
+    .pontos-leitura span:nth-child(2) { animation-delay: 0.15s; }
+    .pontos-leitura span:nth-child(3) { animation-delay: 0.3s; }
+    @keyframes pulso-ponto-leitura {
+      0%, 100% { opacity: 0.25; transform: scale(0.85); }
+      50% { opacity: 1; transform: scale(1); }
+    }
+    .grade-alternativas {
+      position: relative;
+      flex: 1;
+      width: 100%;
+      max-width: 640px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 10px;
+      margin-top: 16px;
+    }
+    @keyframes flip-in {
+      from { opacity: 0; transform: perspective(800px) rotateY(-90deg); }
+      to { opacity: 1; transform: perspective(800px) rotateY(0deg); }
+    }
+    .alternativa {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 18px;
+      border-radius: 14px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      box-shadow: 0 1px 2px oklch(20% 0.01 260 / 0.04), 0 6px 16px oklch(20% 0.01 260 / 0.05);
+      font-size: 0.98rem;
+      font-weight: 500;
+      text-align: left;
+      color: var(--ink);
+      transform-origin: left center;
+      opacity: 0;
+      animation: flip-in 0.55s cubic-bezier(.175,.885,.32,1.275) forwards;
+    }
+    .alt-a { animation-delay: 0s; }
+    .alt-b { animation-delay: 0.06s; }
+    .alt-c { animation-delay: 0.06s; }
+    .alt-d { animation-delay: 0.12s; }
+    @keyframes pop-letra {
+      from { opacity: 0; transform: scale(0.5); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .letra {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: transparent;
+      border: 1.5px solid var(--line);
+      color: var(--ink-soft);
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 700;
+      font-size: 0.84rem;
+      flex-shrink: 0;
+      opacity: 0;
+      animation: pop-letra 0.36s cubic-bezier(.34,1.56,.64,1) forwards;
+    }
+    .alt-a .letra { animation-delay: 0.28s; }
+    .alt-b .letra { animation-delay: 0.34s; }
+    .alt-c .letra { animation-delay: 0.34s; }
+    .alt-d .letra { animation-delay: 0.40s; }
+    .alternativa.selecionada {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+      animation: flip-in 0.55s cubic-bezier(.175,.885,.32,1.275) 0.06s forwards,
+                 assenta 0.4s cubic-bezier(.34,1.56,.64,1) 0.55s backwards,
+                 pulso-selecao 2.2s ease-in-out infinite 1s;
+    }
+    .alternativa.selecionada .letra {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: oklch(99% 0.002 260);
+    }
+    @keyframes assenta {
+      from { transform: scale(0.93); }
+      to { transform: scale(1); }
+    }
+    @keyframes pulso-selecao {
+      0%, 100% { box-shadow: 0 0 0 1px var(--accent), 0 0 0 0 var(--accent-dim); }
+      50% { box-shadow: 0 0 0 1px var(--accent), 0 0 14px 3px var(--accent-dim); }
+    }
+    /* quando a TV revela a resposta certa, o card correspondente reaproveita
+       o mesmo estilo/pulso de "selecionada" só trocando a cor de --accent */
+    .alternativa.correta-revelada {
+      --accent: var(--verde);
+      --accent-dim: var(--verde-dim);
+    }
+    .overlay-continuar {
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: oklch(97% 0.005 260 / 0.9);
+      border-radius: 14px;
+      opacity: 0;
+      animation: revela 0.4s ease forwards;
+    }
+    .botao-continuar {
+      padding: 10px 26px;
+      border-radius: 10px;
+      border: none;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.88rem;
+      font-family: inherit;
+    }
+    .status-aguardando {
+      font-size: 0.7rem;
+      color: var(--ink-soft);
+      margin: 0;
+    }
+  </style>
+</helmet>
+<div class="tela">
+  <div class="fundo-vivo">
+    <div class="orbe orbe-1"></div>
+    <div class="orbe orbe-2"></div>
+    <div class="feixe"></div>
+  </div>
+  <div class="conteudo">
+    <div class="coluna-pergunta anim" style="animation-delay:0.05s">
+      <span class="rotulo">Rodada 2 de 3 · Pergunta 2 de 3</span>
+      <span class="categoria">Geografia</span>
+      <h2>Qual é o maior país do mundo em extensão territorial?</h2>
+    </div>
+    <sc-if value="{{emLeitura}}" hint-placeholder-val="{{true}}">
+      <div class="leitura-placeholder">
+        <span class="leitura-texto">Leia a pergunta com atenção...</span>
+        <div class="pontos-leitura"><span></span><span></span><span></span></div>
+      </div>
+    </sc-if>
+    <sc-if value="{{emGrade}}" hint-placeholder-val="{{false}}">
+      <div class="grade-alternativas">
+        <button class="alternativa alt-a"><span class="letra">A</span>Canadá</button>
+        <button class="alternativa alt-b selecionada {{classeCorreta}}"><span class="letra">B</span>Rússia</button>
+        <button class="alternativa alt-c"><span class="letra">C</span>China</button>
+        <button class="alternativa alt-d"><span class="letra">D</span>Estados Unidos</button>
+        <sc-if value="{{emConfirmacao}}" hint-placeholder-val="{{false}}">
+          <div class="overlay-continuar">
+            <button class="botao-continuar">Próxima pergunta</button>
+            <p class="status-aguardando">Aguardando os outros jogadores confirmarem...</p>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.leituraMs = 2500;
+    this.respostaMs = 4000;
+    this.revelacaoMs = 2000;
+    this.confirmacaoMs = 3500;
+    this.duracaoMs = this.leituraMs + this.respostaMs + this.revelacaoMs + this.confirmacaoMs;
+    this.state = { fase: "leitura" };
+  }
+  componentDidMount() {
+    this.inicio = performance.now();
+    this.tick = () => {
+      const decorrido = (performance.now() - this.inicio) % this.duracaoMs;
+      let fase = "leitura";
+      if (decorrido >= this.leituraMs + this.respostaMs + this.revelacaoMs) {
+        fase = "confirmacao";
+      } else if (decorrido >= this.leituraMs + this.respostaMs) {
+        fase = "revelacao";
+      } else if (decorrido >= this.leituraMs) {
+        fase = "resposta";
+      }
+      if (fase !== this.state.fase) this.setState({ fase });
+      this.raf = requestAnimationFrame(this.tick);
+    };
+    this.raf = requestAnimationFrame(this.tick);
+  }
+  componentWillUnmount() {
+    if (this.raf) cancelAnimationFrame(this.raf);
+  }
+  renderVals() {
+    const emLeitura = this.state.fase === "leitura";
+    const emRevelado = this.state.fase === "revelacao" || this.state.fase === "confirmacao";
+    return {
+      emLeitura,
+      emGrade: !emLeitura,
+      emConfirmacao: this.state.fase === "confirmacao",
+      classeCorreta: emRevelado ? "correta-revelada" : "",
+    };
+  }
+}
+</script>
+</body>
+</html>

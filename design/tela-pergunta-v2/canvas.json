@@ -1,0 +1,13 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "x": 0, "y": 0, "w": 1440, "h": 900 },
+    { "file": "TVResultado.dc.html", "x": 1560, "y": 0, "w": 1440, "h": 900 },
+    { "file": "Controlador.dc.html", "x": 0, "y": 1020, "w": 751, "h": 336 }
+  ],
+  "annotations": [
+    { "id": "note-tv-a", "x": 0, "y": -80, "w": 400, "text": "TV — aguardando resposta" },
+    { "id": "note-tv-b", "x": 1560, "y": -80, "w": 400, "text": "TV — revelação" },
+    { "id": "note-fone", "x": 0, "y": 940, "w": 400, "text": "Celular — tamanho real medido (751x336)" }
+  ],
+  "launch": { "view": "canvas" }
+}

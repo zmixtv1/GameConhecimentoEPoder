@@ -1,27 +1,77 @@
 :root {
-  --bg: #14172e;
-  --surface: #1c2140;
-  --ink: #f2efe4;
-  --ink-soft: #a9adc9;
-  --gold: #e8bf5c;
-  --violet: #8462c9;
-  --verde: #4caf7d;
-  --vermelho: #d16060;
-  --gosma: #6ba832;
-  font-family: "Segoe UI", system-ui, sans-serif;
+  color-scheme: light;
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --ink: #0f172a;
+  --ink-soft: #475569;
+  --gold: #1e90ff;
+  --violet: #9b59b6;
+  --verde: #2ed573;
+  --vermelho: #ff4757;
+  --gosma: #2ed573;
+  --borda: rgba(15, 23, 42, 0.1);
+  --glass-bg: rgba(255, 255, 255, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.9);
+  --glass-shadow: 0 15px 30px rgba(0, 0, 0, 0.06);
+  /* 10px de respiro do conteúdo até a borda física da tela em qualquer
+     celular - o max() com env() ainda soma a área "segura" em telas com
+     notch/cantos arredondados, pra nunca ficar cortado */
+  --margem-tela: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right))
+    max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+  font-family: "Outfit", system-ui, sans-serif;
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
+/* cartões em lista (placar, jogadores etc.) ganham uma borda sutil - no
+   tema claro a diferença de luminosidade entre --bg e --surface sozinha
+   não dá contraste suficiente como dava no tema escuro */
+li { border: 1px solid var(--borda); }
+
 body {
   margin: 0;
+  /* 100dvh (não 100vh) acompanha a barra do navegador aparecendo/sumindo
+     no celular, em vez de assumir uma altura fixa que ora sobra, ora
+     esconde conteúdo atrás do menu */
   min-height: 100vh;
-  background: var(--bg);
+  min-height: 100dvh;
+  background-color: var(--bg);
+  background-image: radial-gradient(#cbd5e1 2px, transparent 2px);
+  background-size: 40px 40px;
+  background-position: center;
   color: var(--ink);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: var(--margem-tela);
+  position: relative;
+  overflow: hidden;
+}
+
+.ambient-light {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(90px);
+  z-index: 0;
+  pointer-events: none;
+  animation: fluidMotion 20s infinite alternate ease-in-out;
+}
+.light-1 { top: -10%; left: -10%; width: 70vw; height: 70vw; background: rgba(226, 232, 240, 0.8); }
+.light-2 { bottom: -20%; right: -10%; width: 60vw; height: 60vw; background: rgba(186, 230, 253, 0.5); animation-delay: -5s; }
+.light-3 { top: 30%; left: 30%; width: 45vw; height: 45vw; background: rgba(255, 255, 255, 0.9); animation-delay: -10s; }
+@keyframes fluidMotion {
+  0% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(4vw, 6vh) scale(1.05); }
+  66% { transform: translate(-4vw, 3vh) scale(0.95); }
+  100% { transform: translate(6vw, -4vh) scale(1.02); }
+}
+
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 2px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
 }
 
 .oculto { display: none !important; }
@@ -30,8 +80,14 @@ body {
   width: 100%;
   max-width: 420px;
   text-align: center;
+  /* sem isso, as luzes ambiente (fixas, z-index:0) pintavam POR CIMA do
+     conteúdo estático das telas simples (sem glass-panel próprio),
+     deixando o texto meio apagado/perdido no fundo */
+  position: relative;
+  z-index: 1;
 }
 
+h1, h2, h3 { font-family: "Space Grotesk", sans-serif; font-weight: 700; }
 h1 { color: var(--gold); font-size: 1.8rem; }
 h2 { font-size: 1.4rem; }
 
@@ -78,6 +134,104 @@ button:active { opacity: 0.8; }
   padding: 0;
 }
 
+/* timer redondo compacto - reaproveitado nas telas de escolha de porta,
+   poder, alvo, Linking e Sorting, pra dar noção visual do tempo em vez de
+   só um texto "Tempo: Xs" */
+.timer-redondo-mini {
+  /* fixo no canto, igual na TV - assim ele não entra no fluxo normal da
+     tela e não empurra o resto do conteúdo pra baixo (isso é o que
+     forçava scroll no celular) */
+  position: fixed;
+  top: max(14px, env(safe-area-inset-top));
+  right: max(14px, env(safe-area-inset-right));
+  z-index: 15;
+  width: 72px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.timer-anel-mini { width: 100%; height: 100%; transform: rotate(-90deg); }
+.anel-fundo-mini { fill: none; stroke: var(--borda); stroke-width: 8; }
+.anel-progresso-mini {
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-dasharray: 326.7;
+}
+.timer-numero-mini {
+  position: absolute;
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 800;
+  font-size: 1.3rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+/* botão de "continuar"/"próxima pergunta": fixo e centralizado na tela,
+   pra NUNCA cair fora da área visível (independente de quanto o placar
+   acima ocupa ou de quanto espaço a tela realmente tem) - ele só avança
+   quando cada jogador clicar aqui, o jogo espera de verdade */
+.overlay-continuar {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--margem-tela);
+  background: color-mix(in oklch, var(--bg) 55%, transparent);
+}
+.card-continuar {
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 22px 26px;
+  border-radius: 18px;
+  background: var(--surface);
+  border: 1px solid var(--borda);
+  box-shadow: 0 12px 32px oklch(20% 0.01 260 / 0.18);
+  text-align: center;
+  animation: pop-continuar 0.4s cubic-bezier(.34,1.56,.64,1);
+}
+.card-continuar button { margin-top: 0; }
+@keyframes pop-continuar {
+  from { opacity: 0; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* aviso pra girar o celular, mostrado só na tela de espera e só enquanto
+   o celular ainda está na vertical - some sozinho assim que ele deita */
+.card-girar-tela {
+  margin-top: 24px;
+  padding: 18px 20px;
+  border-radius: 14px;
+  background: var(--surface);
+  border: 1px solid var(--borda);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+}
+.icone-girar {
+  color: var(--gold);
+  animation: girar-telefone 2.4s ease-in-out infinite;
+}
+@keyframes girar-telefone {
+  0%, 15% { transform: rotate(0deg); }
+  45%, 65% { transform: rotate(-90deg); }
+  85%, 100% { transform: rotate(0deg); }
+}
+@media (orientation: landscape) {
+  .card-girar-tela { display: none; }
+}
+
 #lista-jogadores li {
   background: var(--surface);
   padding: 10px;
@@ -93,6 +247,28 @@ button:active { opacity: 0.8; }
   font-size: 0.85rem;
 }
 
+.opcao-garantir-porta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--borda);
+  font-size: 0.85rem;
+  text-align: left;
+  color: var(--ink-soft);
+}
+.opcao-garantir-porta input {
+  width: auto;
+  flex-shrink: 0;
+  padding: 0;
+  font-size: 1rem;
+  background: none;
+  accent-color: var(--gold);
+}
+
 .alternativas {
   display: grid;
   gap: 12px;
@@ -103,7 +279,7 @@ button:active { opacity: 0.8; }
   padding: 18px;
   border-radius: 10px;
   background: var(--surface);
-  border: 2px solid transparent;
+  border: 2px solid var(--borda);
   font-size: 1.1rem;
 }
 
@@ -170,7 +346,7 @@ button:active { opacity: 0.8; }
 .obstrucao {
   position: absolute;
   inset: 0;
-  background: rgba(20, 23, 46, 0.92);
+  background: color-mix(in oklch, var(--ink) 92%, transparent);
   border-radius: 12px;
   display: flex;
   flex-direction: column;
@@ -234,12 +410,15 @@ button:active { opacity: 0.8; }
 }
 
 .linking-item-full.correto {
-  background: rgba(76, 175, 125, 0.2);
+  background: color-mix(in oklch, var(--verde) 18%, transparent);
   border-color: var(--verde);
   color: var(--verde);
 }
 
-.linking-item-full.incorreto { background: rgba(209, 96, 96, 0.3); border-color: var(--vermelho); }
+.linking-item-full.incorreto {
+  background: color-mix(in oklch, var(--vermelho) 22%, transparent);
+  border-color: var(--vermelho);
+}
 .linking-item-full.usado { opacity: 0.35; }
 .linking-item-full:disabled { opacity: 0.6; }
 
@@ -302,11 +481,186 @@ button:active { opacity: 0.8; }
 .sorting-item.incorreto .sorting-botao-categoria.escolhida { background: var(--vermelho); }
 .sorting-item.correto .sorting-botao-categoria.escolhida { background: var(--verde); }
 
+/* ---------- Tela da Pergunta: vidro/gamer ---------- */
+#tela-pergunta {
+  position: fixed;
+  inset: 0;
+  width: 100vw; width: 100dvw;
+  height: 100vh; height: 100dvh;
+  z-index: 5;
+  max-width: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: var(--margem-tela);
+  background-color: var(--bg);
+  background-image: radial-gradient(#cbd5e1 2px, transparent 2px);
+  background-size: 40px 40px;
+  background-position: center;
+  color: var(--ink);
+}
+#tela-pergunta.oculto { display: none; }
+#tela-pergunta > * {
+  max-width: 420px;
+  width: 100%;
+}
+#tela-pergunta .ajuda { color: var(--ink-soft); }
+#tela-pergunta .categoria { color: var(--violet); }
+#tela-pergunta h2 { font-size: 1.4rem; }
+
+/* pílula com o próprio emoji/nome - fixa no canto oposto ao timer */
+.player-identity {
+  position: fixed;
+  top: max(14px, env(safe-area-inset-top));
+  left: max(14px, env(safe-area-inset-left));
+  z-index: 15;
+  max-width: none !important;
+  width: auto !important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border-radius: 100px;
+}
+.player-identity .player-avatar { font-size: 20px; line-height: 1; }
+.player-identity .player-name {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--ink);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+#alternativas .alternativa {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 2px solid var(--glass-border);
+  color: var(--ink);
+  box-shadow: var(--glass-shadow);
+  opacity: 0;
+  animation: pq-flip-in 0.55s cubic-bezier(.175,.885,.32,1.275) forwards;
+}
+#alternativas .alternativa:nth-child(1) { animation-delay: 0s; }
+#alternativas .alternativa:nth-child(2) { animation-delay: 0.08s; }
+#alternativas .alternativa:nth-child(3) { animation-delay: 0.16s; }
+#alternativas .alternativa:nth-child(4) { animation-delay: 0.24s; }
+@keyframes pq-flip-in {
+  from { opacity: 0; transform: perspective(800px) rotateY(-90deg); }
+  to { opacity: 1; transform: perspective(800px) rotateY(0deg); }
+}
+/* a resposta escolhida acende com a PRÓPRIA cor do jogador (não uma cor
+   fixa igual pra todo mundo) */
+#alternativas .alternativa.selecionada {
+  background: color-mix(in srgb, var(--cor-jogador, #1e90ff) 15%, var(--glass-bg));
+  border-color: var(--cor-jogador, #1e90ff);
+  color: var(--cor-jogador, #1e90ff);
+  box-shadow: 0 15px 35px color-mix(in srgb, var(--cor-jogador, #1e90ff) 30%, transparent);
+}
+/* quando a TV revela a resposta certa, pisca em verde por cima de
+   qualquer cor que já estivesse (a do jogador, se foi essa a escolhida) */
+#alternativas .alternativa.correta-revelada {
+  border-color: var(--verde);
+  background: color-mix(in srgb, var(--verde) 15%, var(--glass-bg));
+  color: var(--verde);
+  animation: pq-pisca-verde 0.5s ease-in-out 3;
+}
+@keyframes pq-pisca-verde {
+  0%, 100% { box-shadow: 0 0 0 1px var(--verde); }
+  50% { box-shadow: 0 0 14px 3px rgba(46, 213, 115, 0.4); }
+}
+/* a resposta certa precisa aparecer nítida mesmo já desabilitada (todo
+   mundo já respondeu nesse momento) */
+#alternativas .alternativa.correta-revelada:disabled {
+  opacity: 1;
+}
+
+/* celular deitado: pergunta centralizada em cima, respostas em matriz 2x2 */
+@media (orientation: landscape) and (max-height: 500px) {
+  /* medido num aparelho real: com a barra do navegador visível, a altura
+     útil é de só ~336px (não os ~430px que dava pra supor) - o layout
+     tem que caber nisso sem depender de rolar a página pra "sumir" a
+     barra, então tudo aqui foi apertado pra caber nesse orçamento. */
+  body { padding: 8px max(10px, env(safe-area-inset-right)) 8px max(10px, env(safe-area-inset-left)); }
+  .tela { max-width: 100%; width: 100%; }
+
+  h1, h2, h3 { margin: 0 0 4px; }
+  h2 { font-size: 1.05rem; line-height: 1.2; }
+  .ajuda, .categoria { font-size: 0.68rem; margin: 0; }
+
+  /* todo grid de botões (portas, poder, alternativas da pergunta e da
+     pirâmide, alvos e o Linking) vira 2 colunas compactas em vez de
+     empilhar tudo numa coluna só - é isso que faz caber sem rolar */
+  .alternativas,
+  .poder-alvos,
+  .linking-lista {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .alternativa,
+  .poder-alvo-btn,
+  .linking-item-full {
+    padding: 14px 16px;
+    font-size: 1rem;
+    min-height: 76px;
+    margin-top: 0;
+  }
+  .linking-voltar { grid-column: 1 / -1; padding: 8px; font-size: 0.8rem; min-height: auto; }
+
+  .sorting-itens { gap: 8px; margin: 8px 0; }
+  .sorting-item { padding: 10px; }
+  .sorting-item-nome { font-size: 0.9rem; margin-bottom: 6px; }
+  .sorting-botao-categoria { padding: 10px; font-size: 0.85rem; }
+
+  .timer-redondo-mini { width: 52px; height: 52px; top: 8px; right: 8px; }
+  .timer-numero-mini { font-size: 1rem; }
+
+  .player-identity { top: 8px; left: 8px; padding: 4px 12px; }
+  .player-identity .player-avatar { font-size: 16px; }
+  .player-identity .player-name { font-size: 0.66rem; }
+
+  .opcao-garantir-porta { margin: 8px 0; padding: 8px 10px; font-size: 0.72rem; }
+
+  #tela-pergunta > .ajuda,
+  #tela-pergunta > .categoria,
+  #tela-pergunta > h2,
+  #tela-pergunta .area-alternativas {
+    max-width: 92vw;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  #tela-pergunta h2 { margin: 4px auto 6px; }
+
+  #placar,
+  #placar-final,
+  #placar-linking,
+  #placar-sorting,
+  #piramide-posicoes-finais,
+  .gabarito-lista {
+    max-width: 92vw;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  #placar li, #placar-final li, #placar-linking li, #placar-sorting li,
+  #piramide-posicoes-finais li, .gabarito-lista li {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    margin-bottom: 4px;
+  }
+
+  .card-continuar { padding: 14px 18px; gap: 6px; }
+  .pontos { font-size: 1.3rem; }
+}
+
 /* ---------- Pirâmide do Conhecimento ---------- */
 #piramide-degrau { font-weight: 600; color: var(--gold); }
 
 .alternativa.errada-piramide {
-  background: rgba(209, 96, 96, 0.3);
+  background: color-mix(in oklch, var(--vermelho) 22%, transparent);
   border-color: var(--vermelho);
   opacity: 0.6;
 }

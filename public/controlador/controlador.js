@@ -12,7 +12,6 @@ const telaAguardandoPorta = document.getElementById("tela-aguardando-porta");
 const telaEscolhaPoder = document.getElementById("tela-escolha-poder");
 const telaEscolhaAlvo = document.getElementById("tela-escolha-alvo");
 const telaPergunta = document.getElementById("tela-pergunta");
-const telaAguardandoOutros = document.getElementById("tela-aguardando-outros");
 const telaResultado = document.getElementById("tela-resultado");
 const telaLinking = document.getElementById("tela-linking");
 const telaResultadoLinking = document.getElementById("tela-resultado-linking");
@@ -25,7 +24,7 @@ const telaFim = document.getElementById("tela-fim");
 const TODAS_AS_TELAS = [
   telaEntrada, telaAguardando, telaEscolhaPorta, telaAguardandoPorta,
   telaEscolhaPoder, telaEscolhaAlvo,
-  telaPergunta, telaAguardandoOutros, telaResultado,
+  telaPergunta, telaResultado,
   telaLinking, telaResultadoLinking, telaSorting, telaResultadoSorting,
   telaPiramide, telaResultadoPiramide,
   telaFim,
@@ -36,25 +35,40 @@ const campoCodigo = document.getElementById("campo-codigo");
 const botaoEntrar = document.getElementById("botao-entrar");
 const mensagemErroEl = document.getElementById("mensagem-erro");
 
+// quem entrou escaneando o QR code da TV já chega com o código na URL
+// (?codigo=ABCD) - preenche pra não precisar digitar.
+const codigoDaUrl = new URLSearchParams(location.search).get("codigo");
+if (codigoDaUrl) campoCodigo.value = codigoDaUrl.toUpperCase();
+
 const listaJogadoresEl = document.getElementById("lista-jogadores");
 const botaoIniciar = document.getElementById("botao-iniciar");
 
+const playerIdentityAvatarEl = document.getElementById("player-identity-avatar");
+const playerIdentityNomeEl = document.getElementById("player-identity-nome");
 const rodadaRotuloEl = document.getElementById("rodada-rotulo");
+const anelPortaEl = document.getElementById("anel-porta");
+const numeroPortaEl = document.getElementById("numero-porta");
+const opcaoGarantirPortaEl = document.getElementById("opcao-garantir-porta");
+const checkboxGarantirPortaEl = document.getElementById("checkbox-garantir-porta");
+const poderPortaUsadoMsgEl = document.getElementById("poder-porta-usado-msg");
 const portasEl = document.getElementById("portas");
 
 const progressoRodadaEl = document.getElementById("progresso-rodada");
 const perguntaCategoriaEl = document.getElementById("pergunta-categoria");
 const perguntaTextoEl = document.getElementById("pergunta-texto");
+const areaAlternativasEl = document.getElementById("area-alternativas");
 const alternativasEl = document.getElementById("alternativas");
 const faseLeituraEl = document.getElementById("fase-leitura");
 const contagemLeituraEl = document.getElementById("contagem-leitura");
 
 const poderRodadaRotuloEl = document.getElementById("poder-rodada-rotulo");
-const poderTempoEl = document.getElementById("poder-tempo");
+const anelPoderEl = document.getElementById("anel-poder");
+const numeroPoderEl = document.getElementById("numero-poder");
 const poderTiposEl = document.getElementById("poder-tipos");
 
 const alvoTituloEl = document.getElementById("alvo-titulo");
-const alvoTempoEl = document.getElementById("alvo-tempo");
+const anelAlvoEl = document.getElementById("anel-alvo");
+const numeroAlvoEl = document.getElementById("numero-alvo");
 const alvoListaEl = document.getElementById("alvo-lista");
 const alvoUsadoMsgEl = document.getElementById("alvo-usado-msg");
 
@@ -70,7 +84,8 @@ const statusProximoEl = document.getElementById("status-proximo");
 
 const linkingTemaEl = document.getElementById("linking-tema");
 const linkingTituloEl = document.getElementById("linking-titulo");
-const linkingTempoEl = document.getElementById("linking-tempo");
+const anelLinkingEl = document.getElementById("anel-linking");
+const numeroLinkingEl = document.getElementById("numero-linking");
 const linkingListaEl = document.getElementById("linking-lista");
 const linkingProgressoEl = document.getElementById("linking-progresso");
 const linkingPontosEl = document.getElementById("linking-pontos");
@@ -79,7 +94,8 @@ const placarLinkingEl = document.getElementById("placar-linking");
 const botaoContinuarLinking = document.getElementById("botao-continuar-linking");
 const statusContinuarLinkingEl = document.getElementById("status-continuar-linking");
 
-const sortingTempoEl = document.getElementById("sorting-tempo");
+const anelSortingEl = document.getElementById("anel-sorting");
+const numeroSortingEl = document.getElementById("numero-sorting");
 const sortingCategoriasEl = document.getElementById("sorting-categorias");
 const sortingItensEl = document.getElementById("sorting-itens");
 const sortingProgressoEl = document.getElementById("sorting-progresso");
@@ -102,11 +118,14 @@ const fimTituloEl = document.getElementById("fim-titulo");
 
 let ws = null;
 let meuJogadorId = null;
+let meuAvatar = null;
+let meuNome = "";
 let jaRespondeuEstaRodada = false;
 let jaEscolheuPorta = false;
 let jaEscolheuTipoPoder = false;
 let jaEscolheuAlvo = false;
 let intervaloLeitura = null;
+let intervaloPorta = null;
 let intervaloPoder = null;
 let intervaloAlvo = null;
 let alternativasBrutas = [];
@@ -131,6 +150,10 @@ let sortingTotalItens = 0;
 let sortingCategoriaANome = "";
 let sortingCategoriaBNome = "";
 let intervaloSorting = null;
+// sem scroll: mostra só 3 itens por vez e revela os próximos 3 conforme
+// esses vão sendo respondidos.
+const ITENS_POR_LOTE_SORTING = 3;
+let sortingLoteAtual = 0;
 
 // estado da Pirâmide
 let piramideTotalDegraus = 0;
@@ -203,10 +226,12 @@ function tratarMensagem(msg) {
       mostrarTela(telaAguardando);
       botaoIniciar.classList.toggle("oculto", !msg.ehAnfitriao);
       renderizarListaSimples(msg.jogadores);
+      atualizarMeuAvatar(msg.jogadores);
       break;
     }
     case "jogadoresAtualizados": {
       renderizarListaSimples(msg.jogadores);
+      atualizarMeuAvatar(msg.jogadores);
       break;
     }
     case "escolhaPorta": {
@@ -221,12 +246,18 @@ function tratarMensagem(msg) {
         btn.addEventListener("click", () => escolherPorta(i, btn));
         portasEl.appendChild(btn);
       });
+      checkboxGarantirPortaEl.checked = false;
+      checkboxGarantirPortaEl.disabled = false;
+      opcaoGarantirPortaEl.classList.toggle("oculto", !msg.poderPortaDisponivel);
+      poderPortaUsadoMsgEl.classList.toggle("oculto", !!msg.poderPortaDisponivel);
+      iniciarContadorRedondo(intervaloPorta, anelPortaEl, numeroPortaEl, msg.tempoLimiteMs, (i) => (intervaloPorta = i));
       break;
     }
     case "portaEscolhida": {
       // a escolha de poder chega logo em seguida; só garante que saímos
       // da tela de espera caso o servidor já tenha resolvido antes de
       // o jogador terminar de escolher (ex: veio pelo timeout).
+      clearInterval(intervaloPorta);
       break;
     }
     case "escolhaPoder": {
@@ -246,7 +277,7 @@ function tratarMensagem(msg) {
         btn.addEventListener("click", () => escolherTipoPoder(tipo, btn));
         poderTiposEl.appendChild(btn);
       });
-      iniciarContador(intervaloPoder, poderTempoEl, msg.tempoLimiteMs, (i) => (intervaloPoder = i));
+      iniciarContadorRedondo(intervaloPoder, anelPoderEl, numeroPoderEl, msg.tempoLimiteMs, (i) => (intervaloPoder = i));
       break;
     }
     case "escolhaAlvo": {
@@ -271,7 +302,7 @@ function tratarMensagem(msg) {
         alvoTituloEl.textContent = "Você não tem poder nesta pergunta";
         jaEscolheuAlvo = true; // nada a fazer aqui, só aguardar
       }
-      iniciarContador(intervaloAlvo, alvoTempoEl, msg.tempoLimiteMs, (i) => (intervaloAlvo = i));
+      iniciarContadorRedondo(intervaloAlvo, anelAlvoEl, numeroAlvoEl, msg.tempoLimiteMs, (i) => (intervaloAlvo = i));
       break;
     }
     case "novaPergunta": {
@@ -285,8 +316,11 @@ function tratarMensagem(msg) {
         `Rodada ${msg.rodadaAtual} de ${msg.totalRodadas} — Pergunta ${msg.perguntaNaRodada} de ${msg.totalPerguntasPorRodada}`;
       perguntaCategoriaEl.textContent = msg.categoria;
       perguntaTextoEl.textContent = msg.pergunta;
-      renderizarAlternativas(alternativasBrutas, 0);
 
+      // as alternativas só aparecem quando o tempo de leitura acabar
+      // (em "iniciarResposta"); até lá, ficam escondidas de propósito.
+      areaAlternativasEl.classList.add("oculto");
+      alternativasEl.innerHTML = "";
       obstrucaoEl.classList.add("oculto");
       obstrucaoEl.innerHTML = "";
 
@@ -319,20 +353,34 @@ function tratarMensagem(msg) {
 
       const mordidas = efeitosAtivosAtuais.filter((e) => e.tipo === "mordicadores").length;
       renderizarAlternativas(alternativasBrutas, mordidas);
+      areaAlternativasEl.classList.remove("oculto");
 
       montarObstrucao(efeitosAtivosAtuais);
       break;
     }
     case "resultadoPergunta": {
-      mostrarTela(telaResultado);
-      if (msg.seuResultado.respondeu) {
-        resultadoTituloEl.textContent = msg.seuResultado.acertou ? "Você acertou!" : "Você errou";
-      } else {
-        resultadoTituloEl.textContent = "Tempo esgotado";
-      }
-      resultadoPontosEl.textContent = `+${msg.seuResultado.pontosGanhos} pontos`;
-      renderizarPlacar(msg.placar, placarEl);
-      prepararTelaResultado(botaoProxima, statusProximoEl);
+      // primeiro pisca a resposta certa em cima do próprio grid de
+      // alternativas (o jogador ainda está na tela-pergunta), só depois
+      // troca pra tela de resultado com o placar e o botão de continuar.
+      // quem não respondeu a tempo ainda tinha os botões habilitados -
+      // trava tudo agora pra não mandar "responder" depois que o servidor
+      // já saiu da fase de pergunta (isso virava um alert() de erro no meio
+      // da revelação).
+      document.querySelectorAll("#alternativas .alternativa").forEach((b) => (b.disabled = true));
+      const botaoCerto = alternativasEl.children[msg.respostaCorretaIndex];
+      if (botaoCerto) botaoCerto.classList.add("correta-revelada");
+
+      setTimeout(() => {
+        mostrarTela(telaResultado);
+        if (msg.seuResultado.respondeu) {
+          resultadoTituloEl.textContent = msg.seuResultado.acertou ? "Você acertou!" : "Você errou";
+        } else {
+          resultadoTituloEl.textContent = "Tempo esgotado";
+        }
+        resultadoPontosEl.textContent = `+${msg.seuResultado.pontosGanhos} pontos`;
+        renderizarPlacar(msg.placar, placarEl);
+        prepararTelaResultado(botaoProxima, statusProximoEl);
+      }, 1500);
       break;
     }
 
@@ -345,7 +393,7 @@ function tratarMensagem(msg) {
       linkingTotalPares = msg.esquerda.length;
       linkingProgressoEl.textContent = `0 de ${linkingTotalPares} pares`;
       renderizarListaEsquerda();
-      iniciarContador(intervaloLinking, linkingTempoEl, msg.tempoLimiteMs, (i) => (intervaloLinking = i));
+      iniciarContadorRedondo(intervaloLinking, anelLinkingEl, numeroLinkingEl, msg.tempoLimiteMs, (i) => (intervaloLinking = i));
       mostrarTela(telaLinking);
       break;
     }
@@ -393,9 +441,10 @@ function tratarMensagem(msg) {
       sortingCategoriasEl.textContent = `${msg.categoriaA}  ou  ${msg.categoriaB}?`;
       sortingRespondidos = 0;
       sortingTotalItens = msg.itens.length;
+      sortingLoteAtual = 0;
       sortingProgressoEl.textContent = `0 de ${sortingTotalItens} respondidos`;
       renderizarSorting(msg.itens, msg.categoriaA, msg.categoriaB);
-      iniciarContador(intervaloSorting, sortingTempoEl, msg.tempoLimiteMs, (i) => (intervaloSorting = i));
+      iniciarContadorRedondo(intervaloSorting, anelSortingEl, numeroSortingEl, msg.tempoLimiteMs, (i) => (intervaloSorting = i));
       mostrarTela(telaSorting);
       break;
     }
@@ -404,6 +453,11 @@ function tratarMensagem(msg) {
       card.classList.add(msg.correto ? "correto" : "incorreto");
       sortingRespondidos++;
       sortingProgressoEl.textContent = `${sortingRespondidos} de ${sortingTotalItens} respondidos`;
+
+      // terminou o lote de 3 atual? revela o próximo lote (sem precisar rolar)
+      if (sortingRespondidos < sortingTotalItens && sortingRespondidos % ITENS_POR_LOTE_SORTING === 0) {
+        avancarLoteSorting();
+      }
       break;
     }
     case "resultadoSorting": {
@@ -503,17 +557,33 @@ function renderizarListaSimples(jogadores) {
   }
 }
 
-function iniciarContador(intervaloAntigo, elemento, tempoLimiteMs, guardarIntervalo) {
+// guarda o próprio emoji/cor (sorteados pelo servidor na ordem de entrada)
+// pra colorir a própria identidade e o destaque da resposta escolhida.
+function atualizarMeuAvatar(jogadores) {
+  const eu = jogadores.find((j) => j.id === meuJogadorId);
+  if (!eu) return;
+  meuNome = eu.nome;
+  meuAvatar = eu.avatar || null;
+  document.documentElement.style.setProperty("--cor-jogador", meuAvatar ? meuAvatar.cor : "#1e90ff");
+  if (playerIdentityAvatarEl) playerIdentityAvatarEl.textContent = meuAvatar ? meuAvatar.emoji : "❔";
+  if (playerIdentityNomeEl) playerIdentityNomeEl.textContent = meuNome;
+}
+
+const CIRCUNFERENCIA_TIMER_MINI = 326.7;
+
+function iniciarContadorRedondo(intervaloAntigo, anelEl, numeroEl, tempoLimiteMs, guardarIntervalo) {
   clearInterval(intervaloAntigo);
   const inicio = Date.now();
   let novoIntervalo = null;
   const atualizar = () => {
-    const restanteMs = Math.max(0, tempoLimiteMs - (Date.now() - inicio));
-    elemento.textContent = `Tempo: ${Math.ceil(restanteMs / 1000)}s`;
+    const decorrido = Date.now() - inicio;
+    const restanteMs = Math.max(0, tempoLimiteMs - decorrido);
+    anelEl.style.strokeDashoffset = String(CIRCUNFERENCIA_TIMER_MINI * Math.min(1, decorrido / tempoLimiteMs));
+    numeroEl.textContent = String(Math.ceil(restanteMs / 1000));
     if (restanteMs <= 0) clearInterval(novoIntervalo);
   };
   atualizar();
-  novoIntervalo = setInterval(atualizar, 200);
+  novoIntervalo = setInterval(atualizar, 100);
   guardarIntervalo(novoIntervalo);
 }
 
@@ -644,8 +714,10 @@ function escolherPorta(indice, botaoClicado) {
 
   document.querySelectorAll("#portas .alternativa").forEach((b) => (b.disabled = true));
   botaoClicado.classList.add("selecionada");
+  const garantir = checkboxGarantirPortaEl.checked;
+  checkboxGarantirPortaEl.disabled = true;
 
-  ws.send(JSON.stringify({ type: "escolherPorta", indice }));
+  ws.send(JSON.stringify({ type: "escolherPorta", indice, garantir }));
   mostrarTela(telaAguardandoPorta);
 }
 
@@ -657,7 +729,9 @@ function responder(indice, botaoClicado) {
   botaoClicado.classList.add("selecionada");
 
   ws.send(JSON.stringify({ type: "responder", alternativaIndex: indice }));
-  mostrarTela(telaAguardandoOutros);
+  // fica na própria tela-pergunta (grid desabilitado, sua escolha em
+  // destaque) em vez de trocar de tela - é nela que a resposta certa vai
+  // piscar em verde quando a TV revelar.
 }
 
 // Mostra a lista de itens da esquerda, um por linha, em tela cheia. Tocar
@@ -716,6 +790,10 @@ function renderizarSorting(itens, categoriaA, categoriaB) {
   itens.forEach((nome, i) => {
     const card = document.createElement("div");
     card.className = "sorting-item";
+    // só o primeiro lote de 3 itens começa visível - os outros ficam
+    // escondidos no DOM (mantendo o índice certo pra quando o resultado
+    // de cada item chegar) até o jogador terminar o lote atual.
+    if (Math.floor(i / ITENS_POR_LOTE_SORTING) !== 0) card.classList.add("oculto");
 
     const nomeEl = document.createElement("p");
     nomeEl.className = "sorting-item-nome";
@@ -740,6 +818,15 @@ function renderizarSorting(itens, categoriaA, categoriaB) {
     card.appendChild(nomeEl);
     card.appendChild(botoes);
     sortingItensEl.appendChild(card);
+  });
+}
+
+function avancarLoteSorting() {
+  sortingLoteAtual++;
+  const inicio = sortingLoteAtual * ITENS_POR_LOTE_SORTING;
+  const fim = inicio + ITENS_POR_LOTE_SORTING;
+  [...sortingItensEl.children].forEach((card, i) => {
+    card.classList.toggle("oculto", i < inicio || i >= fim);
   });
 }
 

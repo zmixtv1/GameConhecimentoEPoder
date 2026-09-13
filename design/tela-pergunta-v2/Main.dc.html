@@ -1,0 +1,178 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;800&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap">
+  <style>
+    :root {
+      --pq-bg: oklch(97% 0.005 260);
+      --pq-surface: oklch(99% 0.002 260);
+      --pq-ink: oklch(20% 0.012 260);
+      --pq-ink-soft: oklch(52% 0.016 260);
+      --pq-line: oklch(89% 0.008 260);
+      --pq-accent: oklch(58% 0.15 75);
+      --pq-accent-dim: oklch(58% 0.15 75 / 0.12);
+      font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    a { color: var(--pq-accent); }
+    a:hover { color: var(--pq-ink); }
+    .tela {
+      position: relative;
+      width: 1440px;
+      height: 900px;
+      overflow: hidden;
+      background: var(--pq-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--pq-ink);
+    }
+    .fundo-vivo { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+    .orbe { position: absolute; border-radius: 50%; filter: blur(70px); }
+    .orbe-1 {
+      width: 640px; height: 640px; top: -260px; left: -160px;
+      background: radial-gradient(closest-side, oklch(58% 0.15 75 / 0.16), transparent 70%);
+    }
+    .orbe-2 {
+      width: 560px; height: 560px; top: -220px; right: -180px;
+      background: radial-gradient(closest-side, oklch(58% 0.15 75 / 0.12), transparent 70%);
+    }
+    .orbe-3 {
+      width: 480px; height: 480px; bottom: -260px; left: 34%;
+      background: radial-gradient(closest-side, oklch(58% 0.15 75 / 0.10), transparent 70%);
+      opacity: 0.35;
+    }
+    .feixe {
+      position: absolute;
+      inset: -20% -60%;
+      background: linear-gradient(100deg, transparent 42%, oklch(58% 0.15 75 / 0.07) 50%, transparent 58%);
+    }
+
+    .conteudo {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 900px;
+      text-align: center;
+    }
+    .topo {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .rotulo { color: var(--pq-ink-soft); font-size: 0.9rem; font-weight: 600; margin: 0; }
+    .ponto-sep { width: 4px; height: 4px; border-radius: 50%; background: var(--pq-line); }
+    .categoria { color: var(--pq-accent); font-weight: 700; font-size: 0.9rem; }
+    h2 {
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 700;
+      font-size: 2.9rem;
+      line-height: 1.15;
+      margin: 22px 0 36px;
+    }
+
+    .timer-redondo {
+      position: absolute;
+      right: 68px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 168px;
+      height: 168px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .timer-halo {
+      position: absolute;
+      inset: -18px;
+      border-radius: 50%;
+      background: radial-gradient(closest-side, var(--pq-accent-dim), transparent 75%);
+    }
+    .timer-anel { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .anel-fundo { fill: none; stroke: var(--pq-line); stroke-width: 8; }
+    .anel-progresso {
+      fill: none; stroke: var(--pq-accent); stroke-width: 8;
+      stroke-linecap: round; stroke-dasharray: 326.7; stroke-dashoffset: 130;
+    }
+    .timer-centro { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .timer-numero {
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 800;
+      font-size: 2.6rem;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+      color: var(--pq-ink);
+    }
+    .timer-label {
+      margin-top: 4px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--pq-ink-soft);
+    }
+
+    .progresso-linha {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-height: 262px;
+      color: var(--pq-ink-soft);
+      font-size: 1.05rem;
+      font-weight: 500;
+    }
+    .avatares { display: flex; gap: 6px; }
+    .avatar { width: 13px; height: 13px; border-radius: 50%; background: transparent; border: 1.5px solid var(--pq-line); }
+    .avatar.on { background: var(--pq-accent); border-color: var(--pq-accent); }
+  </style>
+</helmet>
+<div class="tela">
+  <div class="fundo-vivo">
+    <div class="orbe orbe-1"></div>
+    <div class="orbe orbe-2"></div>
+    <div class="orbe orbe-3"></div>
+    <div class="feixe"></div>
+  </div>
+  <div class="timer-redondo">
+    <div class="timer-halo"></div>
+    <svg class="timer-anel" viewBox="0 0 120 120">
+      <circle class="anel-fundo" cx="60" cy="60" r="52"></circle>
+      <circle class="anel-progresso" cx="60" cy="60" r="52"></circle>
+    </svg>
+    <div class="timer-centro">
+      <span class="timer-numero">05</span>
+      <span class="timer-label">segundos</span>
+    </div>
+  </div>
+  <div class="conteudo">
+    <div class="topo">
+      <span class="rotulo">Rodada 2 de 3 — Pergunta 2 de 3</span>
+      <span class="ponto-sep"></span>
+      <span class="categoria">Geografia</span>
+    </div>
+    <h2>Qual é o maior país do mundo em extensão territorial?</h2>
+    <div class="progresso-linha">
+      <div class="avatares">
+        <span class="avatar on"></span>
+        <span class="avatar on"></span>
+        <span class="avatar on"></span>
+        <span class="avatar"></span>
+        <span class="avatar"></span>
+      </div>
+      3 de 5 jogadores já responderam
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

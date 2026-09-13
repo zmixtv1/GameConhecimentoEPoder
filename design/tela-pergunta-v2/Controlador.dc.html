@@ -1,0 +1,139 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;800&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap">
+  <style>
+    :root {
+      --bg: oklch(96% 0.006 260);
+      --surface: oklch(99% 0.002 260);
+      --ink: oklch(20% 0.012 260);
+      --ink-soft: oklch(52% 0.016 260);
+      --gold: oklch(58% 0.15 75);
+      --borda: oklch(89% 0.008 260);
+      --pq-verde: oklch(60% 0.14 145);
+      --pq-verde-dim: oklch(60% 0.14 145 / 0.14);
+      font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { margin: 0; }
+    a { color: var(--gold); }
+    a:hover { color: var(--ink); }
+
+    /* 751x336 = o tamanho REAL medido no celular do Rodrigo, na horizontal,
+       com a barra do navegador visível (o "cenário ruim" que tem que caber
+       sem precisar rolar a página) */
+    .tela {
+      position: relative;
+      width: 751px;
+      height: 336px;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--ink);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 10px;
+    }
+    .tela > * { max-width: 92%; }
+
+    h2 {
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 700;
+      font-size: 1.05rem;
+      line-height: 1.2;
+      margin: 0 0 4px;
+      text-align: center;
+    }
+    .ajuda { color: var(--ink-soft); font-size: 0.68rem; margin: 0; text-align: center; }
+    .categoria {
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: oklch(55% 0.18 300);
+      font-weight: 600;
+      font-size: 0.68rem;
+      margin: 0;
+      text-align: center;
+    }
+
+    .alternativas {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin-top: 8px;
+      width: 100%;
+    }
+    .alternativa {
+      padding: 8px 12px;
+      min-height: 40px;
+      border-radius: 10px;
+      background: var(--surface);
+      border: 2px solid var(--borda);
+      color: var(--ink);
+      font-family: inherit;
+      font-size: 0.8rem;
+      text-align: left;
+      display: flex;
+      align-items: center;
+    }
+    .alternativa.selecionada { border-color: var(--gold); background: oklch(58% 0.15 75 / 0.12); }
+    .alternativa.correta-revelada {
+      border-color: var(--pq-verde);
+      background: var(--pq-verde-dim);
+      box-shadow: 0 0 0 1px var(--pq-verde);
+    }
+
+    .timer-redondo-mini {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 52px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .timer-anel-mini { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .anel-fundo-mini { fill: none; stroke: var(--borda); stroke-width: 8; }
+    .anel-progresso-mini {
+      fill: none; stroke: var(--gold); stroke-width: 8;
+      stroke-linecap: round; stroke-dasharray: 326.7; stroke-dashoffset: 130;
+    }
+    .timer-numero-mini {
+      position: absolute;
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 800;
+      font-size: 1rem;
+      color: var(--ink);
+    }
+  </style>
+</helmet>
+<div class="tela">
+  <div class="timer-redondo-mini">
+    <svg class="timer-anel-mini" viewBox="0 0 120 120">
+      <circle class="anel-fundo-mini" cx="60" cy="60" r="52"></circle>
+      <circle class="anel-progresso-mini" cx="60" cy="60" r="52"></circle>
+    </svg>
+    <span class="timer-numero-mini">05</span>
+  </div>
+
+  <p class="ajuda">Rodada 2 de 3 — Pergunta 2 de 3</p>
+  <p class="categoria">Geografia</p>
+  <h2>Qual é o maior país do mundo em extensão territorial?</h2>
+
+  <div class="alternativas">
+    <button class="alternativa">Canadá</button>
+    <button class="alternativa selecionada correta-revelada">Rússia</button>
+    <button class="alternativa">China</button>
+    <button class="alternativa">Estados Unidos</button>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

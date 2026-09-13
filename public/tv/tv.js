@@ -30,6 +30,9 @@ const TODAS_AS_TELAS = [
 ];
 
 const codigoSalaEl = document.getElementById("codigo-sala");
+const blocoQrcodeEl = document.getElementById("bloco-qrcode");
+const entradaDivisorEl = document.getElementById("entrada-divisor");
+const qrcodeImagemEl = document.getElementById("qrcode-imagem");
 const listaJogadoresEl = document.getElementById("lista-jogadores");
 
 const rodadaRotuloEl = document.getElementById("rodada-rotulo");
@@ -37,16 +40,17 @@ const portasEl = document.getElementById("portas");
 
 const rodadaRotulo2El = document.getElementById("rodada-rotulo-2");
 const categoriaEscolhidaEl = document.getElementById("categoria-escolhida");
+const garantidaPorMensagemEl = document.getElementById("garantida-por-mensagem");
 
 const progressoRodadaEl = document.getElementById("progresso-rodada");
 const perguntaCategoriaEl = document.getElementById("pergunta-categoria");
 const perguntaTextoEl = document.getElementById("pergunta-texto");
-const alternativasEl = document.getElementById("alternativas");
-const progressoEl = document.getElementById("progresso-respostas");
 const faseLeituraEl = document.getElementById("fase-leitura");
 const contagemLeituraEl = document.getElementById("contagem-leitura");
-const barraTempoFundoEl = document.getElementById("barra-tempo-fundo");
-const barraTempoEl = document.getElementById("barra-tempo");
+const timerRedondoEl = document.getElementById("timer-redondo");
+const anelProgressoEl = document.getElementById("anel-progresso");
+const timerNumeroEl = document.getElementById("timer-numero");
+const playersDockEl = document.getElementById("players-dock");
 
 const poderRodadaRotuloEl = document.getElementById("poder-rodada-rotulo");
 const poderTempoEl = document.getElementById("poder-tempo");
@@ -87,22 +91,54 @@ let intervaloAlvo = null;
 let intervaloLinking = null;
 let intervaloSorting = null;
 let portasAtuais = [];
+let alternativasAtuais = [];
+const CIRCUNFERENCIA_TIMER = 326.7;
+const ICONE_CHECK_SVG =
+  '<svg class="icone-check" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M8 12.5l2.5 2.5L16 9"></path></svg>';
 let sortingCategoriaANome = "";
 let sortingCategoriaBNome = "";
 let progressoContinuarAtivoEl = null;
 let piramideTotalDegraus = 0;
+let jogadoresAtuais = [];
 
 function mostrarTela(tela) {
   for (const t of TODAS_AS_TELAS) t.classList.toggle("oculto", t !== tela);
 }
 
 function renderizarJogadores(jogadores) {
+  jogadoresAtuais = jogadores;
   listaJogadoresEl.innerHTML = "";
   for (const jogador of jogadores) {
     const li = document.createElement("li");
     li.textContent = jogador.nome;
     if (jogador.ehAnfitriao) li.classList.add("anfitriao");
     listaJogadoresEl.appendChild(li);
+  }
+}
+
+// pódio de jogadores da tela da pergunta: cada um "pensando" até travar a
+// resposta, aí acende com a cor + emoji do próprio jogador.
+function renderizarPlayersDock() {
+  playersDockEl.innerHTML = "";
+  for (const jogador of jogadoresAtuais) {
+    const pod = document.createElement("div");
+    pod.className = "player-pod glass-panel thinking";
+    pod.dataset.jogadorId = jogador.id;
+    if (jogador.avatar) pod.style.setProperty("--cor-jogador", jogador.avatar.cor);
+    pod.innerHTML = `
+      <div class="ready-stamp">✓</div>
+      <div class="player-avatar">${jogador.avatar ? jogador.avatar.emoji : "❔"}</div>
+      <div class="player-name">${jogador.nome}</div>
+    `;
+    playersDockEl.appendChild(pod);
+  }
+}
+
+function travarPodDoJogador(jogadorId) {
+  const pod = playersDockEl.querySelector(`[data-jogador-id="${jogadorId}"]`);
+  if (pod) {
+    pod.classList.remove("thinking");
+    pod.classList.add("locked");
   }
 }
 
@@ -151,6 +187,14 @@ function tratarMensagem(msg) {
     case "estadoSala": {
       codigoSalaEl.textContent = msg.codigo;
       renderizarJogadores(msg.jogadores);
+      if (msg.qrCodeDataUrl) {
+        qrcodeImagemEl.src = msg.qrCodeDataUrl;
+        blocoQrcodeEl.classList.remove("oculto");
+        entradaDivisorEl.classList.remove("oculto");
+      } else {
+        blocoQrcodeEl.classList.add("oculto");
+        entradaDivisorEl.classList.add("oculto");
+      }
       break;
     }
     case "jogadoresAtualizados": {
@@ -181,6 +225,12 @@ function tratarMensagem(msg) {
       mostrarTela(telaPortaEscolhida);
       rodadaRotulo2El.textContent = rodadaRotuloEl.textContent;
       categoriaEscolhidaEl.textContent = msg.categoria;
+      if (msg.garantidaPorNome) {
+        garantidaPorMensagemEl.textContent = `🔒 ${msg.garantidaPorNome} usou o poder de garantir essa porta!`;
+        garantidaPorMensagemEl.classList.remove("oculto");
+      } else {
+        garantidaPorMensagemEl.classList.add("oculto");
+      }
       break;
     }
     case "escolhaPoder": {
@@ -199,23 +249,23 @@ function tratarMensagem(msg) {
     }
     case "novaPergunta": {
       clearInterval(intervaloAlvo);
+      alternativasAtuais = msg.alternativas;
       mostrarTela(telaPergunta);
       progressoRodadaEl.textContent =
         `Rodada ${msg.rodadaAtual} de ${msg.totalRodadas} — Pergunta ${msg.perguntaNaRodada} de ${msg.totalPerguntasPorRodada}`;
       perguntaCategoriaEl.textContent = msg.categoria;
       perguntaTextoEl.textContent = msg.pergunta;
-      alternativasEl.innerHTML = "";
-      for (const alt of msg.alternativas) {
-        const div = document.createElement("div");
-        div.className = "alternativa";
-        div.textContent = alt;
-        alternativasEl.appendChild(div);
-      }
-      progressoEl.textContent = "";
 
-      // fase de leitura: mostra contagem regressiva, esconde a barra de resposta
+      // as respostas só aparecem quando a revelação acontecer (tela-resultado);
+      // aqui, durante a leitura e a espera das respostas, mostramos só a
+      // pergunta + o timer redondo (esse ainda escondido na fase de leitura)
+      // e o pódio dos jogadores, todos "pensando" até travarem a resposta.
+      timerRedondoEl.classList.add("oculto");
+      timerRedondoEl.classList.remove("urgente");
+      playersDockEl.classList.add("oculto");
+      renderizarPlayersDock();
+
       faseLeituraEl.classList.remove("oculto");
-      barraTempoFundoEl.classList.add("oculto");
       clearInterval(intervaloTempo);
       clearInterval(intervaloLeitura);
       const inicioLeitura = Date.now();
@@ -229,25 +279,33 @@ function tratarMensagem(msg) {
       break;
     }
     case "iniciarResposta": {
-      // fase de resposta: some com a contagem de leitura, mostra a barra de tempo
+      // fase de resposta: some com a contagem de leitura, mostra o timer
+      // redondo contando e o pódio de jogadores (todos "pensando").
       clearInterval(intervaloLeitura);
       faseLeituraEl.classList.add("oculto");
-      barraTempoFundoEl.classList.remove("oculto");
-      progressoEl.textContent = "0 de ? responderam";
+      timerRedondoEl.classList.remove("oculto");
+      playersDockEl.classList.remove("oculto");
 
       clearInterval(intervaloTempo);
       const inicio = Date.now();
-      barraTempoEl.style.width = "100%";
-      intervaloTempo = setInterval(() => {
+      const atualizarTimerRedondo = () => {
         const decorrido = Date.now() - inicio;
-        const restante = Math.max(0, 1 - decorrido / msg.tempoLimiteMs);
-        barraTempoEl.style.width = `${restante * 100}%`;
-        if (restante <= 0) clearInterval(intervaloTempo);
-      }, 100);
+        const restanteMs = Math.max(0, msg.tempoLimiteMs - decorrido);
+        const restanteS = Math.ceil(restanteMs / 1000);
+        anelProgressoEl.style.strokeDashoffset =
+          String(CIRCUNFERENCIA_TIMER * Math.min(1, decorrido / msg.tempoLimiteMs));
+        timerNumeroEl.textContent = String(restanteS);
+        timerRedondoEl.classList.toggle("urgente", restanteS <= 3 && restanteS > 0);
+        if (restanteMs <= 0) clearInterval(intervaloTempo);
+      };
+      atualizarTimerRedondo();
+      intervaloTempo = setInterval(atualizarTimerRedondo, 100);
       break;
     }
     case "progressoRespostas": {
-      progressoEl.textContent = `${msg.respondidos} de ${msg.total} responderam`;
+      for (const jogadorId of msg.jogadoresQueResponderam || []) {
+        travarPodDoJogador(jogadorId);
+      }
       break;
     }
     case "usoDePoder": {
@@ -260,11 +318,41 @@ function tratarMensagem(msg) {
     case "resultadoPergunta": {
       clearInterval(intervaloTempo);
       mostrarTela(telaResultado);
-      alternativasResultadoEl.innerHTML = alternativasEl.innerHTML;
-      const cartas = alternativasResultadoEl.querySelectorAll(".alternativa");
-      cartas.forEach((carta, i) => {
-        if (i === msg.respostaCorretaIndex) carta.classList.add("correta");
+
+      const respostasPorAlternativa = alternativasAtuais.map(() => []);
+      for (const r of msg.respostasPorJogador || []) {
+        if (r.alternativaIndex !== null && respostasPorAlternativa[r.alternativaIndex]) {
+          const jogador = jogadoresAtuais.find((j) => j.id === r.id);
+          respostasPorAlternativa[r.alternativaIndex].push(jogador || r);
+        }
+      }
+
+      alternativasResultadoEl.innerHTML = "";
+      alternativasAtuais.forEach((texto, i) => {
+        const ehCorreta = i === msg.respostaCorretaIndex;
+        const div = document.createElement("div");
+        div.className = "alternativa-resultado glass-panel" + (ehCorreta ? " correta" : "");
+        div.appendChild(document.createTextNode(texto));
+
+        const avataresCard = document.createElement("div");
+        avataresCard.className = "avatares-resultado";
+        respostasPorAlternativa[i].forEach((jogador, idx) => {
+          const chip = document.createElement("span");
+          chip.className = "avatar-chip";
+          chip.textContent = jogador.avatar ? jogador.avatar.emoji : "❔";
+          chip.style.background = jogador.avatar
+            ? `color-mix(in srgb, ${jogador.avatar.cor} 20%, white)`
+            : "var(--surface)";
+          chip.style.animationDelay = `${1.5 + idx * 0.08}s`;
+          avataresCard.appendChild(chip);
+        });
+        div.appendChild(avataresCard);
+
+        if (ehCorreta) div.insertAdjacentHTML("beforeend", ICONE_CHECK_SVG);
+
+        alternativasResultadoEl.appendChild(div);
       });
+
       renderizarPlacar(msg.placar, placarEl);
       progressoProximoEl.textContent = "Aguardando jogadores confirmarem...";
       progressoContinuarAtivoEl = progressoProximoEl;
