@@ -1,22 +1,20 @@
 #!/usr/bin/env bash
 #
-# Instala o Domínio pelo Saber no Raspberry Pi, com o Pi ligado na TV por HDMI.
+# Prepara o Raspberry Pi para rodar o Domínio pelo Saber.
 #
-# Depois disso, ligar o Pi na tomada já põe o jogo na tela: o servidor sobe
-# sozinho e o navegador abre a tela da TV em tela cheia. Sem teclado, sem SSH.
+# Depois disto o jogo vira um ícone na área de trabalho: você entra no Wi-Fi da
+# casa e abre o jogo. Nada sobe sozinho no boot - quem manda é você.
 #
 #   Uso:  ./raspberry-pi/instalar.sh
 #
-# Rode como o seu usuário normal, SEM sudo - o script pede sudo sozinho só nas
-# partes que precisam (instalar pacote e criar o serviço).
+# Rode como o seu usuário normal, SEM sudo - o script pede sudo sozinho nas
+# partes que precisam.
 
 set -euo pipefail
 
-SERVICO="dominio-pelo-saber"
-PORTA="${PORTA:-3000}"
+NOME="dominio-pelo-saber"
 RAIZ="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 AQUI="$RAIZ/raspberry-pi"
-USUARIO="$(id -un)"
 
 info() { printf '\n\033[1;36m==>\033[0m %s\n' "$1"; }
 erro() { printf '\n\033[1;31mErro:\033[0m %s\n' "$1" >&2; exit 1; }
@@ -25,14 +23,13 @@ erro() { printf '\n\033[1;31mErro:\033[0m %s\n' "$1" >&2; exit 1; }
 
 if [ "$(id -u)" -eq 0 ]; then
   erro "Rode sem sudo, como o seu usuário normal.
-O script pede sudo sozinho onde precisa. Rodando tudo como root, o modo
-quiosque seria instalado na casa do root e não abriria na sua sessão."
+Como root, os atalhos iriam para a área de trabalho do root, não para a sua."
 fi
 
 command -v sudo >/dev/null 2>&1 || erro "O comando sudo não existe nesta máquina."
 [ -f "$RAIZ/server/package.json" ] || erro "Não achei o server/package.json. Rode o script de dentro do repositório clonado."
 
-info "Instalando para o usuário '$USUARIO', a partir de $RAIZ"
+info "Instalando para o usuário '$(id -un)', a partir de $RAIZ"
 
 # ----------------------------------------------------------------- Node.js 18+
 
@@ -57,14 +54,16 @@ if [ "$instalar_node" -eq 1 ]; then
   sudo apt-get install -y nodejs
 fi
 
-NODE_BIN="$(command -v node)"
-
-# ------------------------------------------------------------------ navegador
+# ------------------------------------------------------------------ programas
 
 if ! command -v chromium-browser >/dev/null 2>&1 && ! command -v chromium >/dev/null 2>&1; then
   info "Instalando o Chromium (para a tela da TV)"
   sudo apt-get install -y chromium-browser || sudo apt-get install -y chromium
 fi
+
+# zenity é o que mostra o aviso "entre no Wi-Fi primeiro" na tela: o atalho
+# roda sem terminal, então sem ele um erro acontece em silêncio.
+command -v zenity >/dev/null 2>&1 || { info "Instalando o zenity (avisos na tela)"; sudo apt-get install -y zenity; }
 
 # --------------------------------------------------------------- dependências
 
@@ -72,23 +71,62 @@ info "Instalando as dependências do servidor"
 echo "São 97 pacotes, todos JavaScript puro - não compila nada, é rápido mesmo no Pi."
 ( cd "$RAIZ/server" && npm install --no-audit --no-fund )
 
-# ------------------------------------------------------------ serviço systemd
+chmod +x "$AQUI/jogar.sh" "$AQUI/parar.sh"
 
-info "Criando o serviço '$SERVICO' (sobe sozinho no boot)"
-chmod +x "$AQUI/esperar-rede.sh" "$AQUI/tv-quiosque.sh"
+# ---------------------------------------------------------------- os atalhos
 
-sed -e "s|__USUARIO__|$USUARIO|g" \
-    -e "s|__DIRETORIO__|$RAIZ|g" \
-    -e "s|__PORTA__|$PORTA|g" \
-    -e "s|__NODE__|$NODE_BIN|g" \
-    "$AQUI/$SERVICO.service" \
-  | sudo tee "/etc/systemd/system/$SERVICO.service" >/dev/null
+info "Criando os atalhos"
 
-sudo systemctl daemon-reload
-sudo systemctl enable "$SERVICO" >/dev/null
-sudo systemctl restart "$SERVICO"
+criar_atalho() {
+  local arquivo="$1" titulo="$2" comentario="$3" comando="$4" icone="$5"
+  cat > "$arquivo" <<DESKTOP
+[Desktop Entry]
+Type=Application
+Name=$titulo
+Comment=$comentario
+Exec=$comando
+Icon=$icone
+Terminal=false
+Categories=Game;
+DESKTOP
+  chmod +x "$arquivo"
+}
 
-# ------------------------------------------------------ Wi-Fi sempre acordado
+mkdir -p "$HOME/.local/share/applications"
+for destino in "$HOME/.local/share/applications" "$HOME/Desktop"; do
+  [ -d "$destino" ] || continue
+  criar_atalho "$destino/$NOME.desktop" \
+    "Domínio pelo Saber" "Abre o jogo na TV" \
+    "$AQUI/jogar.sh" "applications-games"
+  criar_atalho "$destino/$NOME-parar.desktop" \
+    "Parar o jogo" "Encerra o servidor do jogo" \
+    "$AQUI/parar.sh" "process-stop"
+  echo "Atalhos criados em $destino"
+done
+
+# Limpeza: se uma versão anterior deste projeto tiver deixado o jogo subindo
+# sozinho no boot, desfaz. Hoje quem decide a hora de rodar é você.
+if [ -f "$HOME/.config/autostart/$NOME-tv.desktop" ]; then
+  rm -f "$HOME/.config/autostart/$NOME-tv.desktop"
+  echo "Removido o início automático antigo."
+fi
+if systemctl list-unit-files "$NOME.service" >/dev/null 2>&1 \
+   && systemctl is-enabled --quiet "$NOME" 2>/dev/null; then
+  sudo systemctl disable --now "$NOME" >/dev/null 2>&1 || true
+  sudo rm -f "/etc/systemd/system/$NOME.service" "/etc/NetworkManager/dispatcher.d/99-$NOME"
+  sudo systemctl daemon-reload
+  echo "Removido o serviço antigo que subia no boot."
+fi
+
+# ------------------------------------------------------------ ajustes da sala
+
+if command -v raspi-config >/dev/null 2>&1; then
+  info "Desligando o apagamento automático da tela"
+  echo "Sem isso a TV apaga no meio da partida."
+  sudo raspi-config nonint do_blanking 1 \
+    || echo "Não consegui pelo raspi-config. Dá para desligar na mão em:
+  sudo raspi-config > Display Options > Screen Blanking"
+fi
 
 if [ -d /etc/NetworkManager ]; then
   info "Desligando a economia de energia do Wi-Fi"
@@ -103,84 +141,21 @@ CONF
   sudo systemctl reload NetworkManager 2>/dev/null || true
 fi
 
-# ------------------------------------------- gancho para quando a rede mudar
-
-if [ -d /etc/NetworkManager/dispatcher.d ]; then
-  info "Instalando o gancho que percebe a troca de rede"
-  echo "É ele que faz o QR code aparecer sozinho quando você leva o Pi para"
-  echo "outra casa e entra no Wi-Fi de lá."
-  sudo install -o root -g root -m 755 \
-    "$AQUI/rede-mudou.sh" "/etc/NetworkManager/dispatcher.d/99-$SERVICO"
-fi
-
-# ------------------------------------------------------- modo quiosque na TV
-
-info "Configurando a TV para abrir sozinha no boot"
-mkdir -p "$HOME/.config/autostart"
-cat > "$HOME/.config/autostart/$SERVICO-tv.desktop" <<DESKTOP
-[Desktop Entry]
-Type=Application
-Name=Domínio pelo Saber (TV)
-Comment=Abre a tela do jogo em tela cheia
-Exec=$AQUI/tv-quiosque.sh
-Terminal=false
-X-GNOME-Autostart-enabled=true
-DESKTOP
-echo "Autostart gravado em $HOME/.config/autostart/$SERVICO-tv.desktop"
-
-# Atalho no menu (e na área de trabalho), para reabrir a TV sem terminal depois
-# de fechar o quiosque com Alt+F4 - o caminho normal quando se troca de Wi-Fi.
-mkdir -p "$HOME/.local/share/applications"
-cat > "$HOME/.local/share/applications/$SERVICO-tv.desktop" <<DESKTOP
-[Desktop Entry]
-Type=Application
-Name=Domínio pelo Saber (TV)
-Comment=Abre a tela do jogo em tela cheia
-Exec=$AQUI/tv-quiosque.sh
-Icon=applications-games
-Terminal=false
-Categories=Game;
-DESKTOP
-
-if [ -d "$HOME/Desktop" ]; then
-  cp "$HOME/.local/share/applications/$SERVICO-tv.desktop" "$HOME/Desktop/"
-  chmod +x "$HOME/Desktop/$SERVICO-tv.desktop"
-fi
-
-if command -v raspi-config >/dev/null 2>&1; then
-  info "Desligando o apagamento automático da tela"
-  echo "Sem isso a TV apaga no meio da partida."
-  sudo raspi-config nonint do_blanking 1 \
-    || echo "Não consegui pelo raspi-config. Dá para desligar na mão em:
-  sudo raspi-config > Display Options > Screen Blanking"
-fi
-
-# ---------------------------------------------------------------- conferência
-
-info "Conferindo se o jogo subiu"
-sleep 3
-
-if systemctl is-active --quiet "$SERVICO"; then
-  echo "O serviço está rodando."
-else
-  erro "O serviço não subiu. Veja o que aconteceu com:
-  sudo journalctl -u $SERVICO -n 40 --no-pager"
-fi
-
-echo
-sudo journalctl -u "$SERVICO" -n 12 --no-pager --output=cat || true
-
 cat <<FIM
 
 ================================================================
- Pronto. Reinicie o Pi para ver o resultado final:  sudo reboot
+ Pronto.
 
- Depois do boot, a TV abre sozinha mostrando o código da sala e
- o QR code. Os celulares escaneiam o QR e entram.
+ Para jogar, em qualquer casa:
 
- Comandos úteis:
-   sudo systemctl status $SERVICO      ver se está no ar
-   sudo systemctl restart $SERVICO     reiniciar (gera código novo)
-   sudo journalctl -u $SERVICO -f      acompanhar ao vivo
+   1. Entre no Wi-Fi do lugar (ícone de rede, no canto da tela)
+   2. Abra o atalho "Domínio pelo Saber" na área de trabalho
+
+ A TV mostra o código da sala e o QR code; os celulares
+ escaneiam e entram. Nada sobe sozinho no boot.
+
+ Fechar a janela da TV não acaba a partida - o servidor segue
+ no ar e o atalho traz a tela de volta. Para encerrar mesmo,
+ use "Parar o jogo".
 ================================================================
 FIM

@@ -142,86 +142,74 @@ sudo nmcli device wifi hotspot ssid DominioPeloSaber password umasenhaboa
 
 Os celulares entram nessa rede e jogam normalmente. O porém: sem internet nessa conexão, o Android costuma avisar que "a rede não tem acesso à internet" e pode querer voltar para os dados móveis — alguém vai precisar mandar o celular continuar conectado. Para uso em casa, entrar no Wi-Fi normal é bem menos atrito.
 
-### Instalação
+### Instalação (uma vez só)
 
-Com o Pi ligado na TV por HDMI, rode no próprio Pi:
+No próprio Pi, já conectado à internet:
 
 ```bash
 git clone https://github.com/zmixtv1/GameConhecimentoEPoder.git
 cd GameConhecimentoEPoder
 ./raspberry-pi/instalar.sh
-sudo reboot
 ```
 
-Rode **sem `sudo`** — o script pede sozinho onde precisa. Rodar tudo como root instalaria o modo quiosque na casa do root, e ele não abriria na sua sessão.
-
-### O que você ganha com isso
-
-Depois do reboot, **ligar o Pi na tomada já põe o jogo na TV**. Sem teclado, sem SSH, sem abrir navegador. A tela sobe mostrando o código da sala e o QR code; os celulares escaneiam e entram.
-
-Se faltar luz no meio da festa, o Pi religa e o jogo volta sozinho. Se o servidor travar, o systemd reinicia em 5 segundos.
-
-O script faz seis coisas:
+Rode **sem `sudo`** — o script pede sozinho onde precisa. Como root, os atalhos iriam parar na área de trabalho do root em vez da sua.
 
 | Etapa | Por quê |
 |---|---|
-| Instala o Node.js 22 (se preciso) | O Node do `apt` do Raspberry Pi OS costuma ser velho demais para o jogo |
-| Cria o serviço `dominio-pelo-saber` | Sobe no boot e reinicia sozinho se cair |
-| Configura o modo quiosque | O Chromium abre a tela da TV em tela cheia no boot, com perfil separado para não aparecer "o Chromium não foi encerrado corretamente" por cima do jogo |
+| Instala o Node.js 22, se preciso | O Node do `apt` do Raspberry Pi OS costuma ser velho demais para o jogo |
+| Instala Chromium e zenity | O primeiro mostra a TV; o segundo mostra avisos na tela, já que o atalho roda sem terminal |
+| Instala as dependências do servidor | 97 pacotes, todos JavaScript puro |
+| Cria os atalhos na área de trabalho | "Domínio pelo Saber" e "Parar o jogo" |
 | Desliga o apagamento de tela | Senão a TV apaga no meio da partida |
-| Desliga a economia de energia do Wi-Fi | O rádio do Pi dorme entre pacotes por padrão, somando atraso e instabilidade justamente num jogo que dá bônus por velocidade |
-| Instala o gancho de troca de rede | Faz o QR code aparecer sozinho quando o Pi entra num Wi-Fi novo, sem precisar de terminal |
+| Desliga a economia de energia do Wi-Fi | O rádio do Pi dorme entre pacotes por padrão, somando atraso num jogo que dá bônus por velocidade |
 
-### Levando o Pi para outra casa
+**Nada passa a subir sozinho no boot.** Quem decide a hora de rodar é você.
 
-Resposta curta: **o jogo abre na TV sozinho, sim — mas ninguém consegue entrar até o Pi estar no Wi-Fi do lugar.**
+### Jogar, em qualquer casa
 
-O que acontece exatamente quando você chega numa casa nova e liga o Pi:
+Dois passos, nessa ordem:
 
-1. O servidor sobe normalmente. Ele não depende de rede para funcionar.
-2. O Chromium abre a tela da TV em tela cheia, porque usa `localhost` — funciona mesmo sem rede nenhuma.
-3. A TV mostra o código da sala, mas **sem QR code**: o servidor não achou nenhum IP para colocar no link.
-4. Os celulares não têm como chegar no jogo, porque o Pi não está em rede alguma.
+1. **Entre no Wi-Fi do lugar** — ícone de rede, no canto da área de trabalho
+2. **Abra o atalho "Domínio pelo Saber"** na área de trabalho
 
-Então falta um passo, e ele é na área de trabalho:
+A TV abre em tela cheia com o código da sala e o QR code. Os celulares escaneiam e entram.
 
-1. **`Alt+F4`** fecha a tela cheia e revela a área de trabalho.
-2. Clique no ícone de rede, escolha o Wi-Fi da casa e digite a senha.
-3. **O jogo se reinicia sozinho** e passa a mostrar o QR code — quem cuida disso é o [rede-mudou.sh](raspberry-pi/rede-mudou.sh), instalado como gancho do NetworkManager.
-4. Abra **"Domínio pelo Saber (TV)"**, o atalho que o instalador deixa na área de trabalho, para voltar à tela cheia.
+#### Por que a ordem importa
 
-Da segunda vez em diante naquela casa não precisa de nada: o Pi já guardou a rede e liga conectado.
+O servidor lê o IP da máquina **uma única vez, ao iniciar** ([index.js:12](server/index.js#L12)), para montar o link do QR code. Abrir o jogo antes de entrar no Wi-Fi daria uma TV sem QR code e sem jeito de os celulares chegarem na partida.
 
-#### Por que o reinício é automático mas não atrapalha
+Por isso o [jogar.sh](raspberry-pi/jogar.sh) confere a rede antes de qualquer coisa: se não houver nenhuma, ele avisa na tela e não abre nada, em vez de deixar você descobrir o problema com a sala cheia de gente esperando.
 
-Reiniciar o servidor gera um código de sala novo e derruba quem estiver jogando — seria péssimo se acontecesse no meio de uma partida porque o Wi-Fi oscilou.
+Levar o Pi para outra casa não tem segredo nenhum: é esse mesmo par de passos. Da segunda vez naquele lugar, o Pi já guardou a rede e só falta abrir o atalho.
 
-Por isso o gancho não reinicia sempre. Ele olha o log da execução atual do serviço e só age se o jogo **tiver subido sem IP**. Se a partida começou com rede normal e o Wi-Fi apenas piscou, nada acontece. Se o jogo subiu sem IP, não havia QR code nem jogador conectado, então reiniciar não custa nada a ninguém.
+### Fechar a janela não acaba a partida
 
-Se preferir não depender disso, um `sudo reboot` depois de entrar no Wi-Fi resolve igual.
+O servidor e a tela da TV são coisas separadas, de propósito. Um `Alt+F4` sem querer no meio do jogo fecha só a janela — **a partida continua**, os celulares seguem conectados, e abrir o atalho de novo traz a TV de volta no mesmo ponto.
 
-### Comandos do dia a dia
+Para encerrar de verdade, use o atalho **"Parar o jogo"**. Serve também para começar do zero com um código de sala novo, sem reiniciar o Pi.
+
+### Detalhes do dia a dia
+
+**Atualizar o jogo** depois de mudanças no repositório:
 
 ```bash
-sudo systemctl status dominio-pelo-saber     # está no ar?
-sudo systemctl restart dominio-pelo-saber    # reinicia e gera um código de sala novo
-sudo journalctl -u dominio-pelo-saber -f     # acompanhar ao vivo
-```
-
-Para atualizar o jogo depois de mudanças no repositório:
-
-```bash
-cd ~/GameConhecimentoEPoder
-git pull
+cd ~/GameConhecimentoEPoder && git pull
 cd server && npm install
-sudo systemctl restart dominio-pelo-saber
 ```
 
-### Detalhe de rede
+**Ver o que o servidor está fazendo**, se algo sair errado:
 
-O servidor descobre o IP da máquina **uma única vez, ao iniciar**, para montar o link do QR code. Num boot do Pi, o systemd normalmente chega lá antes de o Wi-Fi associar — por isso o serviço espera até 30 segundos por um IP antes de subir ([esperar-rede.sh](raspberry-pi/esperar-rede.sh)). Passados os 30s ele sobe mesmo assim: melhor um jogo no ar sem QR code, com o código digitado na mão, do que nenhum jogo.
+```bash
+cat /run/user/$(id -u)/dominio-pelo-saber/servidor.log
+```
 
-Um aviso para quem usa cabo e Wi-Fi ao mesmo tempo: o servidor pega o primeiro IPv4 que encontra ([index.js:12](server/index.js#L12)). Com `eth0` e `wlan0` ativos juntos, ele pode anunciar no QR code o IP do cabo enquanto os celulares estão no Wi-Fi. Se isso acontecer, deixe só uma das duas conexões ativa.
+**Rodar sem a TV em tela cheia** (só o servidor, para testar de outro aparelho):
+
+```bash
+cd ~/GameConhecimentoEPoder/server && npm start
+```
+
+**Cabo e Wi-Fi ao mesmo tempo, não.** O servidor usa o primeiro IP que encontra, e pode anunciar no QR code a interface errada. Deixe só uma das duas ativa.
 
 ## Como é uma partida
 
@@ -264,7 +252,7 @@ public/tv/         tela da TV (o que todos olham)
 public/controlador/ tela do celular (o controle de cada jogador)
 data/              banco de conteúdo: perguntas, ligações, classificações
 docs/              documentação da mecânica original do jogo
-raspberry-pi/      instalação como serviço no Pi (serviço, quiosque, instalador)
+raspberry-pi/      instalador e atalhos para rodar o jogo no Pi
 design/            protótipos de tela (não entram na partida)
 upgrade_a_fazer.md fila de mudanças planejadas do projeto
 ```
