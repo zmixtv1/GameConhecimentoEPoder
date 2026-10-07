@@ -103,6 +103,16 @@ CONF
   sudo systemctl reload NetworkManager 2>/dev/null || true
 fi
 
+# ------------------------------------------- gancho para quando a rede mudar
+
+if [ -d /etc/NetworkManager/dispatcher.d ]; then
+  info "Instalando o gancho que percebe a troca de rede"
+  echo "É ele que faz o QR code aparecer sozinho quando você leva o Pi para"
+  echo "outra casa e entra no Wi-Fi de lá."
+  sudo install -o root -g root -m 755 \
+    "$AQUI/rede-mudou.sh" "/etc/NetworkManager/dispatcher.d/99-$SERVICO"
+fi
+
 # ------------------------------------------------------- modo quiosque na TV
 
 info "Configurando a TV para abrir sozinha no boot"
@@ -117,6 +127,25 @@ Terminal=false
 X-GNOME-Autostart-enabled=true
 DESKTOP
 echo "Autostart gravado em $HOME/.config/autostart/$SERVICO-tv.desktop"
+
+# Atalho no menu (e na área de trabalho), para reabrir a TV sem terminal depois
+# de fechar o quiosque com Alt+F4 - o caminho normal quando se troca de Wi-Fi.
+mkdir -p "$HOME/.local/share/applications"
+cat > "$HOME/.local/share/applications/$SERVICO-tv.desktop" <<DESKTOP
+[Desktop Entry]
+Type=Application
+Name=Domínio pelo Saber (TV)
+Comment=Abre a tela do jogo em tela cheia
+Exec=$AQUI/tv-quiosque.sh
+Icon=applications-games
+Terminal=false
+Categories=Game;
+DESKTOP
+
+if [ -d "$HOME/Desktop" ]; then
+  cp "$HOME/.local/share/applications/$SERVICO-tv.desktop" "$HOME/Desktop/"
+  chmod +x "$HOME/Desktop/$SERVICO-tv.desktop"
+fi
 
 if command -v raspi-config >/dev/null 2>&1; then
   info "Desligando o apagamento automático da tela"

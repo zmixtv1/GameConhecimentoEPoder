@@ -161,7 +161,7 @@ Depois do reboot, **ligar o Pi na tomada já põe o jogo na TV**. Sem teclado, s
 
 Se faltar luz no meio da festa, o Pi religa e o jogo volta sozinho. Se o servidor travar, o systemd reinicia em 5 segundos.
 
-O script faz cinco coisas:
+O script faz seis coisas:
 
 | Etapa | Por quê |
 |---|---|
@@ -170,6 +170,35 @@ O script faz cinco coisas:
 | Configura o modo quiosque | O Chromium abre a tela da TV em tela cheia no boot, com perfil separado para não aparecer "o Chromium não foi encerrado corretamente" por cima do jogo |
 | Desliga o apagamento de tela | Senão a TV apaga no meio da partida |
 | Desliga a economia de energia do Wi-Fi | O rádio do Pi dorme entre pacotes por padrão, somando atraso e instabilidade justamente num jogo que dá bônus por velocidade |
+| Instala o gancho de troca de rede | Faz o QR code aparecer sozinho quando o Pi entra num Wi-Fi novo, sem precisar de terminal |
+
+### Levando o Pi para outra casa
+
+Resposta curta: **o jogo abre na TV sozinho, sim — mas ninguém consegue entrar até o Pi estar no Wi-Fi do lugar.**
+
+O que acontece exatamente quando você chega numa casa nova e liga o Pi:
+
+1. O servidor sobe normalmente. Ele não depende de rede para funcionar.
+2. O Chromium abre a tela da TV em tela cheia, porque usa `localhost` — funciona mesmo sem rede nenhuma.
+3. A TV mostra o código da sala, mas **sem QR code**: o servidor não achou nenhum IP para colocar no link.
+4. Os celulares não têm como chegar no jogo, porque o Pi não está em rede alguma.
+
+Então falta um passo, e ele é na área de trabalho:
+
+1. **`Alt+F4`** fecha a tela cheia e revela a área de trabalho.
+2. Clique no ícone de rede, escolha o Wi-Fi da casa e digite a senha.
+3. **O jogo se reinicia sozinho** e passa a mostrar o QR code — quem cuida disso é o [rede-mudou.sh](raspberry-pi/rede-mudou.sh), instalado como gancho do NetworkManager.
+4. Abra **"Domínio pelo Saber (TV)"**, o atalho que o instalador deixa na área de trabalho, para voltar à tela cheia.
+
+Da segunda vez em diante naquela casa não precisa de nada: o Pi já guardou a rede e liga conectado.
+
+#### Por que o reinício é automático mas não atrapalha
+
+Reiniciar o servidor gera um código de sala novo e derruba quem estiver jogando — seria péssimo se acontecesse no meio de uma partida porque o Wi-Fi oscilou.
+
+Por isso o gancho não reinicia sempre. Ele olha o log da execução atual do serviço e só age se o jogo **tiver subido sem IP**. Se a partida começou com rede normal e o Wi-Fi apenas piscou, nada acontece. Se o jogo subiu sem IP, não havia QR code nem jogador conectado, então reiniciar não custa nada a ninguém.
+
+Se preferir não depender disso, um `sudo reboot` depois de entrar no Wi-Fi resolve igual.
 
 ### Comandos do dia a dia
 
