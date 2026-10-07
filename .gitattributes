@@ -1,0 +1,5 @@
+# Scripts que rodam no Raspberry Pi precisam chegar lá com fim de linha Unix.
+# Sem isto, com core.autocrlf=true no Windows, o shell do Pi falha com
+# "bad interpreter: No such file or directory" por causa do \r no shebang.
+*.sh text eol=lf
+*.service text eol=lf

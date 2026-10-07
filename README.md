@@ -87,6 +87,65 @@ PORTA=8080 npm start
 
 ---
 
+---
+
+## Rodar no Raspberry Pi
+
+O Pi é o lugar natural desse jogo: fica ligado atrás da TV e nunca mais precisa de atenção. E a instalação é leve — o servidor tem 97 dependências, **todas JavaScript puro**, sem nenhum pacote que precise compilar. Não existe aqui aquela espera de 20 minutos compilando pacote nativo no ARM.
+
+**Modelos que funcionam:** Pi 2, 3, 4, 5 e Zero 2 W. Pi 1, Pi Zero e Zero W originais são ARMv6, arquitetura que o Node.js não distribui mais oficialmente — dariam bastante trabalho.
+
+### Instalação
+
+Com o Pi ligado na TV por HDMI, rode no próprio Pi:
+
+```bash
+git clone https://github.com/zmixtv1/GameConhecimentoEPoder.git
+cd GameConhecimentoEPoder
+./raspberry-pi/instalar.sh
+sudo reboot
+```
+
+Rode **sem `sudo`** — o script pede sozinho onde precisa. Rodar tudo como root instalaria o modo quiosque na casa do root, e ele não abriria na sua sessão.
+
+### O que você ganha com isso
+
+Depois do reboot, **ligar o Pi na tomada já põe o jogo na TV**. Sem teclado, sem SSH, sem abrir navegador. A tela sobe mostrando o código da sala e o QR code; os celulares escaneiam e entram.
+
+Se faltar luz no meio da festa, o Pi religa e o jogo volta sozinho. Se o servidor travar, o systemd reinicia em 5 segundos.
+
+O script faz quatro coisas:
+
+| Etapa | Por quê |
+|---|---|
+| Instala o Node.js 22 (se preciso) | O Node do `apt` do Raspberry Pi OS costuma ser velho demais para o jogo |
+| Cria o serviço `dominio-pelo-saber` | Sobe no boot e reinicia sozinho se cair |
+| Configura o modo quiosque | O Chromium abre a tela da TV em tela cheia no boot, com perfil separado para não aparecer "o Chromium não foi encerrado corretamente" por cima do jogo |
+| Desliga o apagamento de tela | Senão a TV apaga no meio da partida |
+
+### Comandos do dia a dia
+
+```bash
+sudo systemctl status dominio-pelo-saber     # está no ar?
+sudo systemctl restart dominio-pelo-saber    # reinicia e gera um código de sala novo
+sudo journalctl -u dominio-pelo-saber -f     # acompanhar ao vivo
+```
+
+Para atualizar o jogo depois de mudanças no repositório:
+
+```bash
+cd ~/GameConhecimentoEPoder
+git pull
+cd server && npm install
+sudo systemctl restart dominio-pelo-saber
+```
+
+### Detalhe de rede
+
+O servidor descobre o IP da máquina **uma única vez, ao iniciar**, para montar o link do QR code. Num boot do Pi, o systemd normalmente chega lá antes de o Wi-Fi associar — por isso o serviço espera até 30 segundos por um IP antes de subir ([esperar-rede.sh](raspberry-pi/esperar-rede.sh)). Passados os 30s ele sobe mesmo assim: melhor um jogo no ar sem QR code, com o código digitado na mão, do que nenhum jogo.
+
+Um aviso para quem usa cabo e Wi-Fi ao mesmo tempo: o servidor pega o primeiro IPv4 que encontra ([index.js:12](server/index.js#L12)). Com `eth0` e `wlan0` ativos juntos, ele pode anunciar no QR code o IP do cabo enquanto os celulares estão no Wi-Fi. Se isso acontecer, deixe só uma das duas conexões ativa.
+
 ## Como é uma partida
 
 | Fase | O que acontece |
@@ -128,6 +187,7 @@ public/tv/         tela da TV (o que todos olham)
 public/controlador/ tela do celular (o controle de cada jogador)
 data/              banco de conteúdo: perguntas, ligações, classificações
 docs/              documentação da mecânica original do jogo
+raspberry-pi/      instalação como serviço no Pi (serviço, quiosque, instalador)
 design/            protótipos de tela (não entram na partida)
 upgrade_a_fazer.md fila de mudanças planejadas do projeto
 ```
