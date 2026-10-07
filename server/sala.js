@@ -1,7 +1,10 @@
+const crypto = require("crypto");
 const QRCode = require("qrcode");
 const { sortearPergunta, sortearPortas } = require("./perguntas");
 const { sortearConjuntoAssociacao, embaralharParaJogador: embaralharAssociacaoParaJogador } = require("./associacoes");
 const { sortearConjuntoClassificacao, embaralharParaJogador: embaralharClassificacaoParaJogador } = require("./classificacoes");
+const { ANIMAIS, buscarAnimal } = require("./animais");
+const { enviarEstadoAoJogador, enviarEstadoATv } = require("./estadoAtual");
 
 // Jogos de Poder implementados nesta etapa. Festa de Pontos e Aposta ficaram
 // de fora de propósito: o efeito exato deles não está documentado em
@@ -9,25 +12,11 @@ const { sortearConjuntoClassificacao, embaralharParaJogador: embaralharClassific
 // regra e ter que desfazer depois.
 const TIPOS_DE_PODER = ["congelamento", "gosma", "bombolha", "mordicadores"];
 
-// cada jogador recebe um desses (emoji + cor) na ordem em que entra na sala -
-// não tem escolha de personagem ainda, é só pra dar identidade visual (pod
-// na TV, destaque da própria resposta no celular).
-const AVATARES_JOGADOR = [
-  { emoji: "🦊", cor: "#ff4757" },
-  { emoji: "🐼", cor: "#1e90ff" },
-  { emoji: "🐸", cor: "#2ed573" },
-  { emoji: "🦁", cor: "#ffa502" },
-  { emoji: "🦄", cor: "#9b59b6" },
-  { emoji: "🐧", cor: "#00d2d3" },
-  { emoji: "🐙", cor: "#ff6b81" },
-  { emoji: "🐯", cor: "#ff7f50" },
-];
-
 // Valores usados numa partida de verdade. Testes automatizados passam um
 // objeto de opções menor pro construtor, pra não precisar esperar segundos
 // reais de leitura/timeout a cada asserção.
 const PADROES = {
-  maxJogadores: 6,
+  maxJogadores: ANIMAIS.length, // um animal por jogador
   totalRodadas: 3,
   perguntasPorRodada: 3,
 
@@ -49,7 +38,13 @@ const PADROES = {
   piramideDegraus: 10, // quantos acertos seguidos (a partir da própria largada) pra vencer
 
   pausaAposPortaMs: 2500, // tempo pra ler "o tema escolhido foi..."
-  timeoutSegurancaProximaMs: 20000, // se alguém travar/desconectar sem confirmar (a detecção de zumbi já cobre o caso comum antes disso)
+  // quando alguém garante a porta, a votação é cortada e a tela do tema aparece
+  // de repente (e ainda traz "fulano garantiu essa porta"): dá mais tempo de ler
+  pausaAposPortaGarantidaMs: 5000,
+
+  // quanto tempo um jogador que caiu no meio da partida fica reservado
+  // (com pontos, animal e posição) esperando voltar, antes de ser removido
+  tempoReconexaoMs: 60000,
 };
 
 function gerarCodigoSala() {
@@ -66,7 +61,8 @@ class Sala {
     this.cfg = { ...PADROES, ...opcoes };
 
     this.codigo = gerarCodigoSala();
-    this.jogadores = new Map(); // id -> { nome, pontos, ehAnfitriao, ws }
+    // id -> { id, nome, pontos, ehAnfitriao, animalId, avatar, token, conectado, ws, timeoutRemocao }
+    this.jogadores = new Map();
     // lobby | escolha_porta | escolha_poder | escolha_alvo | leitura | pergunta
     // | revelacao | linking | revelacao_linking | sorting | revelacao_sorting
     // | piramide | revelacao_piramide | fim
@@ -90,6 +86,7 @@ class Sala {
     // na partida inteira, então isso NÃO é resetado por rodada.
     this.jogadoresQueUsaramPoderPorta = new Set();
     this._timeoutPorta = null;
+    this._timeoutPausaPorta = null;
 
     // fase de pergunta
     this.perguntaAtual = null; // { ...pergunta, indiceCorreto, iniciadaEm, respostas }
@@ -121,7 +118,16 @@ class Sala {
     this._faseRevelacaoAtual = null; // "pergunta" | "linking" | "sorting"
     this._aguardandoConfirmacao = false;
     this.confirmacoesProximo = new Set();
-    this._timeoutProximo = null;
+
+    // o que precisa ser guardado pra reenviar a tela da fase atual a quem
+    // reconecta (celular ou TV) - ver estadoAtual.js
+    this._inicioFase = null; // quando começou a fase atual com tempo (porta/poder/alvo/leitura)
+    this._payloadPortaBase = null;
+    this._payloadPortaEscolhida = null;
+    this._payloadEscolhaPoder = null;
+    this._payloadNovaPergunta = null;
+    this._payloadFim = null;
+    this._resultadoAtual = { porJogador: new Map(), tv: null, comum: null };
   }
 
   // ---------- gestão de conexões ----------
@@ -129,6 +135,8 @@ class Sala {
   registrarTv(ws) {
     this.tvWs = ws;
     this._enviar(ws, "estadoSala", this._resumoParaTv());
+    // TV que recarregou no meio da partida volta direto pra tela da fase atual
+    enviarEstadoATv(this);
   }
 
   // chamado de fora (index.js) assim que o IP local é conhecido - gera o
@@ -159,12 +167,20 @@ class Sala {
 
     const id = String(this._proximoIdJogador++);
     const ehAnfitriao = this.jogadores.size === 0;
-    const avatar = AVATARES_JOGADOR[this.jogadores.size % AVATARES_JOGADOR.length];
-    this.jogadores.set(id, { id, nome, pontos: 0, ehAnfitriao, avatar, ws });
+    // o animal (emoji + cor) é escolhido pelo próprio jogador no lobby
+    // o token é o "RG" desse jogador: com ele o celular consegue voltar pro
+    // mesmo lugar se a conexão cair no meio da partida
+    const token = crypto.randomBytes(16).toString("hex");
+    this.jogadores.set(id, {
+      id, nome, pontos: 0, ehAnfitriao, animalId: null, avatar: null,
+      token, conectado: true, ws, timeoutRemocao: null,
+    });
 
     this._enviar(ws, "entrouComSucesso", {
       jogadorId: id,
+      token,
       ehAnfitriao,
+      animais: ANIMAIS,
       jogadores: this._listaJogadoresPublica(),
     });
     this._transmitirParaTodos("jogadoresAtualizados", {
@@ -177,75 +193,298 @@ class Sala {
     return { jogadorId: id };
   }
 
-  removerJogadorPorWs(ws) {
-    for (const [id, jogador] of this.jogadores) {
-      if (jogador.ws === ws) {
-        const eraAnfitriao = jogador.ehAnfitriao;
-        this.jogadores.delete(id);
-        if (eraAnfitriao && this.jogadores.size > 0) {
-          const proximo = this.jogadores.values().next().value;
-          proximo.ehAnfitriao = true;
-        }
-        this._transmitirParaTodos("jogadoresAtualizados", {
-          jogadores: this._listaJogadoresPublica(),
-        });
-        this._enviarParaTv("jogadoresAtualizados", {
-          jogadores: this._listaJogadoresPublica(),
-        });
+  // Escolha (ou troca) de animal no lobby. Cada animal é de um jogador só;
+  // se dois clicam no mesmo ao mesmo tempo, vale quem chegou primeiro ao servidor.
+  escolherAnimal(jogadorId, animalId) {
+    if (this.estado !== "lobby") {
+      return { erro: "A partida já começou, não dá mais para trocar de animal." };
+    }
+    const jogador = this.jogadores.get(jogadorId);
+    if (!jogador) {
+      return { erro: "Jogador desconhecido." };
+    }
+    const animal = buscarAnimal(animalId);
+    if (!animal) {
+      return { erro: "Animal inválido." };
+    }
+    const dono = [...this.jogadores.values()].find((j) => j.animalId === animal.id);
+    if (dono && dono.id !== jogadorId) {
+      return { erro: `${animal.nome} já foi escolhido por outro jogador.` };
+    }
 
-        // se o jogador que saiu era o único que faltava confirmar/escolher/
-        // terminar, o jogo não deve ficar esperando por ele pra sempre.
-        if (
-          this.jogadores.size > 0 &&
-          this._aguardandoConfirmacao &&
-          this.confirmacoesProximo.size >= this.jogadores.size
-        ) {
-          clearTimeout(this._timeoutProximo);
-          this._aguardandoConfirmacao = false;
-          this._avancarAposResultado();
-        } else if (
-          this.jogadores.size > 0 &&
-          this.estado === "escolha_poder" &&
-          this.poderesEscolhidos.size >= this.jogadores.size
-        ) {
-          clearTimeout(this._timeoutEscolhaPoder);
-          this._resolverEscolhaPoder();
-        } else if (
-          this.jogadores.size > 0 &&
-          this.estado === "escolha_alvo" &&
-          this.alvosEscolhidos.size >= this.jogadores.size
-        ) {
-          clearTimeout(this._timeoutEscolhaAlvo);
-          this._resolverEscolhaAlvo();
-        } else if (
-          this.jogadores.size > 0 &&
-          this.estado === "pergunta" &&
-          this.perguntaAtual &&
-          this.perguntaAtual.respostas.size >= this.jogadores.size
-        ) {
-          clearTimeout(this._timeoutPergunta);
-          this._revelarResultado();
-        } else if (
-          this.jogadores.size > 0 &&
-          this.estado === "linking" &&
-          this.linkingAtual &&
-          [...this.linkingAtual.progresso.values()].every((p) => p.completoEmMs !== null)
-        ) {
-          clearTimeout(this._timeoutLinking);
-          this._revelarLinking();
-        } else if (
-          this.jogadores.size > 0 &&
-          this.estado === "sorting" &&
-          this.sortingAtual &&
-          [...this.sortingAtual.progresso.values()].every(
-            (p) => p.respondidos.size >= p.itens.length
-          )
-        ) {
-          clearTimeout(this._timeoutSorting);
-          this._revelarSorting();
-        }
-        return;
+    jogador.animalId = animal.id;
+    jogador.avatar = { emoji: animal.emoji, cor: animal.cor, nome: animal.nome };
+
+    this._enviar(jogador.ws, "animalEscolhido", { animalId: animal.id });
+    this._transmitirParaTodos("jogadoresAtualizados", { jogadores: this._listaJogadoresPublica() });
+    this._enviarParaTv("jogadoresAtualizados", { jogadores: this._listaJogadoresPublica() });
+    return { ok: true };
+  }
+
+  // "Trocar animal": o animal atual volta a ficar livre na hora, pros outros
+  // poderem pegar, e o jogador fica sem animal até escolher outro.
+  liberarAnimal(jogadorId) {
+    if (this.estado !== "lobby") {
+      return { erro: "A partida já começou, não dá mais para trocar de animal." };
+    }
+    const jogador = this.jogadores.get(jogadorId);
+    if (!jogador) {
+      return { erro: "Jogador desconhecido." };
+    }
+    jogador.animalId = null;
+    jogador.avatar = null;
+    this._avisarListaJogadores();
+    return { ok: true };
+  }
+
+  // Desliga a sala: cancela todos os timers pendentes (fases, confirmações,
+  // prazos de reconexão). Usado quando o servidor fecha - nos testes, evita
+  // que partidas abandonadas continuem rodando em segundo plano.
+  encerrar() {
+    this._cancelarTimersDeFase();
+    this.estado = "encerrada";
+    for (const jogador of this.jogadores.values()) clearTimeout(jogador.timeoutRemocao);
+  }
+
+  _cancelarTimersDeFase() {
+    for (const t of [
+      this._timeoutPorta, this._timeoutPausaPorta, this._timeoutLeitura, this._timeoutPergunta,
+      this._timeoutEscolhaPoder, this._timeoutEscolhaAlvo, this._timeoutLinking,
+      this._timeoutSorting,
+    ]) {
+      clearTimeout(t);
+    }
+    this._aguardandoConfirmacao = false;
+  }
+
+  // a partida está rolando de verdade (não é lobby, nem a tela final)
+  _partidaEmAndamento() {
+    return !["lobby", "fim", "encerrada"].includes(this.estado);
+  }
+
+  // Volta a sala pro lobby, pronta pra outra partida: zera pontos e progresso,
+  // mantém quem está conectado (com o animal que já escolheu) e tira quem caiu.
+  voltarAoLobby(motivo = null) {
+    this._cancelarTimersDeFase();
+    this.estado = "lobby";
+
+    // quem está desconectado não volta pro novo lobby (o animal dele fica livre)
+    for (const [id, jogador] of [...this.jogadores]) {
+      if (!jogador.conectado) {
+        clearTimeout(jogador.timeoutRemocao);
+        this.jogadores.delete(id);
       }
+    }
+    // se o anfitrião era um dos que saíram, alguém assume
+    if (this.jogadores.size > 0 && ![...this.jogadores.values()].some((j) => j.ehAnfitriao)) {
+      this.jogadores.values().next().value.ehAnfitriao = true;
+    }
+
+    for (const jogador of this.jogadores.values()) jogador.pontos = 0;
+
+    this.rodadaAtual = 0;
+    this.perguntaNaRodada = 0;
+    this.categoriaRodadaAtual = null;
+    this.idsPerguntasUsadas = [];
+    this.portasAtuais = [];
+    this.escolhasPorta = new Map();
+    this.garantiasPorta = [];
+    this.jogadoresQueUsaramPoderPorta = new Set(); // todo mundo recupera o poder da porta
+    this.perguntaAtual = null;
+    this.poderesEscolhidos = new Map();
+    this.alvosEscolhidos = new Set();
+    this.efeitosAtivos = new Map();
+    this.linkingAtual = null;
+    this.sortingAtual = null;
+    this.piramideAtual = null;
+    this._faseRevelacaoAtual = null;
+    this.confirmacoesProximo = new Set();
+    this._inicioFase = null;
+    this._payloadPortaBase = null;
+    this._payloadPortaEscolhida = null;
+    this._payloadEscolhaPoder = null;
+    this._payloadNovaPergunta = null;
+    this._payloadFim = null;
+    this._resetarResultado();
+
+    const payload = { motivo, jogadores: this._listaJogadoresPublica() };
+    this._transmitirParaTodos("voltouAoLobby", payload);
+    this._enviarParaTv("voltouAoLobby", payload);
+  }
+
+  // Reinício manual (5 toques na pílula do jogador + confirmação): vale a
+  // qualquer momento, inclusive no meio da partida, pra destravar o jogo.
+  pedirReiniciar(jogadorId) {
+    const jogador = this.jogadores.get(jogadorId);
+    if (!jogador || !jogador.ehAnfitriao) {
+      return { erro: "Só o anfitrião pode reiniciar o jogo." };
+    }
+    const tinhaPartida = this.estado !== "lobby";
+    this.voltarAoLobby(tinhaPartida ? "O anfitrião reiniciou o jogo." : null);
+    return { ok: true };
+  }
+
+  // Só o anfitrião pode levar todo mundo de volta ao início, e só depois que a
+  // partida terminou.
+  pedirVoltarAoLobby(jogadorId) {
+    const jogador = this.jogadores.get(jogadorId);
+    if (!jogador || !jogador.ehAnfitriao) {
+      return { erro: "Só o anfitrião pode voltar ao início." };
+    }
+    if (this.estado !== "fim") {
+      return { erro: "A partida ainda está em andamento." };
+    }
+    this.voltarAoLobby();
+    return { ok: true };
+  }
+
+  // Jogadores "ativos" = com o celular conectado agora. Quem caiu no meio da
+  // partida continua na sala (esperando voltar), mas não segura o jogo.
+  _ativos() {
+    return [...this.jogadores.values()].filter((j) => j.conectado);
+  }
+
+  // true quando TODOS os jogadores conectados já estão em `colecao` (Set/Map
+  // com .has(id)). Sem nenhum conectado, nada avança sozinho.
+  _todosAtivosEm(colecao) {
+    const ativos = this._ativos();
+    return ativos.length > 0 && ativos.every((j) => colecao.has(j.id));
+  }
+
+  _avisarListaJogadores() {
+    const dados = { jogadores: this._listaJogadoresPublica() };
+    this._transmitirParaTodos("jogadoresAtualizados", dados);
+    this._enviarParaTv("jogadoresAtualizados", dados);
+  }
+
+  // A conexão de um jogador fechou. No lobby ele sai na hora (o animal volta
+  // a ficar livre); durante a partida ele fica reservado por
+  // `tempoReconexaoMs` esperando voltar com o token.
+  removerJogadorPorWs(ws) {
+    for (const jogador of this.jogadores.values()) {
+      if (jogador.ws !== ws) continue;
+      if (this.estado === "lobby") {
+        this._removerJogador(jogador.id);
+      } else {
+        this._marcarDesconectado(jogador);
+      }
+      return;
+    }
+  }
+
+  _marcarDesconectado(jogador) {
+    jogador.ws = null;
+    jogador.conectado = false;
+    clearTimeout(jogador.timeoutRemocao);
+    jogador.timeoutRemocao = setTimeout(() => {
+      if (this.jogadores.get(jogador.id) === jogador && !jogador.conectado) {
+        this._removerJogador(jogador.id);
+      }
+    }, this.cfg.tempoReconexaoMs);
+    // não deixa esse timer sozinho segurar o processo aberto
+    if (jogador.timeoutRemocao.unref) jogador.timeoutRemocao.unref();
+
+    this._avisarListaJogadores();
+    this._verificarAvancoAposSaida();
+  }
+
+  _removerJogador(id) {
+    const jogador = this.jogadores.get(id);
+    if (!jogador) return;
+    clearTimeout(jogador.timeoutRemocao);
+    this.jogadores.delete(id);
+    if (jogador.ehAnfitriao && this.jogadores.size > 0) {
+      const proximo = this._ativos()[0] || this.jogadores.values().next().value;
+      proximo.ehAnfitriao = true;
+    }
+    this._avisarListaJogadores();
+
+    // Quem caiu teve o tempo de reconexão pra voltar e não voltou. Se a partida
+    // ficou com um jogador só (ou nenhum), não dá pra continuar: encerra e volta
+    // todo mundo pra tela de início. Enquanto o tempo de reconexão não acaba, a
+    // partida continua - quem voltar reentra no lugar em que estava.
+    if (this._partidaEmAndamento() && this.jogadores.size <= 1) {
+      this.voltarAoLobby("Os outros jogadores não voltaram, então a partida foi encerrada.");
+      return;
+    }
+
+    this._verificarAvancoAposSaida();
+  }
+
+  // Volta um jogador que caiu: confere o token, troca a conexão antiga pela
+  // nova e reenvia a tela da fase em que a partida está agora.
+  reconectarJogador(token, codigoSala, ws) {
+    if (String(codigoSala || "").toUpperCase() !== this.codigo) {
+      return { erro: "Código da sala inválido." };
+    }
+    const jogador = token
+      ? [...this.jogadores.values()].find((j) => j.token === token)
+      : null;
+    if (!jogador) {
+      return { erro: "Sua vaga na partida expirou. Entre na sala de novo." };
+    }
+
+    const antigo = jogador.ws;
+    jogador.ws = ws;
+    jogador.conectado = true;
+    clearTimeout(jogador.timeoutRemocao);
+    // a conexão antiga pode ainda estar "viva" pro servidor (queda sem aviso):
+    // derruba, senão ela ficaria segurando a vaga
+    if (antigo && antigo !== ws) {
+      try { antigo.terminate(); } catch { /* já estava fechada */ }
+    }
+
+    this._enviar(ws, "reconectado", {
+      jogadorId: jogador.id,
+      ehAnfitriao: jogador.ehAnfitriao,
+      estado: this.estado,
+      animais: ANIMAIS,
+      jogadores: this._listaJogadoresPublica(),
+    });
+    this._avisarListaJogadores();
+    enviarEstadoAoJogador(this, jogador);
+    return { jogadorId: jogador.id };
+  }
+
+  // Se quem saiu (ou caiu) era o único que faltava confirmar/escolher/terminar,
+  // o jogo não deve ficar esperando por ele.
+  _verificarAvancoAposSaida() {
+    const ativos = this._ativos();
+    if (ativos.length === 0) return;
+
+    if (this._aguardandoConfirmacao && this._todosAtivosEm(this.confirmacoesProximo)) {
+      this._aguardandoConfirmacao = false;
+      this._avancarAposResultado();
+    } else if (this.estado === "escolha_poder" && this._todosAtivosEm(this.poderesEscolhidos)) {
+      clearTimeout(this._timeoutEscolhaPoder);
+      this._resolverEscolhaPoder();
+    } else if (this.estado === "escolha_alvo" && this._todosAtivosEm(this.alvosEscolhidos)) {
+      clearTimeout(this._timeoutEscolhaAlvo);
+      this._resolverEscolhaAlvo();
+    } else if (
+      this.estado === "pergunta" &&
+      this.perguntaAtual &&
+      this._todosAtivosEm(this.perguntaAtual.respostas)
+    ) {
+      clearTimeout(this._timeoutPergunta);
+      this._revelarResultado();
+    } else if (
+      this.estado === "linking" &&
+      this.linkingAtual &&
+      ativos.every((j) => this.linkingAtual.progresso.get(j.id).completoEmMs !== null)
+    ) {
+      clearTimeout(this._timeoutLinking);
+      this._revelarLinking();
+    } else if (
+      this.estado === "sorting" &&
+      this.sortingAtual &&
+      ativos.every((j) => {
+        const p = this.sortingAtual.progresso.get(j.id);
+        return p.respondidos.size >= p.itens.length;
+      })
+    ) {
+      clearTimeout(this._timeoutSorting);
+      this._revelarSorting();
     }
   }
 
@@ -259,6 +498,9 @@ class Sala {
     if (this.jogadores.size < 2) {
       return { erro: "Precisa de pelo menos 2 jogadores." };
     }
+    if ([...this.jogadores.values()].some((j) => !j.animalId)) {
+      return { erro: "Todos os jogadores precisam escolher um animal antes de iniciar." };
+    }
     this.rodadaAtual = 1;
     this._iniciarEscolhaPorta();
     return { ok: true };
@@ -271,12 +513,29 @@ class Sala {
     if (indice < 0 || indice >= this.portasAtuais.length) {
       return { erro: "Porta inválida." };
     }
+
+    const jogador = this.jogadores.get(jogadorId);
+
+    // A porta já foi decidida (alguém garantiu primeiro, ou o tempo acabou) e
+    // estamos na pausa do "o tema é...". Quem chegou agora não muda nada - e,
+    // principalmente, NÃO gasta o poder de garantir: ele continua valendo pras
+    // próximas rodadas. Não é erro do jogador, então não devolve mensagem de
+    // erro, só avisa que o poder não foi usado.
+    if (this.categoriaRodadaAtual !== null) {
+      if (garantir && jogador && !this.jogadoresQueUsaramPoderPorta.has(jogadorId)) {
+        this._enviar(jogador.ws, "poderPortaDevolvido", {
+          categoria: this.categoriaRodadaAtual,
+          garantidaPorNome: this.garantiasPorta.length > 0 ? this.garantiasPorta[0].nome : null,
+        });
+      }
+      return { ok: true };
+    }
+
     if (garantir) {
       if (this.jogadoresQueUsaramPoderPorta.has(jogadorId)) {
         return { erro: "Você já usou seu poder de garantir a porta nesta partida." };
       }
       this.jogadoresQueUsaramPoderPorta.add(jogadorId);
-      const jogador = this.jogadores.get(jogadorId);
       this.garantiasPorta.push({ jogadorId, indice, nome: jogador.nome });
     }
     this.escolhasPorta.set(jogadorId, indice);
@@ -285,7 +544,15 @@ class Sala {
       contagens: this._contarVotosPorta(),
     });
 
-    // a revelação só acontece quando o tempo da votação realmente acabar -
+    // Porta garantida vence de qualquer jeito, então não há por que esperar o
+    // resto do tempo: decide na hora e todo mundo já vê o tema da rodada.
+    if (garantir) {
+      clearTimeout(this._timeoutPorta);
+      this._resolverPorta();
+      return { ok: true };
+    }
+
+    // Sem garantia, a revelação só acontece quando o tempo da votação acabar -
     // mesmo que todo mundo já tenha escolhido antes disso, propositalmente
     // não resolve na hora (é o que dá a demora/suspense do sorteio).
     return { ok: true };
@@ -314,7 +581,7 @@ class Sala {
       jogadoresQueResponderam: [...this.perguntaAtual.respostas.keys()],
     });
 
-    if (this.perguntaAtual.respostas.size >= this.jogadores.size) {
+    if (this._todosAtivosEm(this.perguntaAtual.respostas)) {
       clearTimeout(this._timeoutPergunta);
       this._revelarResultado();
     }
@@ -335,7 +602,7 @@ class Sala {
 
     this.poderesEscolhidos.set(jogadorId, tipo);
 
-    if (this.poderesEscolhidos.size >= this.jogadores.size) {
+    if (this._todosAtivosEm(this.poderesEscolhidos)) {
       clearTimeout(this._timeoutEscolhaPoder);
       this._resolverEscolhaPoder();
     }
@@ -375,7 +642,7 @@ class Sala {
     });
     this._enviarParaTv("usoDePoder", { tipo, deNome: jogador.nome, alvoNome: alvo.nome });
 
-    if (this.alvosEscolhidos.size >= this.jogadores.size) {
+    if (this._todosAtivosEm(this.alvosEscolhidos)) {
       clearTimeout(this._timeoutEscolhaAlvo);
       this._resolverEscolhaAlvo();
     }
@@ -426,11 +693,12 @@ class Sala {
       correto,
       completou: progresso.completoEmMs !== null,
     });
-    this._enviarParaTv("progressoLinking", this._progressoLinkingParaTv());
+    this._enviarParaTv("progressoLinking", { jogadores: this._progressoLinkingParaTv() });
 
-    const todosCompletos = [...this.linkingAtual.progresso.values()].every(
-      (p) => p.completoEmMs !== null
-    );
+    const ativosLinking = this._ativos();
+    const todosCompletos =
+      ativosLinking.length > 0 &&
+      ativosLinking.every((j) => this.linkingAtual.progresso.get(j.id).completoEmMs !== null);
     if (todosCompletos) {
       clearTimeout(this._timeoutLinking);
       this._revelarLinking();
@@ -463,11 +731,15 @@ class Sala {
 
     const jogador = this.jogadores.get(jogadorId);
     this._enviar(jogador.ws, "resultadoClassificacaoItem", { itemIndex, correto });
-    this._enviarParaTv("progressoSorting", this._progressoSortingParaTv());
+    this._enviarParaTv("progressoSorting", { jogadores: this._progressoSortingParaTv() });
 
-    const todosCompletos = [...this.sortingAtual.progresso.values()].every(
-      (p) => p.respondidos.size >= p.itens.length
-    );
+    const ativosSorting = this._ativos();
+    const todosCompletos =
+      ativosSorting.length > 0 &&
+      ativosSorting.every((j) => {
+        const p = this.sortingAtual.progresso.get(j.id);
+        return p.respondidos.size >= p.itens.length;
+      });
     if (todosCompletos) {
       clearTimeout(this._timeoutSorting);
       this._revelarSorting();
@@ -501,7 +773,7 @@ class Sala {
     }
 
     progresso.posicao++;
-    const progressoParaTodos = this._progressoPiramideParaTodos();
+    const progressoParaTodos = { jogadores: this._progressoPiramideParaTodos() };
     this._transmitirParaTodos("progressoPiramide", progressoParaTodos);
     this._enviarParaTv("progressoPiramide", progressoParaTodos);
 
@@ -523,20 +795,25 @@ class Sala {
     }
     this.confirmacoesProximo.add(jogadorId);
 
-    const progresso = {
-      confirmados: this.confirmacoesProximo.size,
-      total: this.jogadores.size,
-    };
+    const progresso = this._progressoConfirmacao();
     this._transmitirParaTodos("progressoContinuar", progresso);
     this._enviarParaTv("progressoContinuar", progresso);
 
-    if (this.confirmacoesProximo.size >= this.jogadores.size) {
-      clearTimeout(this._timeoutProximo);
+    if (this._todosAtivosEm(this.confirmacoesProximo)) {
       this._aguardandoConfirmacao = false;
       this._avancarAposResultado();
     }
 
     return { ok: true };
+  }
+
+  // quantos dos jogadores conectados já apertaram "continuar"
+  _progressoConfirmacao() {
+    const ativos = this._ativos();
+    return {
+      confirmados: ativos.filter((j) => this.confirmacoesProximo.has(j.id)).length,
+      total: ativos.length,
+    };
   }
 
   // ---------- internos: escolha de porta ----------
@@ -555,6 +832,9 @@ class Sala {
       portas: this.portasAtuais,
       tempoLimiteMs: this.cfg.tempoLimitePortaMs,
     };
+    this._payloadPortaBase = payloadBase;
+    this._payloadPortaEscolhida = null;
+    this._inicioFase = Date.now();
     // "poderPortaDisponivel" é por jogador (só pode ser usado 1x na
     // partida inteira), por isso manda individual em vez de transmitir.
     for (const [id, jogador] of this.jogadores) {
@@ -578,6 +858,7 @@ class Sala {
 
   _resolverPorta() {
     if (this.estado !== "escolha_porta") return;
+    if (this.categoriaRodadaAtual !== null) return; // já resolvida (garantia + timeout no mesmo instante)
 
     const contagens = this._contarVotosPorta();
     let indiceVencedor;
@@ -602,10 +883,16 @@ class Sala {
     this.categoriaRodadaAtual = this.portasAtuais[indiceVencedor];
 
     const payload = { categoria: this.categoriaRodadaAtual, contagens, garantidaPorNome };
+    this._payloadPortaEscolhida = payload;
     this._transmitirParaTodos("portaEscolhida", payload);
     this._enviarParaTv("portaEscolhida", payload);
 
-    setTimeout(() => this._iniciarEscolhaPoder(), this.cfg.pausaAposPortaMs);
+    const pausaMs = garantidaPorNome
+      ? this.cfg.pausaAposPortaGarantidaMs
+      : this.cfg.pausaAposPortaMs;
+    this._timeoutPausaPorta = setTimeout(() => {
+      if (this.estado === "escolha_porta") this._iniciarEscolhaPoder();
+    }, pausaMs);
   }
 
   // ---------- internos: Jogos de Poder (escolha em duas etapas) ----------
@@ -624,6 +911,8 @@ class Sala {
       tiposDisponiveis: TIPOS_DE_PODER,
       tempoLimiteMs: this.cfg.tempoEscolhaPoderMs,
     };
+    this._payloadEscolhaPoder = payload;
+    this._inicioFase = Date.now();
     this._transmitirParaTodos("escolhaPoder", payload);
     this._enviarParaTv("escolhaPoder", payload);
 
@@ -640,6 +929,7 @@ class Sala {
   _iniciarEscolhaAlvo() {
     this.estado = "escolha_alvo";
     this.alvosEscolhidos = new Set();
+    this._inicioFase = Date.now();
 
     for (const [id, jogador] of this.jogadores) {
       const tipo = this.poderesEscolhidos.get(id);
@@ -667,7 +957,7 @@ class Sala {
     }, this.cfg.tempoEscolhaAlvoMs + 500);
 
     // se ninguém escolheu poder algum, não há por que esperar
-    if (this.alvosEscolhidos.size >= this.jogadores.size) {
+    if (this._todosAtivosEm(this.alvosEscolhidos)) {
       clearTimeout(this._timeoutEscolhaAlvo);
       this._resolverEscolhaAlvo();
     }
@@ -703,6 +993,8 @@ class Sala {
       tempoLeituraMs: this.cfg.tempoLeituraMs,
       tempoLimiteMs: this.cfg.tempoLimitePerguntaMs,
     };
+    this._payloadNovaPergunta = payload;
+    this._inicioFase = Date.now();
     this._transmitirParaTodos("novaPergunta", payload);
     this._enviarParaTv("novaPergunta", payload);
 
@@ -730,9 +1022,15 @@ class Sala {
   _revelarResultado() {
     if (this.estado !== "pergunta") return;
     this.estado = "revelacao";
+    this._resetarResultado();
 
     const { indiceCorreto, respostas } = this.perguntaAtual;
 
+    // Primeiro soma os pontos de TODO MUNDO; só depois monta o placar. Montar
+    // o placar dentro deste laço daria, pra quem é processado antes, um placar
+    // com os outros ainda sem os pontos da rodada (dois jogadores chegavam a
+    // ver a mesma posição com pontuações diferentes).
+    const ganhos = new Map();
     for (const [id, jogador] of this.jogadores) {
       const resposta = respostas.get(id);
       const acertou = !!resposta && resposta.alternativaIndex === indiceCorreto;
@@ -747,21 +1045,26 @@ class Sala {
           this.cfg.pontosBaseAcerto + Math.round(this.cfg.bonusVelocidadeMax * fracaoRestante);
         jogador.pontos += pontosGanhos;
       }
+      ganhos.set(id, { acertou, pontosGanhos, respondeu: !!resposta });
+    }
 
-      this._enviar(jogador.ws, "resultadoPergunta", {
+    const placarFinal = this._placar(); // igual pra todos os celulares e pra TV
+    for (const id of this.jogadores.keys()) {
+      this._enviarResultado(id, "resultadoPergunta", {
         respostaCorretaIndex: indiceCorreto,
-        seuResultado: { acertou, pontosGanhos, respondeu: !!resposta },
-        placar: this._placar(),
+        seuResultado: ganhos.get(id),
+        placar: placarFinal,
       });
     }
 
-    this._enviarParaTv("resultadoPergunta", {
+    this._enviarResultadoTv("resultadoPergunta", {
+      alternativas: this.perguntaAtual.alternativas,
       respostaCorretaIndex: indiceCorreto,
       respostasPorJogador: [...this.jogadores.values()].map((j) => {
         const resposta = respostas.get(j.id);
         return { id: j.id, nome: j.nome, alternativaIndex: resposta ? resposta.alternativaIndex : null };
       }),
-      placar: this._placar(),
+      placar: placarFinal,
     });
 
     this._faseRevelacaoAtual = "pergunta";
@@ -786,6 +1089,7 @@ class Sala {
     for (const [id, jogador] of this.jogadores) {
       const { direita, direitaEmbaralhadaIndices } = embaralharAssociacaoParaJogador(conjunto.pares);
       this.linkingAtual.progresso.set(id, {
+        direita,
         direitaEmbaralhadaIndices,
         corretos: new Set(),
         direitaUsada: new Set(),
@@ -820,9 +1124,12 @@ class Sala {
     if (this.estado !== "linking") return;
     clearTimeout(this._timeoutLinking);
     this.estado = "revelacao_linking";
+    this._resetarResultado();
 
     const totalPares = this.linkingAtual.pares.length;
 
+    // soma os pontos de todos antes de montar o placar (ver _revelarResultado)
+    const ganhos = new Map();
     for (const [id, jogador] of this.jogadores) {
       const p = this.linkingAtual.progresso.get(id);
       const fracaoRestante =
@@ -835,19 +1142,22 @@ class Sala {
           ? Math.round(this.cfg.bonusVelocidadeLinkingMax * fracaoRestante)
           : 0);
       jogador.pontos += pontosGanhos;
+      ganhos.set(id, { pontosGanhos, paresCorretos: p.corretos.size });
+    }
 
-      this._enviar(jogador.ws, "resultadoLinking", {
-        pontosGanhos,
-        paresCorretos: p.corretos.size,
+    const placarFinal = this._placar();
+    for (const id of this.jogadores.keys()) {
+      this._enviarResultado(id, "resultadoLinking", {
+        ...ganhos.get(id),
         totalPares,
         pares: this.linkingAtual.pares,
-        placar: this._placar(),
+        placar: placarFinal,
       });
     }
 
-    this._enviarParaTv("resultadoLinking", {
+    this._enviarResultadoTv("resultadoLinking", {
       pares: this.linkingAtual.pares,
-      placar: this._placar(),
+      placar: placarFinal,
     });
 
     this._faseRevelacaoAtual = "linking";
@@ -903,6 +1213,7 @@ class Sala {
     if (this.estado !== "sorting") return;
     clearTimeout(this._timeoutSorting);
     this.estado = "revelacao_sorting";
+    this._resetarResultado();
 
     const totalItens = this.sortingAtual.itensOriginais.length;
     const gabaritoCompleto = this.sortingAtual.itensOriginais.map((it) => ({
@@ -910,6 +1221,8 @@ class Sala {
       categoria: it.categoria,
     }));
 
+    // soma os pontos de todos antes de montar o placar (ver _revelarResultado)
+    const ganhos = new Map();
     for (const [id, jogador] of this.jogadores) {
       const p = this.sortingAtual.progresso.get(id);
       let corretos = 0;
@@ -918,19 +1231,26 @@ class Sala {
       }
       const pontosGanhos = corretos * this.cfg.pontosPorItemSorting;
       jogador.pontos += pontosGanhos;
+      ganhos.set(id, { pontosGanhos, corretos });
+    }
 
-      this._enviar(jogador.ws, "resultadoSorting", {
-        pontosGanhos,
-        corretos,
+    const placarFinal = this._placar();
+    for (const id of this.jogadores.keys()) {
+      this._enviarResultado(id, "resultadoSorting", {
+        categoriaA: this.sortingAtual.categoriaA,
+        categoriaB: this.sortingAtual.categoriaB,
+        ...ganhos.get(id),
         totalItens,
         gabarito: gabaritoCompleto,
-        placar: this._placar(),
+        placar: placarFinal,
       });
     }
 
-    this._enviarParaTv("resultadoSorting", {
+    this._enviarResultadoTv("resultadoSorting", {
+      categoriaA: this.sortingAtual.categoriaA,
+      categoriaB: this.sortingAtual.categoriaB,
       gabarito: gabaritoCompleto,
-      placar: this._placar(),
+      placar: placarFinal,
     });
 
     this._faseRevelacaoAtual = "sorting";
@@ -979,6 +1299,9 @@ class Sala {
     progresso.perguntaAtual = {
       indiceCorreto: sorteada.indiceCorreto,
       tentativasErradas: new Set(),
+      pergunta: sorteada.pergunta,
+      categoria: sorteada.categoria,
+      alternativas: sorteada.alternativas,
     };
 
     const jogador = this.jogadores.get(jogadorId);
@@ -999,6 +1322,7 @@ class Sala {
 
   _vencerPiramide(vencedorId) {
     this.estado = "revelacao_piramide";
+    this._resetarResultado();
     const vencedor = this.jogadores.get(vencedorId);
     this.piramideAtual.vencedorId = vencedorId;
     this.piramideAtual.vencedorNome = vencedor.nome;
@@ -1012,8 +1336,7 @@ class Sala {
       vencedorNome: vencedor.nome,
       posicoesFinais: this._progressoPiramideParaTodos(),
     };
-    this._transmitirParaTodos("resultadoPiramide", payload);
-    this._enviarParaTv("resultadoPiramide", payload);
+    this._enviarResultadoComum("resultadoPiramide", payload);
 
     this._faseRevelacaoAtual = "piramide";
     this._iniciarEsperaConfirmacao();
@@ -1021,13 +1344,12 @@ class Sala {
 
   // ---------- internos: confirmação genérica pra avançar ----------
 
+  // Nas telas de resultado a partida só avança quando TODOS os jogadores
+  // conectados apertarem "continuar" - não existe avanço automático por tempo.
+  // (quem caiu não trava: ver _todosAtivosEm / _verificarAvancoAposSaida)
   _iniciarEsperaConfirmacao() {
     this.confirmacoesProximo = new Set();
     this._aguardandoConfirmacao = true;
-    this._timeoutProximo = setTimeout(() => {
-      this._aguardandoConfirmacao = false;
-      this._avancarAposResultado();
-    }, this.cfg.timeoutSegurancaProximaMs);
   }
 
   _avancarAposResultado() {
@@ -1062,11 +1384,36 @@ class Sala {
       placarFinal: this._placar(),
       vencedorNome: this.piramideAtual?.vencedorNome ?? null,
     };
+    this._payloadFim = payload;
     this._transmitirParaTodos("fimDePartida", payload);
     this._enviarParaTv("fimDePartida", payload);
   }
 
   // ---------- utilitários ----------
+
+  // Resultado da fase de revelação: além de enviar, guarda o que cada jogador
+  // (e a TV) viu, pra reenviar a quem reconectar nessa tela.
+  _resetarResultado() {
+    this._resultadoAtual = { porJogador: new Map(), tv: null, comum: null };
+  }
+
+  _enviarResultado(jogadorId, type, payload) {
+    this._resultadoAtual.porJogador.set(jogadorId, { type, payload });
+    const jogador = this.jogadores.get(jogadorId);
+    if (jogador) this._enviar(jogador.ws, type, payload);
+  }
+
+  _enviarResultadoTv(type, payload) {
+    this._resultadoAtual.tv = { type, payload };
+    this._enviarParaTv(type, payload);
+  }
+
+  // mesmo resultado pra todos os celulares e pra TV
+  _enviarResultadoComum(type, payload) {
+    this._resultadoAtual.comum = { type, payload };
+    this._transmitirParaTodos(type, payload);
+    this._enviarParaTv(type, payload);
+  }
 
   _placar() {
     return [...this.jogadores.values()]
@@ -1080,7 +1427,9 @@ class Sala {
       nome: j.nome,
       ehAnfitriao: j.ehAnfitriao,
       pontos: j.pontos,
+      animalId: j.animalId,
       avatar: j.avatar,
+      conectado: j.conectado,
     }));
   }
 

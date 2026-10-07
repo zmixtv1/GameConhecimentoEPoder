@@ -162,12 +162,20 @@ test("responder durante a fase de leitura é rejeitado pelo servidor", async (t)
   assert.match(erro.mensagem, /leitura/i);
 });
 
-async function avancarAtePergunta(porta, sala) {
+async function avancarAtePergunta(porta, sala, nomesExtras = []) {
   const ana = await entrarNaSala(porta, "Ana", sala.codigo);
   const bruno = await entrarNaSala(porta, "Bruno", sala.codigo);
+  const extras = [];
+  for (const nome of nomesExtras.slice(2)) {
+    extras.push(await entrarNaSala(porta, nome, sala.codigo));
+  }
   ana.cliente.enviar({ type: "iniciarPartida" });
   await ana.cliente.esperar("escolhaPorta");
   await bruno.cliente.esperar("escolhaPorta");
+  for (const e of extras) {
+    await e.cliente.esperar("escolhaPorta");
+    e.cliente.enviar({ type: "escolherPorta", indice: 0 });
+  }
   ana.cliente.enviar({ type: "escolherPorta", indice: 0 });
   bruno.cliente.enviar({ type: "escolherPorta", indice: 0 });
   await ana.cliente.esperar("portaEscolhida");
@@ -241,14 +249,18 @@ test("desconexão do último jogador pendente libera o avanço sozinha", async (
   const { porta, sala, fechar } = await subirServidorDeTeste();
   t.after(fechar);
 
-  const { ana, bruno } = await avancarAtePergunta(porta, sala);
+  // 3 jogadores: com 2, a saída de um encerraria a partida (sobraria um só)
+  const { ana, bruno } = await avancarAtePergunta(porta, sala, ["Ana", "Bruno", "Carla"]);
+  const carla = [...sala.jogadores.values()].find((j) => j.nome === "Carla");
   const indiceCorreto = sala.perguntaAtual.indiceCorreto;
   ana.cliente.enviar({ type: "responder", alternativaIndex: indiceCorreto });
   bruno.cliente.enviar({ type: "responder", alternativaIndex: indiceCorreto });
+  sala.registrarResposta(carla.id, indiceCorreto);
   await ana.cliente.esperar("resultadoPergunta");
   await bruno.cliente.esperar("resultadoPergunta");
 
   ana.cliente.enviar({ type: "continuar" });
+  sala.registrarContinuar(carla.id);
   bruno.cliente.fechar(); // Bruno sai sem confirmar
 
   const proxima = await ana.cliente.esperar("novaPergunta", 2000);

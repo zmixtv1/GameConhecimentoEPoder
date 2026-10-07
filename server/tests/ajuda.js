@@ -4,6 +4,7 @@
 
 const WebSocket = require("ws");
 const { criarServidor } = require("../app");
+const { ANIMAIS } = require("../animais");
 
 // Configuração usada nos testes: tudo bem mais rápido que uma partida real,
 // pra suíte inteira rodar em segundos em vez de minutos.
@@ -16,7 +17,7 @@ const CONFIG_TESTE = {
   tempoLimiteLinkingMs: 300,
   tempoLimiteSortingMs: 300,
   pausaAposPortaMs: 30,
-  timeoutSegurancaProximaMs: 4000,
+  pausaAposPortaGarantidaMs: 60,
   piramideDegraus: 4, // baixo de propósito, pra testar sem precisar simular dezenas de acertos
 };
 
@@ -34,6 +35,7 @@ function subirServidorDeTeste(opcoes = {}) {
         // à força antes de fechar o servidor.
         fechar: () =>
           new Promise((r) => {
+            sala.encerrar(); // sem isso a partida continuaria rodando em segundo plano
             for (const cliente of wss.clients) cliente.terminate();
             servidorHttp.close(r);
           }),
@@ -99,13 +101,22 @@ function criarCliente(porta) {
 }
 
 // Faz um jogador entrar na sala e devolve o cliente já pronto (após
-// "entrouComSucesso"), pra não repetir esse bloco em todo teste.
-async function entrarNaSala(porta, nome, codigoSala) {
+// "entrouComSucesso"), pra não repetir esse bloco em todo teste. Por padrão
+// já escolhe o primeiro animal livre (o servidor só deixa iniciar a partida
+// quando todos têm animal); passe { escolherAnimal: false } pra ficar sem.
+async function entrarNaSala(porta, nome, codigoSala, { escolherAnimal = true } = {}) {
   const cliente = criarCliente(porta);
   await cliente.aberto();
   cliente.enviar({ type: "entrar", nome, codigoSala });
   const boasVindas = await cliente.esperar("entrouComSucesso");
-  return { cliente, jogadorId: boasVindas.jogadorId, ehAnfitriao: boasVindas.ehAnfitriao };
+  let animalId = null;
+  if (escolherAnimal) {
+    const ocupados = new Set(boasVindas.jogadores.map((j) => j.animalId));
+    animalId = ANIMAIS.find((a) => !ocupados.has(a.id)).id;
+    cliente.enviar({ type: "escolherAnimal", animalId });
+    await cliente.esperar("animalEscolhido");
+  }
+  return { cliente, jogadorId: boasVindas.jogadorId, token: boasVindas.token, ehAnfitriao: boasVindas.ehAnfitriao, animalId };
 }
 
 // Faz N jogadores entrarem, o anfitrião iniciar a partida, todos escolherem

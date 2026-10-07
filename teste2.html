@@ -1,23 +1,24 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Controle Mobile - Tema Claro Gamer</title>
     <!-- Mesma fonte usada na TV -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
-    
+
     <style>
         :root {
             /* Textos (Alto contraste) */
             --text-main: #0f172a;
             --text-muted: #475569;
-            
+
             /* Cores do Jogador (Neste exemplo, Panda/Azul Elétrico) */
-            --player-color: #1e90ff; 
+            --player-color: #1e90ff;
             --player-glow: rgba(30, 144, 255, 0.3);
             --player-glass: rgba(30, 144, 255, 0.15);
-            
+
             /* Efeito de Vidro (Glassmorphism) igual ao da TV */
             --glass-bg: rgba(255, 255, 255, 0.65);
             --glass-border: rgba(255, 255, 255, 0.9);
@@ -30,7 +31,8 @@
             padding: 0;
             font-family: 'Outfit', sans-serif;
             user-select: none;
-            -webkit-tap-highlight-color: transparent; /* Remove o flash azul feio do celular ao clicar */
+            -webkit-tap-highlight-color: transparent;
+            /* Remove o flash azul feio do celular ao clicar */
         }
 
         /* Fundo fora do celular apenas para visualização no preview */
@@ -48,19 +50,21 @@
             height: 336px;
             position: relative;
             overflow: hidden;
-            border-radius: 16px; /* Arredondamento um pouco maior */
-            
+            border-radius: 16px;
+            /* Arredondamento um pouco maior */
+
             /* O mesmo fundo Gelo/Prata da TV */
             background-color: #f8fafc;
             background-image: radial-gradient(#cbd5e1 2px, transparent 2px);
-            background-size: 40px 40px; /* Mantendo o mesmo tamanho de grid da TV */
+            background-size: 40px 40px;
+            /* Mantendo o mesmo tamanho de grid da TV */
             background-position: center;
-            
+
             display: flex;
             flex-direction: column;
             padding: 20px;
             gap: 20px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.4);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
         }
 
         /* Luzes flutuantes (mesmo efeito da TV, escalado para o celular) */
@@ -71,23 +75,57 @@
             z-index: 0;
             animation: fluidMotion 20s infinite alternate ease-in-out;
         }
-        
+
         /* Paleta PS5 / Next-Gen para o celular também */
-        .light-1 { top: -10%; left: -10%; width: 400px; height: 400px; background: rgba(226, 232, 240, 0.8); }
-        .light-2 { bottom: -20%; right: -10%; width: 350px; height: 350px; background: rgba(186, 230, 253, 0.5); animation-delay: -5s; }
-        .light-3 { top: 30%; left: 30%; width: 250px; height: 250px; background: rgba(255, 255, 255, 0.9); animation-delay: -10s; }
+        .light-1 {
+            top: -10%;
+            left: -10%;
+            width: 400px;
+            height: 400px;
+            background: rgba(226, 232, 240, 0.8);
+        }
+
+        .light-2 {
+            bottom: -20%;
+            right: -10%;
+            width: 350px;
+            height: 350px;
+            background: rgba(186, 230, 253, 0.5);
+            animation-delay: -5s;
+        }
+
+        .light-3 {
+            top: 30%;
+            left: 30%;
+            width: 250px;
+            height: 250px;
+            background: rgba(255, 255, 255, 0.9);
+            animation-delay: -10s;
+        }
 
         @keyframes fluidMotion {
-            0% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(15px, 20px) scale(1.05); }
-            66% { transform: translate(-15px, 10px) scale(0.95); }
-            100% { transform: translate(25px, -15px) scale(1.02); }
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            33% {
+                transform: translate(15px, 20px) scale(1.05);
+            }
+
+            66% {
+                transform: translate(-15px, 10px) scale(0.95);
+            }
+
+            100% {
+                transform: translate(25px, -15px) scale(1.02);
+            }
         }
 
         /* Utilitário Glassmorphism */
         .glass-panel {
             background: var(--glass-bg);
-            backdrop-filter: blur(24px); /* Mesmo blur da TV */
+            backdrop-filter: blur(24px);
+            /* Mesmo blur da TV */
             -webkit-backdrop-filter: blur(24px);
             border: 2px solid var(--glass-border);
             box-shadow: var(--glass-shadow);
@@ -116,7 +154,7 @@
         .player-avatar {
             font-size: 28px;
             line-height: 1;
-            filter: drop-shadow(0 2px 5px rgba(0,0,0,0.15));
+            filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.15));
         }
 
         .player-name {
@@ -135,7 +173,7 @@
             color: var(--text-main);
             text-align: center;
             line-height: 1.2;
-            text-shadow: 0 4px 15px rgba(255,255,255,0.8);
+            text-shadow: 0 4px 15px rgba(255, 255, 255, 0.8);
             /* Trunca a pergunta se for gigantesca (opcional) */
             display: -webkit-box;
             -webkit-line-clamp: 2;
@@ -156,14 +194,18 @@
 
         .timer-svg {
             position: absolute;
-            top: -5px; left: -5px; right: -5px; bottom: -5px;
-            width: 70px; height: 70px;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            width: 70px;
+            height: 70px;
             transform: rotate(-90deg);
         }
 
         .timer-bg {
             fill: none;
-            stroke: rgba(255,255,255,0.8);
+            stroke: rgba(255, 255, 255, 0.8);
             stroke-width: 6;
         }
 
@@ -172,7 +214,8 @@
             stroke: var(--text-main);
             stroke-width: 6;
             stroke-linecap: round;
-            stroke-dasharray: 188; /* 2 * PI * 30 = 188 */
+            stroke-dasharray: 188;
+            /* 2 * PI * 30 = 188 */
             stroke-dashoffset: 0;
             transition: stroke-dashoffset 1s linear, stroke 0.3s ease;
         }
@@ -206,7 +249,8 @@
             padding: 20px;
             cursor: pointer;
             outline: none;
-            border: 2px solid var(--glass-border); /* Borda inicial mais visível */
+            border: 2px solid var(--glass-border);
+            /* Borda inicial mais visível */
             /* Física elástica e visual de botão afundando */
             transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
@@ -215,7 +259,7 @@
         .answer-btn:active:not(.locked-in):not(.disabled) {
             transform: scale(0.96);
             background: rgba(255, 255, 255, 0.8);
-            box-shadow: inset 2px 2px 8px rgba(0,0,0,0.05);
+            box-shadow: inset 2px 2px 8px rgba(0, 0, 0, 0.05);
         }
 
         /* O botão que o jogador escolheu vira "Vidro Neon" */
@@ -241,18 +285,18 @@
             color: var(--player-color);
             box-shadow: 0 10px 25px var(--player-glow);
         }
-        
+
         .player-identity.voted .player-name {
             color: var(--player-color);
         }
-
     </style>
 </head>
+
 <body>
 
     <!-- A TELA DO CELULAR (751x336) -->
     <div class="mobile-screen">
-        
+
         <!-- Fundo Animado -->
         <div class="ambient-light light-1"></div>
         <div class="ambient-light light-2"></div>
@@ -262,7 +306,7 @@
         <div class="header">
             <div class="player-identity glass-panel" id="player-id">
                 <span class="player-avatar">🐼</span>
-                <span class="player-name">Panda</span>
+                <span class="player-name">Rodrigo</span>
             </div>
 
             <div class="question-text">
@@ -292,14 +336,14 @@
         // CONFIGURAÇÃO DO RELÓGIO (Match perfeito com a TV)
         const TOTAL_TIME = 10;
         let timeLeft = TOTAL_TIME;
-        
+
         const timerText = document.getElementById('timer-text');
         const timerRing = document.getElementById('timer-ring');
-        
+
         // Circunferência do SVG (Raio é 30, então 2 * PI * 30 = ~188)
         const radius = 30;
-        const circumference = 2 * Math.PI * radius; 
-        
+        const circumference = 2 * Math.PI * radius;
+
         timerRing.style.strokeDasharray = circumference;
         timerRing.style.strokeDashoffset = 0;
 
@@ -308,17 +352,17 @@
         function startTimer() {
             gameClock = setInterval(() => {
                 timeLeft--;
-                
+
                 timerText.textContent = timeLeft;
-                
+
                 const percent = timeLeft / TOTAL_TIME;
                 timerRing.style.strokeDashoffset = circumference - (percent * circumference);
 
                 // Tensão nos últimos 3 segundos (muda a cor pro vermelho)
-                if(timeLeft <= 3 && timeLeft > 0) {
+                if (timeLeft <= 3 && timeLeft > 0) {
                     timerRing.style.stroke = '#ff4757'; // Vermelho Gamer
                     timerText.style.color = '#ff4757';
-                    
+
                     const module = document.querySelector('.timer-module');
                     module.style.transform = 'scale(1.1)';
                     module.style.borderColor = '#ff4757';
@@ -339,14 +383,14 @@
         let hasVoted = false;
 
         function lockAnswer(clickedButton) {
-            if (hasVoted || timeLeft <= 0) return; 
-            
+            if (hasVoted || timeLeft <= 0) return;
+
             hasVoted = true;
             // Opcional: pausar o timer individual ao votar
             // clearInterval(gameClock); 
 
             const allButtons = document.querySelectorAll('.answer-btn');
-            
+
             // Aplica os estilos de "Travar Voto"
             allButtons.forEach(btn => {
                 if (btn === clickedButton) {
@@ -367,11 +411,12 @@
         function disableAllButtons() {
             const allButtons = document.querySelectorAll('.answer-btn');
             allButtons.forEach(btn => {
-                if(!btn.classList.contains('locked-in')){
+                if (!btn.classList.contains('locked-in')) {
                     btn.classList.add('disabled');
                 }
             });
         }
     </script>
 </body>
+
 </html>

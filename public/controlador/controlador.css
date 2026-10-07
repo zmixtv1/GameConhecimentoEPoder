@@ -1,69 +1,79 @@
+/* Controle do celular - mesmo visual do teste2.html (tema claro, vidro, Outfit),
+   mas ocupando a tela inteira e pensado pro celular DEITADO: o layout é
+   dimensionado em vh pra caber em ~336px de altura sem rolar. Em pé, o mesmo
+   layout vira uma coluna (ver @media portrait no fim). */
+
 :root {
   color-scheme: light;
+  --text-main: #0f172a;
+  --text-muted: #475569;
   --bg: #f8fafc;
   --surface: #ffffff;
-  --ink: #0f172a;
-  --ink-soft: #475569;
-  --gold: #1e90ff;
-  --violet: #9b59b6;
   --verde: #2ed573;
   --vermelho: #ff4757;
-  --gosma: #2ed573;
-  --borda: rgba(15, 23, 42, 0.1);
+  --violet: #9b59b6;
   --glass-bg: rgba(255, 255, 255, 0.65);
   --glass-border: rgba(255, 255, 255, 0.9);
-  --glass-shadow: 0 15px 30px rgba(0, 0, 0, 0.06);
-  /* 10px de respiro do conteúdo até a borda física da tela em qualquer
-     celular - o max() com env() ainda soma a área "segura" em telas com
-     notch/cantos arredondados, pra nunca ficar cortado */
-  --margem-tela: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right))
-    max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
-  font-family: "Outfit", system-ui, sans-serif;
+  --glass-shadow: 0 6px 14px rgba(0, 0, 0, 0.07);
+
+  /* cor do animal do jogador - o controlador.js troca o valor assim que o
+     jogador escolhe o animal; azul é só o padrão antes disso */
+  --cor-jogador: #1e90ff;
+  --player-glass: color-mix(in srgb, var(--cor-jogador) 15%, transparent);
+  --player-glow: color-mix(in srgb, var(--cor-jogador) 30%, transparent);
+
+  /* respiro até a borda física da tela (soma a área segura de notch/cantos) */
+  --pad-t: max(8px, env(safe-area-inset-top));
+  --pad-r: max(12px, env(safe-area-inset-right));
+  --pad-b: max(8px, env(safe-area-inset-bottom));
+  --pad-l: max(12px, env(safe-area-inset-left));
 }
 
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: "Outfit", system-ui, sans-serif;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
 
-/* cartões em lista (placar, jogadores etc.) ganham uma borda sutil - no
-   tema claro a diferença de luminosidade entre --bg e --surface sozinha
-   não dá contraste suficiente como dava no tema escuro */
-li { border: 1px solid var(--borda); }
+html { height: 100%; }
 
 body {
-  margin: 0;
-  /* 100dvh (não 100vh) acompanha a barra do navegador aparecendo/sumindo
-     no celular, em vez de assumir uma altura fixa que ora sobra, ora
-     esconde conteúdo atrás do menu */
-  min-height: 100vh;
-  min-height: 100dvh;
+  height: 100vh;
+  height: 100dvh; /* acompanha a barra do navegador aparecendo/sumindo */
+  display: flex;
+  flex-direction: column;
+  padding: var(--pad-t) var(--pad-r) var(--pad-b) var(--pad-l);
   background-color: var(--bg);
   background-image: radial-gradient(#cbd5e1 2px, transparent 2px);
   background-size: 40px 40px;
   background-position: center;
-  color: var(--ink);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--margem-tela);
-  position: relative;
+  color: var(--text-main);
   overflow: hidden;
+  position: relative;
 }
 
+.oculto { display: none !important; }
+
+/* ---------- Fundo e vidro ---------- */
 .ambient-light {
   position: fixed;
   border-radius: 50%;
-  filter: blur(90px);
+  filter: blur(80px);
   z-index: 0;
   pointer-events: none;
   animation: fluidMotion 20s infinite alternate ease-in-out;
 }
-.light-1 { top: -10%; left: -10%; width: 70vw; height: 70vw; background: rgba(226, 232, 240, 0.8); }
-.light-2 { bottom: -20%; right: -10%; width: 60vw; height: 60vw; background: rgba(186, 230, 253, 0.5); animation-delay: -5s; }
-.light-3 { top: 30%; left: 30%; width: 45vw; height: 45vw; background: rgba(255, 255, 255, 0.9); animation-delay: -10s; }
+.light-1 { top: -10%; left: -10%; width: 60vmax; height: 60vmax; background: rgba(226, 232, 240, 0.8); }
+.light-2 { bottom: -20%; right: -10%; width: 50vmax; height: 50vmax; background: rgba(186, 230, 253, 0.5); animation-delay: -5s; }
+.light-3 { top: 30%; left: 30%; width: 35vmax; height: 35vmax; background: rgba(255, 255, 255, 0.9); animation-delay: -10s; }
 @keyframes fluidMotion {
   0% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(4vw, 6vh) scale(1.05); }
-  66% { transform: translate(-4vw, 3vh) scale(0.95); }
-  100% { transform: translate(6vw, -4vh) scale(1.02); }
+  33% { transform: translate(15px, 20px) scale(1.05); }
+  66% { transform: translate(-15px, 10px) scale(0.95); }
+  100% { transform: translate(25px, -15px) scale(1.02); }
 }
 
 .glass-panel {
@@ -74,613 +84,687 @@ body {
   box-shadow: var(--glass-shadow);
 }
 
-.oculto { display: none !important; }
-
+/* ---------- Estrutura de cada tela: cabeçalho / corpo / rodapé ---------- */
 .tela {
-  width: 100%;
-  max-width: 420px;
-  text-align: center;
-  /* sem isso, as luzes ambiente (fixas, z-index:0) pintavam POR CIMA do
-     conteúdo estático das telas simples (sem glass-panel próprio),
-     deixando o texto meio apagado/perdido no fundo */
   position: relative;
   z-index: 1;
-}
-
-h1, h2, h3 { font-family: "Space Grotesk", sans-serif; font-weight: 700; }
-h1 { color: var(--gold); font-size: 1.8rem; }
-h2 { font-size: 1.4rem; }
-
-label {
-  display: block;
-  text-align: left;
-  margin: 16px 0 6px;
-  color: var(--ink-soft);
-  font-size: 0.9rem;
-}
-
-input {
+  flex: 1;
+  min-height: 0;
   width: 100%;
-  padding: 14px;
-  font-size: 1.3rem;
-  border-radius: 10px;
-  border: none;
-  background: var(--surface);
-  color: var(--ink);
-  text-transform: uppercase;
-}
-
-input#campo-nome { text-transform: none; }
-
-button {
-  width: 100%;
-  padding: 16px;
-  font-size: 1.2rem;
-  font-weight: 600;
-  border-radius: 10px;
-  border: none;
-  background: var(--gold);
-  color: #1c1608;
-  margin-top: 20px;
-}
-
-button:active { opacity: 0.8; }
-
-.erro { color: var(--vermelho); min-height: 1.2em; }
-.ajuda { color: var(--ink-soft); }
-
-#lista-jogadores {
-  list-style: none;
-  padding: 0;
-}
-
-/* timer redondo compacto - reaproveitado nas telas de escolha de porta,
-   poder, alvo, Linking e Sorting, pra dar noção visual do tempo em vez de
-   só um texto "Tempo: Xs" */
-.timer-redondo-mini {
-  /* fixo no canto, igual na TV - assim ele não entra no fluxo normal da
-     tela e não empurra o resto do conteúdo pra baixo (isso é o que
-     forçava scroll no celular) */
-  position: fixed;
-  top: max(14px, env(safe-area-inset-top));
-  right: max(14px, env(safe-area-inset-right));
-  z-index: 15;
-  width: 72px;
-  height: 72px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.timer-anel-mini { width: 100%; height: 100%; transform: rotate(-90deg); }
-.anel-fundo-mini { fill: none; stroke: var(--borda); stroke-width: 8; }
-.anel-progresso-mini {
-  fill: none;
-  stroke: var(--gold);
-  stroke-width: 8;
-  stroke-linecap: round;
-  stroke-dasharray: 326.7;
-}
-.timer-numero-mini {
-  position: absolute;
-  font-family: "Space Grotesk", sans-serif;
-  font-weight: 800;
-  font-size: 1.3rem;
-  font-variant-numeric: tabular-nums;
-  color: var(--ink);
-}
-
-/* botão de "continuar"/"próxima pergunta": fixo e centralizado na tela,
-   pra NUNCA cair fora da área visível (independente de quanto o placar
-   acima ocupa ou de quanto espaço a tela realmente tem) - ele só avança
-   quando cada jogador clicar aqui, o jogo espera de verdade */
-.overlay-continuar {
-  position: fixed;
-  inset: 0;
-  z-index: 30;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--margem-tela);
-  background: color-mix(in oklch, var(--bg) 55%, transparent);
-}
-.card-continuar {
-  width: 100%;
-  max-width: 320px;
+  max-width: 1000px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  padding: 22px 26px;
-  border-radius: 18px;
-  background: var(--surface);
-  border: 1px solid var(--borda);
-  box-shadow: 0 12px 32px oklch(20% 0.01 260 / 0.18);
-  text-align: center;
-  animation: pop-continuar 0.4s cubic-bezier(.34,1.56,.64,1);
+  gap: clamp(6px, 2vh, 12px);
 }
-.card-continuar button { margin-top: 0; }
-@keyframes pop-continuar {
+
+.cabecalho {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+}
+.cabecalho-texto {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+}
+.cabecalho-vazio { flex: none; width: 56px; } /* equilibra o cabeçalho quando não há timer */
+
+.corpo {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* folga pras sombras dos botões não serem cortadas pelo scroll; a margem
+     negativa devolve o espaço, então o layout fica igual */
+  padding: 2px 6px 8px;
+  margin: -2px -6px -8px;
+}
+.corpo-centro { align-items: center; justify-content: center; text-align: center; }
+.corpo-duas-colunas { display: grid; grid-template-columns: 1.5fr 1fr; gap: 12px; align-content: start; }
+
+.rodape {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.rodape .ajuda { flex: none; max-width: 40%; text-align: left; }
+.rodape-duplo > button { flex: 1; }
+
+/* ---------- Texto ---------- */
+h1 { font-size: clamp(26px, 9vh, 42px); font-weight: 900; color: var(--cor-jogador); line-height: 1.05; }
+h2 { font-size: clamp(15px, 4.6vh, 22px); font-weight: 800; line-height: 1.2; }
+h3 { font-size: clamp(12px, 3.4vh, 15px); font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+.pergunta-texto { font-size: clamp(14px, 4.2vh, 20px); font-weight: 800; text-shadow: 0 4px 15px rgba(255, 255, 255, 0.8); }
+.ajuda { color: var(--text-muted); font-size: clamp(11px, 3vh, 14px); }
+.ajuda-mini { font-size: clamp(10px, 2.6vh, 12px); margin-bottom: 2px; }
+.categoria { text-transform: uppercase; letter-spacing: 0.1em; color: var(--violet); font-weight: 800; }
+.cabecalho .categoria { font-size: clamp(10px, 2.8vh, 13px); letter-spacing: 0.05em; }
+.ajuda-mini .categoria { margin-left: 0.3em; }
+.pontos { font-size: clamp(14px, 4vh, 20px); font-weight: 800; color: var(--cor-jogador); }
+.erro { color: var(--vermelho); min-height: 1.2em; font-size: 14px; }
+
+/* ---------- Botões e campos ---------- */
+button { font: inherit; border: none; cursor: pointer; }
+button:disabled { cursor: default; }
+
+.btn-primario,
+.btn-vidro {
+  width: 100%;
+  padding: clamp(10px, 3.4vh, 16px) 18px;
+  border-radius: 18px;
+  font-size: clamp(15px, 4vh, 20px);
+  font-weight: 900;
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s;
+}
+.btn-primario { background: var(--cor-jogador); color: #fff; box-shadow: 0 10px 25px var(--player-glow); }
+.btn-vidro {
+  background: var(--glass-bg);
+  border: 2px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  color: var(--text-main);
+}
+.btn-primario:active:not(:disabled),
+.btn-vidro:active:not(:disabled) { transform: scale(0.96); }
+.btn-primario:disabled { opacity: 0.5; box-shadow: none; }
+
+label { display: block; text-align: left; color: var(--text-muted); font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+input[type="text"] {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  padding: 10px 14px;
+  font-size: 18px;
+  font-weight: 700;
+  border-radius: 14px;
+  border: 2px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--text-main);
+  text-transform: uppercase;
+  user-select: text;
+}
+input#campo-nome { text-transform: none; }
+input:focus { outline: 2px solid var(--cor-jogador); }
+
+/* ---------- Identidade do jogador (animal + nome) ---------- */
+.player-identity {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px 6px 10px;
+  border-radius: 100px;
+  max-width: 40%;
+  transition: all 0.3s ease;
+}
+.player-identity:empty { visibility: hidden; }
+.player-avatar { font-size: 26px; line-height: 1; filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.15)); }
+.player-name {
+  font-size: 15px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 110px;
+}
+/* a pílula acende quando o jogador trava a resposta */
+.player-identity.voted {
+  background: var(--player-glass);
+  border-color: var(--cor-jogador);
+  box-shadow: 0 10px 25px var(--player-glow);
+}
+.player-identity.voted .player-name { color: var(--cor-jogador); }
+
+/* ---------- Timer circular (igual ao da TV, menor) ---------- */
+.timer-redondo-mini {
+  position: relative;
+  flex: none;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+.timer-anel-mini {
+  position: absolute;
+  inset: -5px;
+  width: calc(100% + 10px);
+  height: calc(100% + 10px);
+  transform: rotate(-90deg);
+}
+.anel-fundo-mini { fill: none; stroke: rgba(255, 255, 255, 0.8); stroke-width: 9; }
+.anel-progresso-mini {
+  fill: none;
+  stroke: var(--text-main);
+  stroke-width: 9;
+  stroke-linecap: round;
+  stroke-dasharray: 326.7;
+  transition: stroke 0.3s ease;
+}
+.timer-numero-mini { font-size: 22px; font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums; }
+.timer-redondo-mini.urgente { animation: pulsoUrgente 1s ease-in-out infinite; border-color: var(--vermelho); }
+.timer-redondo-mini.urgente .anel-progresso-mini { stroke: var(--vermelho); }
+.timer-redondo-mini.urgente .timer-numero-mini { color: var(--vermelho); }
+@keyframes pulsoUrgente { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+
+/* ---------- Aviso pra girar o celular (só em pé) ---------- */
+.aviso-girar {
+  display: none;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 6px 6px 6px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--glass-border);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  position: relative;
+  z-index: 2;
+}
+.aviso-girar button { width: 28px; height: 28px; border-radius: 50%; background: rgba(15, 23, 42, 0.08); color: var(--text-muted); font-size: 13px; }
+@media (orientation: portrait) {
+  .aviso-girar:not(.dispensado) { display: flex; }
+}
+
+/* ---------- Banner "fulano usou um poder em você" ---------- */
+#aviso-atingido {
+  position: fixed;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  max-width: 90vw;
+  padding: 8px 18px;
+  border-radius: 100px;
+  background: rgba(255, 71, 87, 0.95);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+/* ---------- Pop-up de reiniciar o jogo ---------- */
+.modal-fundo {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--pad-t) var(--pad-r) var(--pad-b) var(--pad-l);
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.modal-card {
+  width: 100%;
+  max-width: 460px;
+  padding: clamp(14px, 5vh, 24px) clamp(16px, 5vw, 28px);
+  border-radius: 24px;
+  background: var(--surface);
+  border: 2px solid var(--glass-border);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  animation: popModal 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes popModal {
   from { opacity: 0; transform: scale(0.85); }
   to { opacity: 1; transform: scale(1); }
 }
-
-/* aviso pra girar o celular, mostrado só na tela de espera e só enquanto
-   o celular ainda está na vertical - some sozinho assim que ele deita */
-.card-girar-tela {
-  margin-top: 24px;
-  padding: 18px 20px;
-  border-radius: 14px;
-  background: var(--surface);
-  border: 1px solid var(--borda);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  color: var(--ink-soft);
-  font-size: 0.9rem;
-}
-.icone-girar {
-  color: var(--gold);
-  animation: girar-telefone 2.4s ease-in-out infinite;
-}
-@keyframes girar-telefone {
-  0%, 15% { transform: rotate(0deg); }
-  45%, 65% { transform: rotate(-90deg); }
-  85%, 100% { transform: rotate(0deg); }
-}
-@media (orientation: landscape) {
-  .card-girar-tela { display: none; }
-}
-
-#lista-jogadores li {
-  background: var(--surface);
-  padding: 10px;
-  border-radius: 8px;
-  margin-bottom: 8px;
-}
-
-.categoria {
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--violet);
-  font-weight: 600;
-  font-size: 0.85rem;
-}
-
-.opcao-garantir-porta {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 16px 0;
-  padding: 12px 14px;
-  border-radius: 10px;
-  background: var(--surface);
-  border: 1px solid var(--borda);
-  font-size: 0.85rem;
-  text-align: left;
-  color: var(--ink-soft);
-}
-.opcao-garantir-porta input {
-  width: auto;
-  flex-shrink: 0;
-  padding: 0;
-  font-size: 1rem;
-  background: none;
-  accent-color: var(--gold);
-}
-
-.alternativas {
-  display: grid;
-  gap: 12px;
-  margin-top: 20px;
-}
-
-.alternativa {
-  padding: 18px;
-  border-radius: 10px;
-  background: var(--surface);
-  border: 2px solid var(--borda);
-  font-size: 1.1rem;
-}
-
-.alternativa.selecionada { border-color: var(--gold); }
-.alternativa:disabled { opacity: 0.5; }
-
-.pontos { font-size: 2rem; color: var(--gold); }
-
-#placar {
-  list-style: none;
-  padding: 0;
-}
-
-#placar li {
-  background: var(--surface);
-  margin-bottom: 6px;
-  padding: 10px 14px;
-  border-radius: 8px;
-  display: flex;
-  justify-content: space-between;
-}
-
-/* ---------- Jogos de Poder ---------- */
-.poder-alvos {
-  display: grid;
-  gap: 8px;
-  margin-top: 20px;
-}
-
-.poder-alvo-btn {
-  padding: 14px;
-  font-size: 1.05rem;
-  margin-top: 0;
-  background: var(--violet);
-  color: #fff;
-  border-radius: 10px;
-  border: 2px solid transparent;
-}
-
-.poder-alvo-btn.selecionada { border-color: var(--gold); }
-.poder-alvo-btn:disabled { opacity: 0.5; }
-
-/* banner flutuante: aparece por cima de qualquer tela, não é uma .tela */
-#aviso-atingido {
-  position: fixed;
-  top: 12px;
-  left: 12px;
-  right: 12px;
-  z-index: 20;
-  background: rgba(209, 96, 96, 0.95);
-  color: #fff;
-  border-radius: 10px;
-  padding: 12px 16px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  text-align: center;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-}
-
-.area-alternativas {
-  position: relative;
-}
-
-.obstrucao {
-  position: absolute;
-  inset: 0;
-  background: color-mix(in oklch, var(--ink) 92%, transparent);
-  border-radius: 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 16px;
-  text-align: center;
-  z-index: 5;
-}
-
-.obstrucao-mensagem {
-  font-weight: 600;
-  color: var(--gold);
-}
-
-.obstrucao-toque {
-  width: 100%;
-  padding: 24px;
-  border-radius: 10px;
-  background: repeating-linear-gradient(135deg, #2a6fb0, #2a6fb0 10px, #1c4a78 10px, #1c4a78 20px);
-  color: #fff;
-  font-weight: 700;
-  font-size: 1.1rem;
-  border: none;
-}
-
-.bolhas-area {
-  position: relative;
-  width: 100%;
-  height: 120px;
-}
-
-.bolha {
-  position: absolute;
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  background: var(--gosma);
-  border: none;
-  font-size: 1.3rem;
-}
-
-/* ---------- Linking ---------- */
-.linking-lista {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 16px;
-}
-
-.linking-item-full {
-  padding: 16px;
-  font-size: 1.05rem;
-  margin-top: 0;
-  background: var(--surface);
-  border: 2px solid transparent;
-  color: var(--ink);
-  border-radius: 10px;
-  text-align: left;
-}
-
-.linking-item-full.correto {
-  background: color-mix(in oklch, var(--verde) 18%, transparent);
-  border-color: var(--verde);
-  color: var(--verde);
-}
-
-.linking-item-full.incorreto {
-  background: color-mix(in oklch, var(--vermelho) 22%, transparent);
-  border-color: var(--vermelho);
-}
-.linking-item-full.usado { opacity: 0.35; }
-.linking-item-full:disabled { opacity: 0.6; }
-
-.linking-voltar {
-  margin-top: 6px;
-  background: transparent;
-  border: 2px solid var(--ink-soft);
-  color: var(--ink-soft);
-}
-
-.gabarito-lista {
-  list-style: none;
-  padding: 0;
-  text-align: left;
-  max-width: 100%;
-}
-
-.gabarito-lista li {
-  background: var(--surface);
-  margin-bottom: 6px;
-  padding: 10px 14px;
-  border-radius: 8px;
-  font-size: 0.9rem;
-}
-
-/* ---------- Sorting ---------- */
-.sorting-itens {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin: 16px 0;
-}
-
-.sorting-item {
-  background: var(--surface);
-  border-radius: 10px;
-  padding: 12px;
-}
-
-.sorting-item-nome {
-  font-weight: 600;
-  margin-bottom: 8px;
-}
-
-.sorting-item-botoes {
+.modal-card .ajuda { margin-top: 6px; }
+.modal-botoes {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: 10px;
+  margin-top: clamp(10px, 3vh, 18px);
 }
 
-.sorting-botao-categoria {
-  padding: 10px;
-  font-size: 0.85rem;
-  margin-top: 0;
-  background: var(--violet);
-  color: #fff;
-}
-
-.sorting-item.correto .sorting-item-botoes { opacity: 0.6; }
-.sorting-item.incorreto .sorting-botao-categoria.escolhida { background: var(--vermelho); }
-.sorting-item.correto .sorting-botao-categoria.escolhida { background: var(--verde); }
-
-/* ---------- Tela da Pergunta: vidro/gamer ---------- */
-#tela-pergunta {
+/* ---------- Aviso de conexão perdida / reconectando ---------- */
+.aviso-conexao {
   position: fixed;
-  inset: 0;
-  width: 100vw; width: 100dvw;
-  height: 100vh; height: 100dvh;
-  z-index: 5;
-  max-width: none;
+  left: 50%;
+  bottom: max(10px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 60;
+  max-width: 92vw;
+  padding: 8px 18px;
+  border-radius: 100px;
+  background: rgba(15, 23, 42, 0.92);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  animation: pulsoConexao 1.4s ease-in-out infinite;
+}
+@keyframes pulsoConexao { 0%, 100% { opacity: 1; } 50% { opacity: 0.65; } }
+
+/* ---------- Entrada ---------- */
+.tela-entrada {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  align-content: center;
+  gap: 8px 28px;
+  overflow-y: auto;
+  padding: 2px 6px 8px;
+  margin: -2px -6px -8px;
+}
+.entrada-titulo { text-align: left; }
+.entrada-titulo .ajuda { margin-top: 8px; }
+.entrada-form .btn-primario { margin-top: 4px; }
+
+/* ---------- Escolha de animal ---------- */
+.animais-grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 1fr;
+  gap: 10px;
+}
+.animal-btn {
+  --cor-animal: var(--cor-jogador);
+  min-height: 0;
+  padding: 4px;
+  border-radius: 22px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-  padding: var(--margem-tela);
-  background-color: var(--bg);
-  background-image: radial-gradient(#cbd5e1 2px, transparent 2px);
-  background-size: 40px 40px;
-  background-position: center;
-  color: var(--ink);
+  gap: 2px;
+  background: var(--glass-bg);
+  border: 2px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  color: var(--text-main);
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-#tela-pergunta.oculto { display: none; }
-#tela-pergunta > * {
-  max-width: 420px;
-  width: 100%;
+.animal-btn:active:not(:disabled) { transform: scale(0.95); }
+.animal-emoji { font-size: clamp(28px, 11vh, 54px); line-height: 1; filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.15)); }
+.animal-nome { font-size: clamp(11px, 3.4vh, 15px); font-weight: 800; }
+.animal-dono { font-size: clamp(9px, 2.6vh, 12px); font-weight: 600; color: var(--text-muted); max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.animal-btn.meu {
+  background: color-mix(in srgb, var(--cor-animal) 15%, transparent);
+  border: 3px solid var(--cor-animal);
+  box-shadow: 0 15px 35px color-mix(in srgb, var(--cor-animal) 30%, transparent);
 }
-#tela-pergunta .ajuda { color: var(--ink-soft); }
-#tela-pergunta .categoria { color: var(--violet); }
-#tela-pergunta h2 { font-size: 1.4rem; }
+.animal-btn:disabled:not(.meu) { opacity: 0.45; filter: grayscale(80%); }
 
-/* pílula com o próprio emoji/nome - fixa no canto oposto ao timer */
-.player-identity {
-  position: fixed;
-  top: max(14px, env(safe-area-inset-top));
-  left: max(14px, env(safe-area-inset-left));
-  z-index: 15;
-  max-width: none !important;
-  width: auto !important;
+/* ---------- Espera no lobby ---------- */
+.lista-jogadores {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+.lista-jogadores li {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 16px;
+  padding: 6px 14px 6px 8px;
   border-radius: 100px;
-}
-.player-identity .player-avatar { font-size: 20px; line-height: 1; }
-.player-identity .player-name {
-  font-size: 0.78rem;
+  background: var(--glass-bg);
+  border: 2px solid var(--glass-border);
   font-weight: 800;
-  color: var(--ink);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-size: 15px;
+  min-width: 0;
 }
+.lista-jogadores li .nome { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lista-jogadores li.sem-animal { opacity: 0.55; }
 
-#alternativas .alternativa {
+/* ---------- Portas, poderes e respostas: grade 2x2 de botões de vidro ---------- */
+.alternativas {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-auto-rows: 1fr;
+  gap: clamp(8px, 2.6vh, 16px);
+}
+.alternativa {
+  min-height: 0;
+  padding: 8px 14px;
+  border-radius: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  overflow-wrap: anywhere;
+  font-size: clamp(15px, 4.8vh, 24px);
+  font-weight: 900;
+  color: var(--text-main);
   background: var(--glass-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 2px solid var(--glass-border);
-  color: var(--ink);
   box-shadow: var(--glass-shadow);
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.alternativa:active:not(:disabled) {
+  transform: scale(0.96);
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: inset 2px 2px 8px rgba(0, 0, 0, 0.05);
+}
+/* a escolhida vira vidro neon na cor do animal do jogador */
+.alternativa.selecionada {
+  background: var(--player-glass);
+  border: 3px solid var(--cor-jogador);
+  box-shadow: 0 15px 35px var(--player-glow);
+  color: var(--cor-jogador);
+}
+/* as outras apagam */
+.alternativa:disabled:not(.selecionada):not(.correta-revelada):not(.errada-piramide) {
+  opacity: 0.5;
+  filter: grayscale(80%);
+}
+
+/* respostas da pergunta entram girando */
+#alternativas .alternativa {
   opacity: 0;
-  animation: pq-flip-in 0.55s cubic-bezier(.175,.885,.32,1.275) forwards;
+  animation: flipIn 0.55s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 #alternativas .alternativa:nth-child(1) { animation-delay: 0s; }
 #alternativas .alternativa:nth-child(2) { animation-delay: 0.08s; }
 #alternativas .alternativa:nth-child(3) { animation-delay: 0.16s; }
 #alternativas .alternativa:nth-child(4) { animation-delay: 0.24s; }
-@keyframes pq-flip-in {
+@keyframes flipIn {
   from { opacity: 0; transform: perspective(800px) rotateY(-90deg); }
   to { opacity: 1; transform: perspective(800px) rotateY(0deg); }
 }
-/* a resposta escolhida acende com a PRÓPRIA cor do jogador (não uma cor
-   fixa igual pra todo mundo) */
-#alternativas .alternativa.selecionada {
-  background: color-mix(in srgb, var(--cor-jogador, #1e90ff) 15%, var(--glass-bg));
-  border-color: var(--cor-jogador, #1e90ff);
-  color: var(--cor-jogador, #1e90ff);
-  box-shadow: 0 15px 35px color-mix(in srgb, var(--cor-jogador, #1e90ff) 30%, transparent);
-}
-/* quando a TV revela a resposta certa, pisca em verde por cima de
-   qualquer cor que já estivesse (a do jogador, se foi essa a escolhida) */
+/* quando a TV revela a resposta certa, pisca em verde por cima de tudo */
 #alternativas .alternativa.correta-revelada {
+  opacity: 1;
   border-color: var(--verde);
   background: color-mix(in srgb, var(--verde) 15%, var(--glass-bg));
-  color: var(--verde);
-  animation: pq-pisca-verde 0.5s ease-in-out 3;
+  color: #0a7a3c;
+  animation: piscaVerde 0.5s ease-in-out 3;
 }
-@keyframes pq-pisca-verde {
+@keyframes piscaVerde {
   0%, 100% { box-shadow: 0 0 0 1px var(--verde); }
   50% { box-shadow: 0 0 14px 3px rgba(46, 213, 115, 0.4); }
 }
-/* a resposta certa precisa aparecer nítida mesmo já desabilitada (todo
-   mundo já respondeu nesse momento) */
-#alternativas .alternativa.correta-revelada:disabled {
-  opacity: 1;
+
+.opcao-garantir-porta {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 6px 12px;
+  border-radius: 14px;
+  background: var(--glass-bg);
+  border: 2px solid var(--glass-border);
+  font-size: clamp(11px, 3vh, 14px);
+  text-align: left;
+}
+.opcao-garantir-porta input { flex: none; width: 20px; height: 20px; accent-color: var(--cor-jogador); }
+
+/* ---------- Pergunta ---------- */
+.fase-leitura {
+  margin: auto;
+  text-align: center;
+  font-size: clamp(16px, 5vh, 24px);
+  font-weight: 800;
+  color: var(--cor-jogador);
+}
+.fase-leitura #contagem-leitura { display: block; font-size: clamp(40px, 22vh, 80px); line-height: 1; }
+.area-alternativas { position: relative; flex: 1; min-height: 0; display: flex; }
+
+/* ---------- Efeitos dos Jogos de Poder (cobrem as respostas) ---------- */
+.obstrucao {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 22px;
+  background: rgba(15, 23, 42, 0.9);
+  text-align: center;
+}
+.obstrucao-mensagem { color: #fff; font-weight: 800; font-size: clamp(13px, 3.8vh, 18px); }
+.obstrucao-toque {
+  width: 100%;
+  padding: clamp(12px, 5vh, 24px);
+  border-radius: 16px;
+  background: repeating-linear-gradient(135deg, #2a6fb0, #2a6fb0 10px, #1c4a78 10px, #1c4a78 20px);
+  color: #fff;
+  font-weight: 900;
+  font-size: clamp(15px, 4vh, 20px);
+}
+.bolhas-area { position: relative; flex: 1; width: 100%; min-height: 60px; }
+.bolha {
+  position: absolute;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--verde);
+  font-size: 22px;
 }
 
-/* celular deitado: pergunta centralizada em cima, respostas em matriz 2x2 */
-@media (orientation: landscape) and (max-height: 500px) {
-  /* medido num aparelho real: com a barra do navegador visível, a altura
-     útil é de só ~336px (não os ~430px que dava pra supor) - o layout
-     tem que caber nisso sem depender de rolar a página pra "sumir" a
-     barra, então tudo aqui foi apertado pra caber nesse orçamento. */
-  body { padding: 8px max(10px, env(safe-area-inset-right)) 8px max(10px, env(safe-area-inset-left)); }
-  .tela { max-width: 100%; width: 100%; }
+/* ---------- Poder: escolha do alvo ---------- */
+.poder-alvos {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: minmax(52px, 96px);
+  align-content: start;
+  gap: 10px;
+}
+.poder-alvo-btn {
+  min-height: 0;
+  padding: 6px 8px;
+  border-radius: 20px;
+  background: var(--glass-bg);
+  border: 2px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  color: var(--text-main);
+  font-size: clamp(13px, 4vh, 20px);
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+.poder-alvo-btn.selecionada {
+  background: var(--player-glass);
+  border: 3px solid var(--cor-jogador);
+  color: var(--cor-jogador);
+  box-shadow: 0 15px 35px var(--player-glow);
+}
+.poder-alvo-btn:disabled:not(.selecionada) { opacity: 0.5; filter: grayscale(80%); }
+#alvo-usado-msg { text-align: center; font-weight: 800; color: var(--cor-jogador); }
 
-  h1, h2, h3 { margin: 0 0 4px; }
-  h2 { font-size: 1.05rem; line-height: 1.2; }
-  .ajuda, .categoria { font-size: 0.68rem; margin: 0; }
-
-  /* todo grid de botões (portas, poder, alternativas da pergunta e da
-     pirâmide, alvos e o Linking) vira 2 colunas compactas em vez de
-     empilhar tudo numa coluna só - é isso que faz caber sem rolar */
-  .alternativas,
-  .poder-alvos,
-  .linking-lista {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-top: 8px;
-  }
-  .alternativa,
-  .poder-alvo-btn,
-  .linking-item-full {
-    padding: 14px 16px;
-    font-size: 1rem;
-    min-height: 76px;
-    margin-top: 0;
-  }
-  .linking-voltar { grid-column: 1 / -1; padding: 8px; font-size: 0.8rem; min-height: auto; }
-
-  .sorting-itens { gap: 8px; margin: 8px 0; }
-  .sorting-item { padding: 10px; }
-  .sorting-item-nome { font-size: 0.9rem; margin-bottom: 6px; }
-  .sorting-botao-categoria { padding: 10px; font-size: 0.85rem; }
-
-  .timer-redondo-mini { width: 52px; height: 52px; top: 8px; right: 8px; }
-  .timer-numero-mini { font-size: 1rem; }
-
-  .player-identity { top: 8px; left: 8px; padding: 4px 12px; }
-  .player-identity .player-avatar { font-size: 16px; }
-  .player-identity .player-name { font-size: 0.66rem; }
-
-  .opcao-garantir-porta { margin: 8px 0; padding: 8px 10px; font-size: 0.72rem; }
-
-  #tela-pergunta > .ajuda,
-  #tela-pergunta > .categoria,
-  #tela-pergunta > h2,
-  #tela-pergunta .area-alternativas {
-    max-width: 92vw;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  #tela-pergunta h2 { margin: 4px auto 6px; }
-
-  #placar,
-  #placar-final,
-  #placar-linking,
-  #placar-sorting,
-  #piramide-posicoes-finais,
-  .gabarito-lista {
-    max-width: 92vw;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  #placar li, #placar-final li, #placar-linking li, #placar-sorting li,
-  #piramide-posicoes-finais li, .gabarito-lista li {
-    padding: 6px 12px;
-    font-size: 0.8rem;
-    margin-bottom: 4px;
-  }
-
-  .card-continuar { padding: 14px 18px; gap: 6px; }
-  .pontos { font-size: 1.3rem; }
+/* ---------- Linking ---------- */
+.linking-lista {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-auto-rows: minmax(48px, 1fr);
+  gap: 8px;
+}
+.linking-item-full {
+  min-height: 0;
+  padding: 6px 12px;
+  border-radius: 18px;
+  background: var(--glass-bg);
+  border: 2px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  color: var(--text-main);
+  font-size: clamp(13px, 4vh, 18px);
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+.linking-item-full:active:not(:disabled) { transform: scale(0.97); }
+.linking-item-full.correto { background: color-mix(in srgb, var(--verde) 18%, transparent); border-color: var(--verde); color: #0a7a3c; }
+.linking-item-full.incorreto { background: color-mix(in srgb, var(--vermelho) 22%, transparent); border-color: var(--vermelho); }
+.linking-item-full.usado { opacity: 0.35; }
+.linking-item-full:disabled:not(.correto):not(.usado) { opacity: 0.6; }
+.linking-voltar {
+  grid-column: 1 / -1;
+  grid-row: auto;
+  align-self: center;
+  height: 78%;
+  min-height: 0;
+  padding: 6px;
+  border-radius: 14px;
+  background: transparent;
+  border: 2px solid var(--text-muted);
+  color: var(--text-muted);
+  font-weight: 800;
 }
 
-/* ---------- Pirâmide do Conhecimento ---------- */
-#piramide-degrau { font-weight: 600; color: var(--gold); }
+/* ---------- Sorting: 3 itens por vez, cada um numa linha (nome | A | B) ---------- */
+.sorting-itens { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 8px; }
+.sorting-item {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: var(--glass-bg);
+  border: 2px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+.sorting-item-nome { text-align: left; font-size: clamp(14px, 4.2vh, 20px); font-weight: 900; overflow-wrap: anywhere; }
+.sorting-item-botoes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; height: 100%; padding: 2px 0; }
+.sorting-botao-categoria {
+  min-height: 0;
+  padding: 4px 6px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 2px solid var(--glass-border);
+  color: var(--text-main);
+  font-size: clamp(11px, 3.4vh, 16px);
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+.sorting-botao-categoria:active:not(:disabled) { transform: scale(0.95); }
+.sorting-botao-categoria:disabled:not(.escolhida) { opacity: 0.4; }
+.sorting-botao-categoria.escolhida { background: var(--player-glass); border-color: var(--cor-jogador); color: var(--cor-jogador); }
+.sorting-item.correto .sorting-botao-categoria.escolhida { background: color-mix(in srgb, var(--verde) 20%, transparent); border-color: var(--verde); color: #0a7a3c; }
+.sorting-item.incorreto .sorting-botao-categoria.escolhida { background: color-mix(in srgb, var(--vermelho) 20%, transparent); border-color: var(--vermelho); color: #b3202f; }
 
+/* ---------- Pirâmide ---------- */
 .alternativa.errada-piramide {
-  background: color-mix(in oklch, var(--vermelho) 22%, transparent);
+  background: color-mix(in srgb, var(--vermelho) 20%, transparent);
   border-color: var(--vermelho);
+  color: #b3202f;
   opacity: 0.6;
 }
 
-#piramide-posicoes-finais {
-  list-style: none;
-  padding: 0;
+/* tema da rodada, depois que a porta é decidida */
+.tema-escolhido {
+  font-size: clamp(22px, 8vh, 44px);
+  font-weight: 900;
+  line-height: 1.1;
+  color: var(--cor-jogador);
+  text-shadow: 0 6px 20px var(--player-glow);
 }
 
-#piramide-posicoes-finais li {
-  background: var(--surface);
-  margin-bottom: 6px;
-  padding: 10px 14px;
-  border-radius: 8px;
+/* ---------- "Sua posição" (no lugar do placar, no celular) ---------- */
+.minha-posicao {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  text-align: center;
+  margin: auto;
+}
+.coluna-posicao { display: flex; align-items: center; justify-content: center; }
+.posicao-rotulo {
+  font-size: clamp(10px, 2.8vh, 13px);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+}
+.posicao-numero {
+  font-size: clamp(42px, 17vh, 86px);
+  font-weight: 900;
+  line-height: 1;
+  color: var(--cor-jogador);
+  text-shadow: 0 6px 20px var(--player-glow);
+}
+.posicao-pontos {
+  font-size: clamp(16px, 5vh, 26px);
+  font-weight: 800;
+  color: var(--text-main);
+}
+.posicao-diferenca {
+  margin-top: 4px;
+  font-size: clamp(11px, 3.2vh, 15px);
+  font-weight: 700;
+  color: var(--text-muted);
+  max-width: 90%;
+}
+
+/* ---------- Listas: placar, gabarito, posições ---------- */
+.lista-cartoes {
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 8px;
+}
+.lista-cartoes.lista-1col { grid-template-columns: 1fr; }
+.lista-cartoes.lista-gabarito { gap: 6px; }
+.lista-cartoes li {
   display: flex;
   justify-content: space-between;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 12px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  font-size: clamp(12px, 3.4vh, 16px);
+  font-weight: 700;
+  text-align: left;
 }
+.lista-cartoes li span:first-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70%; }
+.lista-cartoes li.vencedor { border: 2px solid var(--cor-jogador); color: var(--cor-jogador); font-weight: 900; }
+#linking-gabarito li, #sorting-gabarito li { display: block; white-space: normal; font-weight: 600; font-size: clamp(11px, 3vh, 14px); }
 
-#piramide-posicoes-finais li.vencedor {
-  border: 2px solid var(--gold);
-  color: var(--gold);
-  font-weight: 600;
+/* ---------- Em pé: o mesmo layout, em uma coluna ---------- */
+@media (orientation: portrait) {
+  .cabecalho { flex-wrap: wrap; }
+  .cabecalho-texto { order: 3; flex-basis: 100%; }
+  .player-identity { max-width: 70%; }
+  .cabecalho > .timer-redondo-mini, .cabecalho > .cabecalho-vazio { margin-left: auto; }
+
+  .tela-entrada { grid-template-columns: 1fr; }
+  .entrada-titulo { text-align: center; margin-bottom: 8px; }
+
+  .animais-grid { grid-template-columns: repeat(2, 1fr); grid-auto-rows: minmax(84px, 1fr); }
+  .alternativas { grid-template-columns: 1fr; grid-auto-rows: minmax(60px, 1fr); }
+  .poder-alvos { grid-template-columns: 1fr 1fr; }
+  .linking-lista { grid-template-columns: 1fr; }
+  .sorting-item { grid-template-columns: 1fr; }
+  .corpo-duas-colunas { grid-template-columns: 1fr; }
+  .lista-cartoes { grid-template-columns: 1fr; }
+  .corpo-duas-colunas { grid-template-columns: 1fr; }
+
+  h2 { font-size: 20px; }
+  .pergunta-texto { font-size: 18px; }
+  .ajuda { font-size: 14px; }
 }

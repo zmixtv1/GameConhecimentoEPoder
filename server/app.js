@@ -74,6 +74,48 @@ function criarServidor(opcoesSala = {}) {
           break;
         }
 
+        case "reconectar": {
+          const resultado = sala.reconectarJogador(mensagem.token, mensagem.codigoSala, ws);
+          if (resultado.erro) {
+            ws.send(JSON.stringify({ type: "erroReconexao", mensagem: resultado.erro }));
+          } else {
+            ws.jogadorId = resultado.jogadorId;
+          }
+          break;
+        }
+
+        case "escolherAnimal": {
+          const resultado = sala.escolherAnimal(ws.jogadorId, mensagem.animalId);
+          if (resultado.erro) {
+            ws.send(JSON.stringify({ type: "erroAcao", mensagem: resultado.erro }));
+          }
+          break;
+        }
+
+        case "liberarAnimal": {
+          const resultado = sala.liberarAnimal(ws.jogadorId);
+          if (resultado.erro) {
+            ws.send(JSON.stringify({ type: "erroAcao", mensagem: resultado.erro }));
+          }
+          break;
+        }
+
+        case "reiniciarPartida": {
+          const resultado = sala.pedirReiniciar(ws.jogadorId);
+          if (resultado.erro) {
+            ws.send(JSON.stringify({ type: "erroAcao", mensagem: resultado.erro }));
+          }
+          break;
+        }
+
+        case "voltarAoLobby": {
+          const resultado = sala.pedirVoltarAoLobby(ws.jogadorId);
+          if (resultado.erro) {
+            ws.send(JSON.stringify({ type: "erroAcao", mensagem: resultado.erro }));
+          }
+          break;
+        }
+
         case "iniciarPartida": {
           const resultado = sala.iniciarPartida(ws.jogadorId);
           if (resultado.erro) {

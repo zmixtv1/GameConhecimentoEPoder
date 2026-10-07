@@ -37,7 +37,8 @@ body {
   justify-content: center;
   padding: 40px;
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 /* luzes ambiente atrás de tudo, fixas na tela inteira (não rolam nem
@@ -82,7 +83,7 @@ body {
   z-index: 1;
 }
 
-h1, h2, h3 { font-family: "Space Grotesk", sans-serif; font-weight: 700; }
+h1, h2, h3 { font-family: "Outfit", system-ui, sans-serif; font-weight: 700; }
 h1 { font-size: 3.2rem; margin: 0 0 20px; color: var(--gold); }
 h2 { font-size: 2rem; margin: 30px 0 16px; }
 
@@ -105,7 +106,7 @@ h2 { font-size: 2rem; margin: 30px 0 16px; }
 }
 
 /* ---------- Lobby ---------- */
-#tela-lobby { position: relative; overflow: hidden; }
+#tela-lobby { position: relative; }
 #tela-lobby .fundo-vivo { position: fixed; inset: 0; overflow: hidden; pointer-events: none; }
 #tela-lobby .orbe { position: absolute; border-radius: 50%; filter: blur(70px); }
 #tela-lobby .orbe-1 {
@@ -194,24 +195,18 @@ h2 { font-size: 2rem; margin: 30px 0 16px; }
   margin: 20px auto;
 }
 
-.lista-jogadores {
-  list-style: none;
-  padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  justify-content: center;
-}
-
-.lista-jogadores li {
-  background: var(--surface);
-  padding: 10px 20px;
-  border-radius: 10px;
-  font-size: 1.3rem;
-}
-
-.lista-jogadores li.anfitriao::after {
-  content: " 👑";
+/* no lobby os jogadores aparecem como os mesmos pods da pergunta */
+.lobby-dock { margin: 10px auto 0; padding: 18px 0 8px; }
+.player-pod.sem-animal { opacity: 0.6; }
+.player-pod.sem-animal .player-avatar { filter: grayscale(1); }
+.player-pod.anfitriao::after {
+  content: "👑";
+  position: absolute;
+  top: -14px;
+  left: -10px;
+  font-size: 28px;
+  transform: rotate(-18deg);
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
 }
 
 .categoria {
@@ -266,6 +261,7 @@ h2 { font-size: 2rem; margin: 30px 0 16px; }
   display: flex;
   justify-content: space-between;
   font-size: 1.6rem;
+  gap: 15px;
 }
 
 #placar-final li:first-child {
@@ -297,7 +293,8 @@ h2 { font-size: 2rem; margin: 30px 0 16px; }
   background-image: radial-gradient(#cbd5e1 2px, transparent 2px);
   background-size: 40px 40px;
   background-position: center;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 #tela-pergunta.oculto, #tela-resultado.oculto { display: none; }
 
@@ -307,7 +304,7 @@ h2 { font-size: 2rem; margin: 30px 0 16px; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  height: 100%;
+  min-height: 100%;
   padding: 40px 60px 50px;
 }
 
@@ -418,8 +415,9 @@ h2 { font-size: 2rem; margin: 30px 0 16px; }
 
 .fase-leitura { color: var(--gold); font-size: 1.4rem; font-weight: 600; margin: 20px 0 0; }
 
-/* pódio dos jogadores, embaixo - cada um "pensando" (pulso) até travar a
-   resposta, quando acende com a cor + emoji do próprio jogador */
+/* pódio dos jogadores, embaixo (igual ao teste.html): squircle com o animal
+   grande e o nome embaixo - cada um "pensando" (pulso) até travar a resposta,
+   quando acende com a cor do próprio animal */
 .players-dock {
   display: flex;
   justify-content: center;
@@ -440,8 +438,10 @@ h2 { font-size: 2rem; margin: 30px 0 16px; }
   justify-content: center;
   align-items: center;
   gap: 8px;
+  padding: 0 8px;
   position: relative;
   transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  cursor: default;
 }
 .player-pod.thinking { animation: pulseWait 2s infinite ease-in-out; }
 @keyframes pulseWait { 0% { transform: scale(1); } 50% { transform: scale(0.97); } 100% { transform: scale(1); } }
@@ -449,25 +449,49 @@ h2 { font-size: 2rem; margin: 30px 0 16px; }
 .player-avatar {
   font-size: 55px;
   line-height: 1;
-  filter: drop-shadow(0 5px 10px rgba(0,0,0,0.15));
+  filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.15));
   transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
-.player-name { font-size: 18px; font-weight: 800; color: var(--ink-soft); transition: color 0.3s; }
+.player-name {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--ink-soft);
+  transition: color 0.3s;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 .ready-stamp {
   position: absolute;
-  top: -15px; right: -15px;
-  width: 45px; height: 45px;
+  top: -15px;
+  right: -15px;
+  width: 45px;
+  height: 45px;
   background: var(--ink);
   color: #fff;
   border-radius: 50%;
   display: flex; justify-content: center; align-items: center;
   font-size: 24px; font-weight: 900;
   border: 4px solid #fff;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
   opacity: 0;
   transform: scale(0) rotate(-45deg);
   transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.1s;
+}
+
+/* jogador que caiu no meio da partida: apagado, esperando voltar */
+.player-pod.desconectado { opacity: 0.45; filter: grayscale(1); animation: none; }
+.player-pod.desconectado::before {
+  content: "reconectando…";
+  position: absolute;
+  bottom: -24px;
+  left: 0;
+  right: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-soft);
 }
 
 .player-pod.locked {
@@ -579,6 +603,33 @@ h2 { font-size: 2rem; margin: 30px 0 16px; }
   display: flex;
   justify-content: space-between;
   font-size: 1.4rem;
+  gap: 15px;
+}
+
+/* placar da TV: posição | nome | pontos */
+#placar li, #placar-final li, #placar-linking li, #placar-sorting li { align-items: baseline; }
+.placar-posicao {
+  flex: none;
+  min-width: 2.2em;
+  font-weight: 800;
+  color: var(--gold);
+  text-align: left;
+}
+.placar-nome {
+  flex: 1;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.placar-pontos { flex: none; font-variant-numeric: tabular-nums; }
+
+#piramide-posicoes-finais li span:first-child,
+.progresso-jogadores li span:first-child {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 75%;
 }
 
 .progresso-jogadores {
@@ -598,6 +649,7 @@ h2 { font-size: 2rem; margin: 30px 0 16px; }
   font-size: 1.3rem;
   display: flex;
   justify-content: space-between;
+  gap: 15px;
 }
 
 .progresso-jogadores li.completou {
@@ -640,7 +692,12 @@ h2 { font-size: 2rem; margin: 30px 0 16px; }
   text-align: left;
 }
 
-.piramide-nome { font-size: 1.2rem; }
+.piramide-nome { 
+  font-size: 1.2rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 .piramide-barra-fundo {
   height: 22px;
@@ -678,6 +735,7 @@ h2 { font-size: 2rem; margin: 30px 0 16px; }
   display: flex;
   justify-content: space-between;
   font-size: 1.4rem;
+  gap: 15px;
 }
 
 #piramide-posicoes-finais li.vencedor {

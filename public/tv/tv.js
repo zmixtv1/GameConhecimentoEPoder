@@ -105,14 +105,34 @@ function mostrarTela(tela) {
   for (const t of TODAS_AS_TELAS) t.classList.toggle("oculto", t !== tela);
 }
 
+// cria um elemento com texto (textContent: o nome do jogador nunca é
+// interpretado como HTML)
+function criarEl(tag, classe, texto) {
+  const el = document.createElement(tag);
+  if (classe) el.className = classe;
+  if (texto !== undefined) el.textContent = texto;
+  return el;
+}
+
+// monta um pod (squircle do teste.html): selo de pronto, animal e nome
+function criarPod(jogador, classesExtras) {
+  const pod = criarEl("div", `player-pod glass-panel ${classesExtras || ""}`.trim());
+  if (jogador.conectado === false) pod.classList.add("desconectado");
+  pod.dataset.jogadorId = jogador.id;
+  if (jogador.avatar) pod.style.setProperty("--cor-jogador", jogador.avatar.cor);
+  pod.appendChild(criarEl("div", "ready-stamp", "✓"));
+  pod.appendChild(criarEl("div", "player-avatar", jogador.avatar ? jogador.avatar.emoji : "❔"));
+  pod.appendChild(criarEl("div", "player-name", jogador.nome));
+  return pod;
+}
+
+// lobby: cada jogador aparece com o animal que escolheu (ou "❔" enquanto não escolhe)
 function renderizarJogadores(jogadores) {
   jogadoresAtuais = jogadores;
   listaJogadoresEl.innerHTML = "";
   for (const jogador of jogadores) {
-    const li = document.createElement("li");
-    li.textContent = jogador.nome;
-    if (jogador.ehAnfitriao) li.classList.add("anfitriao");
-    listaJogadoresEl.appendChild(li);
+    const extras = [jogador.avatar ? "" : "sem-animal", jogador.ehAnfitriao ? "anfitriao" : ""].join(" ");
+    listaJogadoresEl.appendChild(criarPod(jogador, extras));
   }
 }
 
@@ -121,16 +141,7 @@ function renderizarJogadores(jogadores) {
 function renderizarPlayersDock() {
   playersDockEl.innerHTML = "";
   for (const jogador of jogadoresAtuais) {
-    const pod = document.createElement("div");
-    pod.className = "player-pod glass-panel thinking";
-    pod.dataset.jogadorId = jogador.id;
-    if (jogador.avatar) pod.style.setProperty("--cor-jogador", jogador.avatar.cor);
-    pod.innerHTML = `
-      <div class="ready-stamp">✓</div>
-      <div class="player-avatar">${jogador.avatar ? jogador.avatar.emoji : "❔"}</div>
-      <div class="player-name">${jogador.nome}</div>
-    `;
-    playersDockEl.appendChild(pod);
+    playersDockEl.appendChild(criarPod(jogador, "thinking"));
   }
 }
 
@@ -142,11 +153,20 @@ function travarPodDoJogador(jogadorId) {
   }
 }
 
+// A TV mostra só os 5 primeiros (a lista já chega ordenada do maior pro menor),
+// com a posição na frente. Empate = mesma posição.
+const TOP_PLACAR_TV = 5;
+
 function renderizarPlacar(lista, ol) {
   ol.innerHTML = "";
-  for (const jogador of lista) {
+  for (const jogador of lista.slice(0, TOP_PLACAR_TV)) {
+    const posicao = lista.filter((j) => j.pontos > jogador.pontos).length + 1;
     const li = document.createElement("li");
-    li.innerHTML = `<span>${jogador.nome}</span><span>${jogador.pontos} pts</span>`;
+    li.append(
+      criarEl("span", "placar-posicao", `${posicao}º`),
+      criarEl("span", "placar-nome", jogador.nome),
+      criarEl("span", "placar-pontos", `${jogador.pontos} pts`)
+    );
     ol.appendChild(li);
   }
 }
@@ -197,8 +217,23 @@ function tratarMensagem(msg) {
       }
       break;
     }
+    case "voltouAoLobby": {
+      // volta pra tela do código/QR, pronta pra outra partida
+      for (const i of [intervaloTempo, intervaloLeitura, intervaloPoder, intervaloAlvo,
+                       intervaloLinking, intervaloSorting]) {
+        clearInterval(i);
+      }
+      renderizarJogadores(msg.jogadores);
+      mostrarTela(telaLobby);
+      break;
+    }
     case "jogadoresAtualizados": {
       renderizarJogadores(msg.jogadores);
+      // quem caiu no meio da partida aparece apagado no pódio, até voltar
+      for (const jogador of msg.jogadores) {
+        const pod = playersDockEl.querySelector(`[data-jogador-id="${jogador.id}"]`);
+        if (pod) pod.classList.toggle("desconectado", jogador.conectado === false);
+      }
       break;
     }
     case "escolhaPorta": {
@@ -318,6 +353,9 @@ function tratarMensagem(msg) {
     case "resultadoPergunta": {
       clearInterval(intervaloTempo);
       mostrarTela(telaResultado);
+      // (a TV que reconectou no meio da partida não viu a pergunta: o texto das
+      // alternativas vem junto com o resultado)
+      if (msg.alternativas) alternativasAtuais = msg.alternativas;
 
       const respostasPorAlternativa = alternativasAtuais.map(() => []);
       for (const r of msg.respostasPorJogador || []) {
@@ -368,9 +406,9 @@ function tratarMensagem(msg) {
     }
     case "progressoLinking": {
       linkingProgressoEl.innerHTML = "";
-      for (const jogador of msg) {
+      for (const jogador of msg.jogadores) {
         const li = document.createElement("li");
-        li.innerHTML = `<span>${jogador.nome}</span><span>${jogador.corretos} pares${jogador.completou ? " ✅" : ""}</span>`;
+        li.append(criarEl("span", "", jogador.nome), criarEl("span", "", `${jogador.corretos} pares${jogador.completou ? " ✅" : ""}`));
         if (jogador.completou) li.classList.add("completou");
         linkingProgressoEl.appendChild(li);
       }
@@ -402,10 +440,10 @@ function tratarMensagem(msg) {
     }
     case "progressoSorting": {
       sortingProgressoEl.innerHTML = "";
-      for (const jogador of msg) {
+      for (const jogador of msg.jogadores) {
         const li = document.createElement("li");
         const completou = jogador.respondidos >= jogador.total;
-        li.innerHTML = `<span>${jogador.nome}</span><span>${jogador.respondidos} de ${jogador.total}${completou ? " ✅" : ""}</span>`;
+        li.append(criarEl("span", "", jogador.nome), criarEl("span", "", `${jogador.respondidos} de ${jogador.total}${completou ? " ✅" : ""}`));
         if (completou) li.classList.add("completou");
         sortingProgressoEl.appendChild(li);
       }
@@ -414,6 +452,8 @@ function tratarMensagem(msg) {
     case "resultadoSorting": {
       clearInterval(intervaloSorting);
       mostrarTela(telaResultadoSorting);
+      if (msg.categoriaA) sortingCategoriaANome = msg.categoriaA;
+      if (msg.categoriaB) sortingCategoriaBNome = msg.categoriaB;
       sortingGabaritoEl.innerHTML = "";
       for (const item of msg.gabarito) {
         const li = document.createElement("li");
@@ -435,7 +475,7 @@ function tratarMensagem(msg) {
       break;
     }
     case "progressoPiramide": {
-      renderizarCorridaPiramide(msg);
+      renderizarCorridaPiramide(msg.jogadores);
       break;
     }
     case "resultadoPiramide": {
@@ -447,7 +487,7 @@ function tratarMensagem(msg) {
         .sort((a, b) => b.posicao - a.posicao)
         .forEach((jogador) => {
           const li = document.createElement("li");
-          li.innerHTML = `<span>${jogador.nome}</span><span>degrau ${jogador.posicao}</span>`;
+          li.append(criarEl("span", "", jogador.nome), criarEl("span", "", `degrau ${jogador.posicao}`));
           if (jogador.nome === msg.vencedorNome) li.classList.add("vencedor");
           piramidePosicoesFinaisEl.appendChild(li);
         });
@@ -479,11 +519,15 @@ function renderizarCorridaPiramide(jogadores) {
     const pct = piramideTotalDegraus > 0 ? (jogador.posicao / piramideTotalDegraus) * 100 : 0;
     const li = document.createElement("li");
     li.className = "piramide-jogador";
-    li.innerHTML = `
-      <span class="piramide-nome">${jogador.nome}</span>
-      <div class="piramide-barra-fundo"><div class="piramide-barra" style="width:${pct}%"></div></div>
-      <span class="piramide-degrau-texto">${jogador.posicao}/${piramideTotalDegraus}</span>
-    `;
+    const barraFundo = criarEl("div", "piramide-barra-fundo");
+    const barra = criarEl("div", "piramide-barra");
+    barra.style.width = `${pct}%`;
+    barraFundo.appendChild(barra);
+    li.append(
+      criarEl("span", "piramide-nome", jogador.nome),
+      barraFundo,
+      criarEl("span", "piramide-degrau-texto", `${jogador.posicao}/${piramideTotalDegraus}`)
+    );
     piramideCorridaEl.appendChild(li);
   }
 }

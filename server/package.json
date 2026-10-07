@@ -1,7 +1,7 @@
 {
-  "name": "conhecimento-e-poder-servidor",
+  "name": "dominio-pelo-saber-servidor",
   "version": "0.1.0",
-  "description": "Servidor do jogo Conhecimento e Poder - roda no Raspberry Pi",
+  "description": "Servidor do jogo Domínio pelo Saber - roda no Raspberry Pi",
   "private": true,
   "type": "commonjs",
   "main": "index.js",
