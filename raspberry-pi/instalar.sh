@@ -92,8 +92,14 @@ DESKTOP
   chmod +x "$arquivo"
 }
 
+# A pasta da área de trabalho tem nome traduzido quando o sistema está em
+# português ("Área de trabalho"), então perguntamos ao sistema em vez de chutar
+# "Desktop" - senão o ícone não apareceria e só sobraria a entrada no menu.
+AREA_TRABALHO="$(xdg-user-dir DESKTOP 2>/dev/null || true)"
+[ -n "$AREA_TRABALHO" ] || AREA_TRABALHO="$HOME/Desktop"
+
 mkdir -p "$HOME/.local/share/applications"
-for destino in "$HOME/.local/share/applications" "$HOME/Desktop"; do
+for destino in "$HOME/.local/share/applications" "$AREA_TRABALHO"; do
   [ -d "$destino" ] || continue
   criar_atalho "$destino/$NOME.desktop" \
     "Domínio pelo Saber" "Abre o jogo na TV" \
@@ -150,6 +156,7 @@ cat <<FIM
 
    1. Entre no Wi-Fi do lugar (ícone de rede, no canto da tela)
    2. Abra o atalho "Domínio pelo Saber" na área de trabalho
+      (ele também fica no menu de aplicativos, em Jogos)
 
  A TV mostra o código da sala e o QR code; os celulares
  escaneiam e entram. Nada sobe sozinho no boot.
