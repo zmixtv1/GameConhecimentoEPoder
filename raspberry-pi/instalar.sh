@@ -88,6 +88,21 @@ sudo systemctl daemon-reload
 sudo systemctl enable "$SERVICO" >/dev/null
 sudo systemctl restart "$SERVICO"
 
+# ------------------------------------------------------ Wi-Fi sempre acordado
+
+if [ -d /etc/NetworkManager ]; then
+  info "Desligando a economia de energia do Wi-Fi"
+  echo "Por padrão o rádio do Pi dorme entre pacotes, o que adiciona atraso e"
+  echo "instabilidade - ruim num jogo que dá bônus por velocidade de resposta."
+  sudo tee /etc/NetworkManager/conf.d/99-wifi-sem-economia.conf >/dev/null <<'CONF'
+# O Pi aqui é um servidor que precisa responder na hora, não um laptop
+# poupando bateria. 2 = desliga a economia de energia do Wi-Fi.
+[connection]
+wifi.powersave = 2
+CONF
+  sudo systemctl reload NetworkManager 2>/dev/null || true
+fi
+
 # ------------------------------------------------------- modo quiosque na TV
 
 info "Configurando a TV para abrir sozinha no boot"

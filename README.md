@@ -95,6 +95,53 @@ O Pi é o lugar natural desse jogo: fica ligado atrás da TV e nunca mais precis
 
 **Modelos que funcionam:** Pi 2, 3, 4, 5 e Zero 2 W. Pi 1, Pi Zero e Zero W originais são ARMv6, arquitetura que o Node.js não distribui mais oficialmente — dariam bastante trabalho.
 
+### Antes de tudo: pôr o Pi na rede
+
+O jogo inteiro depende disso — é por essa rede que os celulares chegam na partida. E sem rede não dá nem para clonar o repositório.
+
+**O jeito mais fácil é configurar antes do primeiro boot**, na hora de gravar o cartão SD. No Raspberry Pi Imager, depois de escolher o sistema e o cartão, clique na engrenagem (ou em "Editar definições") e preencha:
+
+- Nome da rede Wi-Fi e senha
+- **País do Wi-Fi: BR** — não pule esse campo, explicado logo abaixo
+- Nome de usuário e senha
+- Hostname (sugestão: `dominio`, que vira o endereço `dominio.local`)
+- SSH ligado, se quiser administrar o Pi de outro computador depois
+
+O Pi já liga conectado, sem precisar de teclado para a parte de rede.
+
+**Se o Pi já está ligado na TV**, é mais simples ainda: clique no ícone de rede no canto superior direito da área de trabalho, escolha o Wi-Fi e digite a senha. Uma vez só — ele reconecta sozinho em todo boot.
+
+**Pelo terminal**, se preferir:
+
+```bash
+nmcli device wifi list                                   # ver as redes por perto
+sudo nmcli device wifi connect "NOME-DA-REDE" password "senha"
+```
+
+Ou `sudo raspi-config` → System Options → Wireless LAN, que também pergunta o país.
+
+#### Dois detalhes que travam muita gente
+
+**O país do Wi-Fi é obrigatório.** Sem ele o rádio fica bloqueado por software e o Pi simplesmente não enxerga rede nenhuma — sem mensagem de erro que ajude. Se o Wi-Fi "não funciona" e nem lista redes, é quase sempre isso: `sudo raspi-config` → Localisation Options → WLAN Country → BR.
+
+**Instrução antiga que não funciona mais:** muito tutorial manda criar um `wpa_supplicant.conf` na partição de boot do cartão SD pelo Windows. Isso valia até o Raspberry Pi OS Bullseye. Do Bookworm em diante, quem cuida da rede é o NetworkManager e esse arquivo é ignorado. Use o Imager ou o `nmcli`.
+
+#### Cabo também serve
+
+Se o Pi ficar perto do roteador, o cabo de rede é mais estável e dispensa configuração — basta plugar. Os celulares continuam no Wi-Fi normalmente, porque é o mesmo roteador.
+
+Só não deixe **cabo e Wi-Fi ligados ao mesmo tempo**: o servidor escolhe o primeiro IP que encontra ([index.js:12](server/index.js#L12)) e pode anunciar no QR code a interface errada. Escolha uma das duas.
+
+#### E se não houver Wi-Fi no lugar?
+
+Para levar o jogo a um lugar sem rede, o Pi pode criar a própria:
+
+```bash
+sudo nmcli device wifi hotspot ssid DominioPeloSaber password umasenhaboa
+```
+
+Os celulares entram nessa rede e jogam normalmente. O porém: sem internet nessa conexão, o Android costuma avisar que "a rede não tem acesso à internet" e pode querer voltar para os dados móveis — alguém vai precisar mandar o celular continuar conectado. Para uso em casa, entrar no Wi-Fi normal é bem menos atrito.
+
 ### Instalação
 
 Com o Pi ligado na TV por HDMI, rode no próprio Pi:
@@ -114,7 +161,7 @@ Depois do reboot, **ligar o Pi na tomada já põe o jogo na TV**. Sem teclado, s
 
 Se faltar luz no meio da festa, o Pi religa e o jogo volta sozinho. Se o servidor travar, o systemd reinicia em 5 segundos.
 
-O script faz quatro coisas:
+O script faz cinco coisas:
 
 | Etapa | Por quê |
 |---|---|
@@ -122,6 +169,7 @@ O script faz quatro coisas:
 | Cria o serviço `dominio-pelo-saber` | Sobe no boot e reinicia sozinho se cair |
 | Configura o modo quiosque | O Chromium abre a tela da TV em tela cheia no boot, com perfil separado para não aparecer "o Chromium não foi encerrado corretamente" por cima do jogo |
 | Desliga o apagamento de tela | Senão a TV apaga no meio da partida |
+| Desliga a economia de energia do Wi-Fi | O rádio do Pi dorme entre pacotes por padrão, somando atraso e instabilidade justamente num jogo que dá bônus por velocidade |
 
 ### Comandos do dia a dia
 
