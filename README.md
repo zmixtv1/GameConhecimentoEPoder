@@ -254,6 +254,7 @@ data/              banco de conteúdo: perguntas, ligações, classificações
 docs/              documentação da mecânica original do jogo
 raspberry-pi/      instalador e atalhos para rodar o jogo no Pi
 design/            protótipos de tela (não entram na partida)
+teste*.html        referência visual de design, feita à parte (não entram na partida)
 upgrade_a_fazer.md fila de mudanças planejadas do projeto
 ```
 

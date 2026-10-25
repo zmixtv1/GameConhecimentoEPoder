@@ -8,6 +8,10 @@ Status: `[ ]` a fazer · `[~]` em andamento
 
 Branch de trabalho desta leva: `novos-poderes`.
 
+Os arquivos `teste*.html` na raiz são **referência visual de design**, feitos à parte.
+Nenhum deles roda no jogo nem é portado para dentro dele: servem para a implementação
+em `public/` saber com o que se parecer.
+
 ---
 
 ## Estrutura da partida
@@ -109,16 +113,18 @@ public/controlador/controlador.js:1038.
       tela separada).
       **Tempo: 2 segundos por jogador que usou poder.** Teto de 16s com os 8 atacando.
       **No celular**, durante a sequência inteira: tela nova com "Olhe para a TV" no centro.
-      Protótipos: `teste-poderes.html` (projétil, cena do escudo, dicionário `PODERES`
-      classificando cada poder em `ataque | defesa | global`) e
-      `teste-poderes-festaDePontos.html` (8 jogadores e a Festa de Pontos com confete).
-      O layout de 8 jogadores já está resolvido: os dois usam o `.players-dock` do
-      `teste.html`, com os pods lado a lado.
-      Duas coisas que os protótipos ainda não resolvem:
-      1. `limparTodosStatus()` zera os efeitos a cada poder novo. No jogo eles acumulam
+      **Referência visual** — `teste-poderes.html` (o projétil, a cena do escudo e o
+      dicionário `PODERES` classificando cada poder em `ataque | defesa | global`) e
+      `teste-poderes-festaDePontos.html` (a Festa de Pontos com confete, e os 8 jogadores
+      no `.players-dock` do `teste.html`, que resolve o layout da sala cheia).
+      A implementação é nova, em `public/tv/tv.js` e `public/tv/tv.css`, mais a tela de
+      espera em `public/controlador/`. Os arquivos `teste*` não entram no jogo.
+      Duas decisões a tomar na implementação, porque a referência resolve de um jeito que
+      não serve à partida de verdade:
+      1. Na referência cada poder novo apaga o anterior. No jogo os efeitos **acumulam**
          (`efeitosAtivos` é um array por alvo), então a sequência deve empilhar e terminar
          mostrando o estado final de todo mundo.
-      2. Na cena do escudo o protótipo revela a defesa antes de o ataque sair. Mais forte
+      2. Na cena do escudo a referência revela a defesa antes de o ataque sair. Mais forte
          ao contrário: o ataque voa, e o escudo só se revela no impacto.
       A Névoa borrar o nome do jogador na TV está ok: o efeito só existe durante esta
       animação, não durante a partida.
@@ -152,8 +158,8 @@ public/controlador/controlador.js:1038.
       senão uma pergunta valeria 400 e uma rodada sozinha decidiria a partida.
       Disponível **2 vezes na partida**: no tema 2 e no tema 4, o penúltimo antes da
       Pirâmide.
-      **Na tela:** aparece normalmente na sequência de "quem atacou quem", com o visual
-      próprio de `teste-poderes-festaDePontos.html` (confete e os pods pulando). O
+      **Na tela:** aparece normalmente na sequência de "quem atacou quem", seguindo a
+      referência visual de `teste-poderes-festaDePontos.html` (confete e os pods pulando). O
       **dobro só é revelado na tela de pontuação** — durante a animação a mesa vê que
       alguém ativou, mas o efeito nos pontos só aparece no placar.
 
