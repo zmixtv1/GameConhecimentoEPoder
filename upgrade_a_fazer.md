@@ -15,37 +15,54 @@ Branch de trabalho desta leva: `novos-poderes`.
 A lista final fica com 7 poderes: Congelamento, Mordicadores, Névoa, Pedágio,
 Aposta, Escudo e Festa de Pontos.
 
+Sequência de telas combinada:
+
+| # | TV | Celular |
+|---|---|---|
+| 1 | Login | Login |
+| 2 | Escolher o boneco | Escolher o boneco |
+| 3 | Escolher a porta | Escolher a porta |
+| 4 | Escolher poderes | Escolher o poder |
+| 5 | **Quem atacou quem** (nova) | **"Olhe para a TV"** (nova) |
+| 6 | Pergunta | Pergunta |
+| 7 | Resposta | Resposta |
+
 **Decisão em aberto que vale para o conjunto todo:** hoje cada jogador escolhe um
 poder em toda pergunta. Se Escudo e Festa de Pontos custarem o mesmo que atacar,
 ninguém ataca mais. Definir se esses dois são de **uso único na partida** (como já
 é o poder de garantir a porta, controlado por `jogadoresQueUsaramPoderPorta` em
 server/sala.js) ou se têm outro custo.
 
+**Segunda decisão em aberto:** o passo 4 são **duas** telas hoje, não uma —
+`escolha_poder` (qual poder, 10s) e depois `escolha_alvo` (em quem, 20s). Definir se
+continuam separadas ou viram uma tela só.
+
 Onde os poderes vivem hoje: `TIPOS_DE_PODER` em server/sala.js:13, `POR_TIPO` em
 public/controlador/controlador.js:12 e `montarObstrucao()` em
 public/controlador/controlador.js:1038.
 
-- [ ] **Tela de "quem atacou quem" na TV.** Entra como fase nova entre
-      `_resolverEscolhaAlvo()` e a leitura da pergunta, com o único objetivo de
-      descontrair: a TV mostra, na ordem em que os jogadores entraram na sala
-      (`this.jogadores` é um Map, então já itera nessa ordem), cada jogador usando
-      seu poder — um projétil sai do pod de quem atacou e acerta o pod do alvo.
-      Terminada a sequência, o jogo segue normal e mostra a pergunta como hoje.
-      **Tempo: 2 segundos por jogador que usou poder** (quem não escolheu poder não
-      ganha um momento). Teto de 16s com os 8 atacando, mas o caso comum é bem menor.
-      Protótipo visual pronto em `teste-poderes.html`, com o dicionário `PODERES`
-      classificando cada um em `ataque | defesa | global` — essa classificação deve
-      ir junto para o servidor.
-      Quatro coisas que o protótipo ainda não resolve e a versão real precisa:
-      1. Ele posiciona dois pods nas laterais com `justify-content: space-between`.
-         O jogo tem de 2 a 8 jogadores, então precisa virar grade ou arco.
-      2. `limparTodosStatus()` zera os efeitos a cada poder novo. No jogo os efeitos
-         **acumulam** (`efeitosAtivos` é um array por alvo), então a sequência deve ir
-         empilhando e terminar mostrando o estado final de todo mundo.
-      3. A Névoa borra o nome do jogador junto com o avatar. Na TV o nome precisa
-         continuar legível — borrar só o avatar, ou pôr a névoa por cima do pod.
-      4. Na cena do escudo o protótipo revela a defesa antes de o ataque sair. Mais
-         forte ao contrário: o ataque voa, e o escudo só se revela no impacto.
+- [ ] **Tela de "quem atacou quem" (passo 5).** Fase nova entre `escolha_alvo` e a
+      abertura da tela da pergunta, só para descontrair. A TV mostra, na ordem em que os
+      jogadores entraram na sala (`this.jogadores` é um Map, então já itera nessa ordem),
+      cada um usando seu poder: um projétil sai do pod de quem atacou e acerta o pod do
+      alvo. Ataque que bate em quem usou Escudo é rebatido, com animação de proteção.
+      Terminada a sequência o jogo segue igual a hoje: abre a tela da pergunta, que já
+      começa com a fase de leitura (`fase-leitura` vive dentro de `tela-pergunta`, não é
+      tela separada).
+      **Tempo: 2 segundos por jogador que usou poder.** Teto de 16s com os 8 atacando.
+      **No celular**, durante a sequência inteira: tela nova com "Olhe para a TV" no centro.
+      Protótipo visual em `teste-poderes.html`, com o dicionário `PODERES` classificando
+      cada poder em `ataque | defesa | global` — essa classificação deve ir para o servidor.
+      Três coisas que o protótipo ainda não resolve:
+      1. Posiciona dois pods nas laterais com `justify-content: space-between`. O jogo tem
+         de 2 a 8 jogadores, então precisa virar grade ou arco.
+      2. `limparTodosStatus()` zera os efeitos a cada poder novo. No jogo eles acumulam
+         (`efeitosAtivos` é um array por alvo), então a sequência deve empilhar e terminar
+         mostrando o estado final de todo mundo.
+      3. Na cena do escudo o protótipo revela a defesa antes de o ataque sair. Mais forte
+         ao contrário: o ataque voa, e o escudo só se revela no impacto.
+      A Névoa borrar o nome do jogador na TV está ok: o efeito só existe durante esta
+      animação, não durante a partida.
 
 - [ ] **Remover Gosma e Bombolha.** A Gosma nunca teve comportamento próprio: cai no
       mesmo contador de toques do Congelamento (`e.tipo === "congelamento" || e.tipo === "gosma"`),
@@ -69,7 +86,7 @@ public/controlador/controlador.js:1038.
       vierem contra ele naquela pergunta. É o que mais muda o jogo, porque a fase de
       poder passa a ter duas decisões ("bato ou me defendo?") e quem está na frente
       ganha motivo real para se proteger. Na TV, cada ataque bloqueado ganha a animação
-      de proteção (ver o item da tela acima).
+      de proteção (ver o item do passo 5).
       Definir: bloqueia um poder ou todos os que chegarem, e se é de uso único na partida.
 
 - [ ] **Festa de Pontos (novo).** Todos que acertarem aquela pergunta ganham o dobro,
