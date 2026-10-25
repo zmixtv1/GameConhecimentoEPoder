@@ -33,9 +33,8 @@ ninguém ataca mais. Definir se esses dois são de **uso único na partida** (co
 é o poder de garantir a porta, controlado por `jogadoresQueUsaramPoderPorta` em
 server/sala.js) ou se têm outro custo.
 
-**Segunda decisão em aberto:** o passo 4 são **duas** telas hoje, não uma —
-`escolha_poder` (qual poder, 10s) e depois `escolha_alvo` (em quem, 20s). Definir se
-continuam separadas ou viram uma tela só.
+**Decidido:** o passo 4 continua em **duas** telas, como já é hoje —
+`escolha_poder` (qual poder, 10s) e depois `escolha_alvo` (em quem, 20s). Não mexer.
 
 Onde os poderes vivem hoje: `TIPOS_DE_PODER` em server/sala.js:13, `POR_TIPO` em
 public/controlador/controlador.js:12 e `montarObstrucao()` em
