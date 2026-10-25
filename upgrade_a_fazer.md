@@ -6,6 +6,8 @@ Regras:
 
 Status: `[ ]` a fazer · `[~]` em andamento
 
+Branch de trabalho desta leva: `novos-poderes`.
+
 ---
 
 ## Jogos de Poder — reformulação
@@ -22,6 +24,28 @@ server/sala.js) ou se têm outro custo.
 Onde os poderes vivem hoje: `TIPOS_DE_PODER` em server/sala.js:13, `POR_TIPO` em
 public/controlador/controlador.js:12 e `montarObstrucao()` em
 public/controlador/controlador.js:1038.
+
+- [ ] **Tela de "quem atacou quem" na TV.** Entra como fase nova entre
+      `_resolverEscolhaAlvo()` e a leitura da pergunta, com o único objetivo de
+      descontrair: a TV mostra, na ordem em que os jogadores entraram na sala
+      (`this.jogadores` é um Map, então já itera nessa ordem), cada jogador usando
+      seu poder — um projétil sai do pod de quem atacou e acerta o pod do alvo.
+      Terminada a sequência, o jogo segue normal e mostra a pergunta como hoje.
+      **Tempo: 2 segundos por jogador que usou poder** (quem não escolheu poder não
+      ganha um momento). Teto de 16s com os 8 atacando, mas o caso comum é bem menor.
+      Protótipo visual pronto em `teste-poderes.html`, com o dicionário `PODERES`
+      classificando cada um em `ataque | defesa | global` — essa classificação deve
+      ir junto para o servidor.
+      Quatro coisas que o protótipo ainda não resolve e a versão real precisa:
+      1. Ele posiciona dois pods nas laterais com `justify-content: space-between`.
+         O jogo tem de 2 a 8 jogadores, então precisa virar grade ou arco.
+      2. `limparTodosStatus()` zera os efeitos a cada poder novo. No jogo os efeitos
+         **acumulam** (`efeitosAtivos` é um array por alvo), então a sequência deve ir
+         empilhando e terminar mostrando o estado final de todo mundo.
+      3. A Névoa borra o nome do jogador junto com o avatar. Na TV o nome precisa
+         continuar legível — borrar só o avatar, ou pôr a névoa por cima do pod.
+      4. Na cena do escudo o protótipo revela a defesa antes de o ataque sair. Mais
+         forte ao contrário: o ataque voa, e o escudo só se revela no impacto.
 
 - [ ] **Remover Gosma e Bombolha.** A Gosma nunca teve comportamento próprio: cai no
       mesmo contador de toques do Congelamento (`e.tipo === "congelamento" || e.tipo === "gosma"`),
@@ -44,7 +68,8 @@ public/controlador/controlador.js:1038.
 - [ ] **Escudo (novo).** Em vez de atacar, o jogador se protege: anula os poderes que
       vierem contra ele naquela pergunta. É o que mais muda o jogo, porque a fase de
       poder passa a ter duas decisões ("bato ou me defendo?") e quem está na frente
-      ganha motivo real para se proteger.
+      ganha motivo real para se proteger. Na TV, cada ataque bloqueado ganha a animação
+      de proteção (ver o item da tela acima).
       Definir: bloqueia um poder ou todos os que chegarem, e se é de uso único na partida.
 
 - [ ] **Festa de Pontos (novo).** Todos que acertarem aquela pergunta ganham o dobro,
@@ -62,6 +87,8 @@ public/controlador/controlador.js:1038.
 - [ ] **Aposta (novo).** O jogador aposta que o alvo vai errar. Se errar, ganha pontos;
       se acertar, perde. Também fecha lacuna do docs/, que lista o poder sem o efeito.
       Definir: quanto se ganha e quanto se perde, e se o alvo sabe que foi apostado.
+      Ideia de tela: é o único poder que não se resolve na hora, então o dado pode ficar
+      girando no pod do alvo até a revelação da pergunta — um segundo ato só dele.
 
 ---
 

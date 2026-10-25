@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz TV - Panda vs Leão</title>
+    <!-- Fonte 'Outfit' -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Textos (Alto contraste) */
+            --text-main: #0f172a;
+
+            /* Efeito de Vidro (Glassmorphism) */
+            --glass-bg: rgba(255, 255, 255, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.9);
+            --glass-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            user-select: none;
+        }
+
+        body {
+            /* Cor base clara e tech (Prata/Gelo) */
+            background-color: #f8fafc;
+            /* Pattern de Grid pontilhado */
+            background-image: radial-gradient(#cbd5e1 2px, transparent 2px);
+            background-size: 40px 40px;
+            background-position: center;
+            height: 100vh;
+
+            /* Layout para colocar um na esquerda e outro na direita */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15vw; /* Espaçamento das laterais */
+
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Bolhas de luz no fundo para manter a estética */
+        .ambient-light {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            z-index: -1;
+            animation: fluidMotion 20s infinite alternate ease-in-out;
+        }
+
+        .light-1 {
+            top: -10%;
+            left: -10%;
+            width: 60vw;
+            height: 60vw;
+            background: rgba(226, 232, 240, 0.8);
+        }
+
+        .light-2 {
+            bottom: -20%;
+            right: -10%;
+            width: 50vw;
+            height: 50vw;
+            background: rgba(186, 230, 253, 0.4);
+            animation-delay: -5s;
+        }
+
+        @keyframes fluidMotion {
+            0% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(5vw, 10vh) scale(1.1); }
+            66% { transform: translate(-5vw, 5vh) scale(0.9); }
+            100% { transform: translate(10vw, -5vh) scale(1.05); }
+        }
+
+        /* Classe utilitária do vidro */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 2px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+        }
+
+        /* O pod do jogador agora está maior para dar destaque */
+        .player-pod {
+            width: 280px;
+            height: 320px;
+            border-radius: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            position: relative;
+
+            /* Animação suave de flutuação */
+            animation: floating 6s ease-in-out infinite alternate;
+        }
+
+        /* Atraso na animação do segundo pod para eles não flutuarem iguais */
+        .player-pod:nth-child(4) {
+            animation-delay: -3s;
+        }
+
+        @keyframes floating {
+            0% { transform: translateY(15px); }
+            100% { transform: translateY(-15px); }
+        }
+
+        .player-avatar {
+            font-size: 120px; /* Avatar bem grande */
+            line-height: 1;
+            filter: drop-shadow(0 15px 20px rgba(0, 0, 0, 0.2));
+        }
+
+        .player-name {
+            font-size: 32px;
+            font-weight: 900;
+            color: var(--text-main);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* Adicionando cores sutis de destaque para cada um */
+        .pod-panda {
+            box-shadow: 0 20px 50px rgba(30, 144, 255, 0.15);
+        }
+
+        .pod-lion {
+            box-shadow: 0 20px 50px rgba(255, 165, 2, 0.15);
+        }
+
+        /* --- ESTILOS DE ANIMAÇÃO DE PODER --- */
+
+        /* Banner de Notificação */
+        .action-banner {
+            position: absolute;
+            top: 15%;
+            left: 50%;
+            transform: translate(-50%, -50px) scale(0.9);
+            opacity: 0;
+            padding: 20px 50px;
+            border-radius: 50px;
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text-main);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            z-index: 100;
+            text-align: center;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .action-banner.show {
+            transform: translate(-50%, 0) scale(1);
+            opacity: 1;
+        }
+
+        .power-name {
+            font-size: 32px;
+            font-weight: 900;
+            display: inline-block;
+            margin-top: 5px;
+            /* A cor vem via JS agora */
+            filter: drop-shadow(0 0 10px currentColor);
+        }
+
+        /* Projétil */
+        .projectile {
+            position: absolute;
+            font-size: 60px;
+            z-index: 50;
+            pointer-events: none;
+            opacity: 0;
+            transition: left 0.5s ease-in, top 0.5s ease-in, transform 0.5s linear;
+        }
+
+        /* --- CLASSES DE STATUS (Efeitos Visuais sobre os Jogadores) --- */
+
+        .status-overlay {
+            position: absolute;
+            font-size: 120px;
+            z-index: 10;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            opacity: 0.9;
+        }
+
+        @keyframes popIn {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        /* 1. Congelamento */
+        .status-congelamento { border-color: #00d2d3 !important; box-shadow: 0 0 50px rgba(0, 210, 211, 0.6) !important; animation: shiver 0.15s infinite alternate !important; }
+
+        /* 2. Mordicadores */
+        .status-mordicadores { border-color: #ff6b81 !important; box-shadow: 0 0 40px rgba(255, 107, 129, 0.5) !important; animation: jitter 0.1s infinite !important; }
+
+        /* 3. Névoa */
+        .status-nevoa { border-color: #a4b0be !important; box-shadow: 0 0 50px rgba(164, 176, 190, 0.6) !important; }
+        .status-nevoa .player-avatar, .status-nevoa .player-name { filter: blur(8px) grayscale(50%); transition: filter 0.5s; }
+
+        /* 4. Pedágio */
+        .status-pedagio { border-color: #f1c40f !important; box-shadow: 0 0 50px rgba(241, 196, 15, 0.6) !important; animation: pulse-gold 1s infinite alternate !important; }
+
+        /* 5. Aposta */
+        .status-aposta { border-color: #9b59b6 !important; box-shadow: 0 0 50px rgba(155, 89, 182, 0.6) !important; }
+
+        /* 6. Escudo */
+        .status-escudo { border-color: #3498db !important; box-shadow: 0 0 60px rgba(52, 152, 219, 0.8) !important; animation: float-shield 2s infinite alternate !important; }
+
+        /* 7. Festa de Pontos */
+        .status-festa { border-color: #ff9f43 !important; box-shadow: 0 0 50px rgba(255, 159, 67, 0.6) !important; animation: bounce-party 0.5s infinite alternate !important; }
+
+        /* Animações de Suporte */
+        @keyframes shiver { 0% { transform: translateX(-4px); } 100% { transform: translateX(4px); } }
+        @keyframes jitter { 0% { transform: translate(2px, 2px); } 50% { transform: translate(-2px, -2px); } 100% { transform: translate(2px, -2px); } }
+        @keyframes pulse-gold { 0% { transform: scale(1); } 100% { transform: scale(1.05); } }
+        @keyframes float-shield { 0% { transform: translateY(0); } 100% { transform: translateY(-10px); } }
+        @keyframes bounce-party { 0% { transform: translateY(0) scale(1); } 100% { transform: translateY(-15px) scale(1.05); } }
+
+        /* Animação de queda por gravidade (Defesa Quebrada) */
+        @keyframes fallDown {
+            0% { transform: translate(-50%, -50%) rotate(0deg); opacity: 1; }
+            100% { transform: translate(-50%, 800px) rotate(45deg); opacity: 0; }
+        }
+
+        .falling {
+            animation: fallDown 0.8s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards !important;
+        }
+
+        /* Painel de Botões */
+        .controls-panel {
+            position: absolute;
+            bottom: 5vh;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 90vw;
+            max-width: 1000px;
+            z-index: 100;
+        }
+
+        .btn-poder {
+            padding: 12px 20px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 2px solid var(--glass-border);
+            color: var(--text-main);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-poder:hover {
+            transform: translateY(-5px) scale(1.05);
+            background: white;
+            box-shadow: 0 15px 25px rgba(0,0,0,0.1);
+        }
+
+        .btn-poder:active {
+            transform: translateY(0) scale(0.95);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Banner de Notificação Escondido -->
+    <div id="action-banner" class="action-banner glass-panel"></div>
+
+    <!-- Fundo de Luzes Vivas -->
+    <div class="ambient-light light-1"></div>
+    <div class="ambient-light light-2"></div>
+
+    <!-- Esquerda: Panda -->
+    <div class="player-pod glass-panel pod-panda" id="pod-rodrigo">
+        <div class="player-avatar">🐼</div>
+        <div class="player-name">Rodrigo</div>
+    </div>
+
+    <!-- Direita: Leão -->
+    <div class="player-pod glass-panel pod-lion" id="pod-adamor">
+        <div class="player-avatar">🦁</div>
+        <div class="player-name">Adamor</div>
+    </div>
+
+    <!-- Painel de Controles de Poderes -->
+    <div class="controls-panel">
+        <button class="btn-poder" onclick="usarPoder('pod-rodrigo', 'pod-adamor', 'CONGELAMENTO')">🧊 Congelamento</button>
+        <button class="btn-poder" onclick="usarPoder('pod-rodrigo', 'pod-adamor', 'MORDICADORES')">😬 Mordicadores</button>
+        <button class="btn-poder" onclick="usarPoder('pod-rodrigo', 'pod-adamor', 'NÉVOA')">🌫️ Névoa</button>
+        <button class="btn-poder" onclick="usarPoder('pod-rodrigo', 'pod-adamor', 'PEDÁGIO')">💰 Pedágio</button>
+        <button class="btn-poder" onclick="usarPoder('pod-rodrigo', 'pod-adamor', 'APOSTA')">🎲 Aposta</button>
+        <button class="btn-poder" onclick="usarPoder('pod-rodrigo', 'pod-adamor', 'ESCUDO')">🛡️ Escudo</button>
+        <button class="btn-poder" onclick="usarPoder('pod-rodrigo', 'pod-adamor', 'FESTA')">🎉 Festa de Pontos</button>
+        <button class="btn-poder" style="background: #e2e8f0; border-color: #94a3b8;" onclick="cenaAtaqueEscudo()">🎬 Cena: Ataque vs Escudo</button>
+    </div>
+
+    <script>
+        // Dicionário "Motor" de Poderes
+        const PODERES = {
+            'CONGELAMENTO': { icone: '🧊', cor: '#00d2d3', tipo: 'ataque', classe: 'status-congelamento' },
+            'MORDICADORES': { icone: '😬', cor: '#ff6b81', tipo: 'ataque', classe: 'status-mordicadores' },
+            'NÉVOA': { icone: '🌫️', cor: '#a4b0be', tipo: 'ataque', classe: 'status-nevoa' },
+            'PEDÁGIO': { icone: '💰', cor: '#f1c40f', tipo: 'ataque', classe: 'status-pedagio' },
+            'APOSTA': { icone: '🎲', cor: '#9b59b6', tipo: 'ataque', classe: 'status-aposta' },
+            'ESCUDO': { icone: '🛡️', cor: '#3498db', tipo: 'defesa', classe: 'status-escudo' },
+            'FESTA': { icone: '🎉', cor: '#ff9f43', tipo: 'global', classe: 'status-festa' }
+        };
+
+        let timerLimpeza; // Evita bugar se clicar muito rápido
+
+        function usarPoder(idAtacante, idDefensor, chavePoder) {
+            clearTimeout(timerLimpeza);
+            limparTodosStatus();
+
+            const banner = document.getElementById('action-banner');
+            const podAtacante = document.getElementById(idAtacante);
+            const podDefensor = document.getElementById(idDefensor);
+            const config = PODERES[chavePoder];
+
+            const nomeAtk = podAtacante.querySelector('.player-name').innerText;
+            const nomeDef = podDefensor.querySelector('.player-name').innerText;
+
+            // 1. Textos dinâmicos do Banner baseados no TIPO do poder
+            let texto = '';
+            if (config.tipo === 'global') {
+                texto = `${nomeAtk} ativou <span class="power-name" style="color:${config.cor}">${config.icone} FESTA DE PONTOS</span>!`;
+            } else if (config.tipo === 'defesa') {
+                texto = `${nomeAtk} ativou <span class="power-name" style="color:${config.cor}">${config.icone} ESCUDO</span>!`;
+            } else {
+                texto = `${nomeAtk} usou <span class="power-name" style="color:${config.cor}">${config.icone} ${chavePoder}</span> em ${nomeDef}!`;
+            }
+
+            banner.innerHTML = texto;
+            banner.classList.add('show');
+
+            // 2. Animação de quem usou o poder (pulinho mágico)
+            podAtacante.style.transition = 'transform 0.2s';
+            podAtacante.style.transform = 'scale(1.1) translateY(-20px)';
+            setTimeout(() => { podAtacante.style.transform = ''; }, 300);
+
+            // 3. Aplica regras diferentes dependendo do alvo
+            if (config.tipo === 'global') {
+                // FESTA DE PONTOS: Afeta todos os pods na tela
+                const todos = document.querySelectorAll('.player-pod');
+                todos.forEach(pod => aplicarEfeitoVisual(pod, config));
+                agendarLimpeza(banner, 4000);
+
+            } else if (config.tipo === 'defesa') {
+                // ESCUDO: Afeta apenas o próprio atacante
+                aplicarEfeitoVisual(podAtacante, config);
+                agendarLimpeza(banner, 4000);
+
+            } else {
+                // ATAQUE PADRÃO: Voa até o alvo e causa o efeito lá
+                atirarProjetil(podAtacante, podDefensor, config, () => {
+                    aplicarEfeitoVisual(podDefensor, config);
+                });
+                agendarLimpeza(banner, 4500);
+            }
+        }
+
+        function atirarProjetil(origem, destino, config, callbackAcerto) {
+            const projetil = document.createElement('div');
+            projetil.classList.add('projectile');
+            projetil.innerHTML = config.icone;
+            projetil.style.filter = `drop-shadow(0 0 15px ${config.cor})`;
+            document.body.appendChild(projetil);
+
+            const rectOrigem = origem.getBoundingClientRect();
+            const rectDestino = destino.getBoundingClientRect();
+
+            // Setup inicial em cima do atacante
+            projetil.style.left = (rectOrigem.left + rectOrigem.width / 2 - 30) + 'px';
+            projetil.style.top = (rectOrigem.top + rectOrigem.height / 2 - 30) + 'px';
+            projetil.style.opacity = '1';
+
+            // Viaja até o destino
+            setTimeout(() => {
+                projetil.style.left = (rectDestino.left + rectDestino.width / 2 - 30) + 'px';
+                projetil.style.top = (rectDestino.top + rectDestino.height / 2 - 30) + 'px';
+                projetil.style.transform = 'rotate(360deg) scale(1.5)';
+            }, 50);
+
+            // Bate no alvo
+            setTimeout(() => {
+                // Passa o projétil para a callback. Se a callback retornar true, ela mesma lida com a remoção.
+                const resolucaoEspecial = callbackAcerto(projetil);
+
+                if (!resolucaoEspecial) {
+                    projetil.style.opacity = '0';
+                    setTimeout(() => projetil.remove(), 500);
+                }
+            }, 550);
+        }
+
+        function aplicarEfeitoVisual(elemento, config) {
+            // Adiciona classe CSS do status (muda cor da borda, sombra e tremor)
+            elemento.classList.add(config.classe);
+
+            // Adiciona o emoji gigante transparente por cima do vidro (exceto Névoa, que só borra)
+            if (config.icone !== '🌫️') {
+                const overlay = document.createElement('div');
+                overlay.classList.add('status-overlay');
+                overlay.innerHTML = config.icone;
+
+                if (config.icone === '🎉') overlay.innerHTML = '🎉✨';
+
+                elemento.appendChild(overlay);
+            }
+        }
+
+        function limparTodosStatus() {
+            document.getElementById('action-banner').classList.remove('show');
+            const pods = document.querySelectorAll('.player-pod');
+
+            pods.forEach(pod => {
+                // Remove as classes de status de todos os poderes
+                Object.values(PODERES).forEach(p => pod.classList.remove(p.classe));
+
+                // Limpa os emojis gigantes se houver
+                const overlays = pod.querySelectorAll('.status-overlay');
+                overlays.forEach(el => el.remove());
+            });
+        }
+
+        function agendarLimpeza(banner, tempo) {
+            timerLimpeza = setTimeout(() => {
+                banner.classList.remove('show');
+                limparTodosStatus();
+            }, tempo);
+        }
+
+        // --- CENA ROTEIRIZADA: ATAQUE BATE NO ESCUDO E CAI ---
+        function cenaAtaqueEscudo() {
+            clearTimeout(timerLimpeza);
+            limparTodosStatus();
+
+            const banner = document.getElementById('action-banner');
+            const podRodrigo = document.getElementById('pod-rodrigo');
+            const podAdamor = document.getElementById('pod-adamor');
+
+            // 1. Adamor já ativou o Escudo anteriormente
+            const configEscudo = PODERES['ESCUDO'];
+            aplicarEfeitoVisual(podAdamor, configEscudo);
+            banner.innerHTML = `Adamor tinha um <span class="power-name" style="color:${configEscudo.cor}">${configEscudo.icone} ESCUDO</span> escondido!`;
+            banner.classList.add('show');
+
+            // 2. Rodrigo ataca com Congelamento após um tempinho
+            setTimeout(() => {
+                const configAtaque = PODERES['CONGELAMENTO'];
+                banner.innerHTML = `Rodrigo ataca com <span class="power-name" style="color:${configAtaque.cor}">${configAtaque.icone} CONGELAMENTO</span>!`;
+
+                // Pulinho mágico do atacante
+                podRodrigo.style.transition = 'transform 0.2s';
+                podRodrigo.style.transform = 'scale(1.1) translateY(-20px)';
+                setTimeout(() => { podRodrigo.style.transform = ''; }, 300);
+
+                // Atira o projétil personalizado e monitora o acerto
+                atirarProjetil(podRodrigo, podAdamor, configAtaque, (projetil) => {
+                    // O ATAQUE BATEU! Resolução Visual:
+
+                    banner.innerHTML = `O <span class="power-name" style="color:${configEscudo.cor}">ESCUDO</span> rebateu o ataque!`;
+
+                    // A) O Adamor treme com o impacto (Física)
+                    podAdamor.style.transition = 'transform 0.05s';
+                    podAdamor.style.transform = 'translateX(-10px)';
+                    setTimeout(() => podAdamor.style.transform = 'translateX(10px)', 50);
+                    setTimeout(() => podAdamor.style.transform = 'translateX(-10px)', 100);
+                    setTimeout(() => podAdamor.style.transform = '', 150);
+
+                    // B) O Escudo quebra e perde o brilho da borda
+                    podAdamor.classList.remove(configEscudo.classe);
+                    const escudoOverlay = podAdamor.querySelector('.status-overlay');
+                    if (escudoOverlay) {
+                        escudoOverlay.classList.add('falling'); // Aciona animação do escudo caindo
+                    }
+
+                    // C) O Projétil (Gelo) perde força, gira e cai pra baixo da tela
+                    projetil.style.transition = 'top 0.8s cubic-bezier(0.55, 0.085, 0.68, 0.53), transform 0.8s linear, opacity 0.8s ease-in';
+                    projetil.style.top = (window.innerHeight + 100) + 'px'; // Joga lá pro fundo
+                    projetil.style.transform = 'rotate(400deg) scale(0.8)';
+                    projetil.style.opacity = '0';
+
+                    // D) Limpa as sujeiras da DOM após a queda terminar (800ms)
+                    setTimeout(() => {
+                        if(escudoOverlay) escudoOverlay.remove();
+                        projetil.remove();
+                        agendarLimpeza(banner, 2500); // Fecha o banner após alguns segundos
+                    }, 800);
+
+                    return true; // Retorna true para avisar à função atirarProjetil que não precisa remover o item padrão
+                });
+            }, 1800);
+        }
+    </script>
+</body>
+</html>
