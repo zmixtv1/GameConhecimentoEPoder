@@ -99,6 +99,14 @@ Sequência de telas combinada:
 **Decidido:** o passo 4 continua em **duas** telas, como já é hoje —
 `escolha_poder` (qual poder, 10s) e depois `escolha_alvo` (em quem, 20s). Não mexer.
 
+**Princípio que resolve as dúvidas de escopo:** o poder é escolhido e resolvido **por
+pergunta**, nunca por tema. Tudo que um poder tira, dá ou dobra se refere aos pontos
+daquela pergunta.
+
+**Limites de uso** — Escudo (3), Pedágio (2) e Aposta (3) são cotas **de cada jogador**
+na partida inteira. A Festa de Pontos é diferente: são 2 usos **da partida toda**, presos
+ao tema 2 e ao tema 4.
+
 Onde os poderes vivem hoje: `TIPOS_DE_PODER` em server/sala.js:13, `POR_TIPO` em
 public/controlador/controlador.js:12 e `montarObstrucao()` em
 public/controlador/controlador.js:1038.
@@ -164,10 +172,9 @@ public/controlador/controlador.js:1038.
       alguém ativou, mas o efeito nos pontos só aparece no placar.
 
 - [ ] **Pedágio (novo).** Não mexe na tela do alvo.
-      **Números:** leva **metade dos pontos que o alvo fizer**, e cada jogador pode usar
-      **2 vezes na partida inteira**. O alvo descobre na revelação.
-      A confirmar: "pontos da rodada" foi entendido como os pontos daquela pergunta. Se
-      a ideia era metade do que ele somou no tema inteiro (3 perguntas), muda muito.
+      **Números:** leva **metade dos pontos que o alvo fizer naquela pergunta** — não do
+      tema inteiro, porque o poder é escolhido e resolvido por pergunta. Cada jogador
+      pode usar **2 vezes na partida inteira**. O alvo descobre na revelação.
 
 - [ ] **Aposta (novo).** O jogador aposta **a favor** do alvo.
       **Números:** se o alvo **acertar**, ganha **+75**; se o alvo **errar**, perde
