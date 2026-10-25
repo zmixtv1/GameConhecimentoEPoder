@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz TV - 8 Jogadores e Festa de Pontos</title>
+    <!-- Fonte 'Outfit' -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --text-main: #0f172a;
+            --text-muted: #475569;
+
+            /* Cores dos Jogadores */
+            --p1-color: #ff4757;
+            --p2-color: #1e90ff;
+            /* Cor do Rodrigo */
+            --p3-color: #2ed573;
+            --p4-color: #ffa502;
+            --p5-color: #9b59b6;
+            --p6-color: #00d2d3;
+            --p7-color: #ff6b81;
+            --p8-color: #ff7f50;
+
+            --glass-bg: rgba(255, 255, 255, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.9);
+            --glass-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+
+            /* Cores da Festa */
+            --party-color: #ff9f43;
+            --party-glow: rgba(255, 159, 67, 0.6);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: #f8fafc;
+            background-image: radial-gradient(#cbd5e1 2px, transparent 2px);
+            background-size: 40px 40px;
+            background-position: center;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            /* Centraliza verticalmente o dock de jogadores */
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Luzes de Fundo */
+        .ambient-light {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            z-index: -1;
+            animation: fluidMotion 20s infinite alternate ease-in-out;
+        }
+
+        .light-1 {
+            top: -10%;
+            left: -10%;
+            width: 60vw;
+            height: 60vw;
+            background: rgba(226, 232, 240, 0.8);
+        }
+
+        .light-2 {
+            bottom: -20%;
+            right: -10%;
+            width: 50vw;
+            height: 50vw;
+            background: rgba(186, 230, 253, 0.4);
+            animation-delay: -5s;
+        }
+
+        .light-3 {
+            top: 30%;
+            left: 30%;
+            width: 40vw;
+            height: 40vw;
+            background: rgba(255, 255, 255, 0.9);
+            animation-delay: -10s;
+        }
+
+        .light-4 {
+            top: -20%;
+            right: 10%;
+            width: 45vw;
+            height: 45vw;
+            background: rgba(148, 163, 184, 0.25);
+            animation-delay: -7s;
+        }
+
+        @keyframes fluidMotion {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            33% {
+                transform: translate(5vw, 10vh) scale(1.1);
+            }
+
+            66% {
+                transform: translate(-5vw, 5vh) scale(0.9);
+            }
+
+            100% {
+                transform: translate(10vw, -5vh) scale(1.05);
+            }
+        }
+
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 2px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+        }
+
+        /* === BANNER DE ANÚNCIO (TÍTULO) === */
+        .action-banner {
+            position: absolute;
+            top: 10vh;
+            /* Usa a altura da tela em vez de porcentagem fixa */
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px) scale(0.5);
+            padding: clamp(15px, 2vh, 30px) clamp(30px, 5vw, 60px);
+            /* Padding fluido */
+            border-radius: 50px;
+            font-size: clamp(22px, 3vw, 42px);
+            /* Fonte fluida (Mínimo 22px, Ideal 3vw, Máx 42px) */
+            font-weight: 900;
+            color: var(--text-main);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            z-index: 100;
+            text-align: center;
+            opacity: 0;
+            white-space: nowrap;
+            /* Impede que o texto quebre em telas finas */
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .action-banner.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0) scale(1);
+            box-shadow: 0 25px 60px var(--party-glow);
+            border-color: var(--party-color);
+            background: white;
+        }
+
+        /* === ÁREA DOS JOGADORES === */
+        .players-dock {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: clamp(15px, 2vw, 30px);
+            /* Gap flexível */
+            width: 100%;
+            max-width: 1800px;
+            padding: 0 4vw;
+            /* Espaçamento lateral dinâmico */
+            margin-top: 15vh;
+            /* Empurra pra baixo dependendo da altura da tela */
+            z-index: 10;
+        }
+
+        .player-pod {
+            width: clamp(100px, 10vw, 160px);
+            /* Pod se adapta ao notebook e à TV */
+            height: clamp(120px, 12vw, 180px);
+            border-radius: clamp(20px, 2vw, 35px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: clamp(5px, 1vw, 12px);
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .player-pod.thinking {
+            animation: pulse-wait 2s infinite ease-in-out;
+        }
+
+        @keyframes pulse-wait {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(0.97);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .player-avatar {
+            font-size: clamp(45px, 5vw, 75px);
+            /* Avatar grande na TV, menor no notebook */
+            line-height: 1;
+            filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.15));
+            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .player-name {
+            font-size: clamp(14px, 1.5vw, 24px);
+            /* Nome acompanha o tamanho */
+            font-weight: 900;
+            color: var(--text-muted);
+            transition: color 0.3s;
+        }
+
+        /* Selo de "Pronto" (Apenas o Rodrigo vai usar) */
+        .ready-stamp {
+            position: absolute;
+            top: -10%;
+            right: -10%;
+            width: clamp(35px, 3.5vw, 55px);
+            height: clamp(35px, 3.5vw, 55px);
+            background: var(--p2-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: clamp(18px, 2vw, 28px);
+            font-weight: 900;
+            border: clamp(2px, 0.4vw, 4px) solid white;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            transform: scale(0) rotate(-45deg);
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.1s;
+        }
+
+        /* Estado "Travado" (Quando o Rodrigo seleciona) */
+        .player-pod.locked {
+            animation: none;
+            transform: translateY(-20px) scale(1.1);
+            border-width: 3px;
+            background: rgba(30, 144, 255, 0.15);
+            /* Fundo azul do Rodrigo */
+            border-color: var(--p2-color);
+            box-shadow: 0 15px 35px rgba(30, 144, 255, 0.3);
+        }
+
+        .player-pod.locked .player-avatar {
+            transform: scale(1.15) rotate(5deg);
+        }
+
+        .player-pod.locked .ready-stamp {
+            opacity: 1;
+            transform: scale(1) rotate(0deg);
+        }
+
+        .player-pod.locked .player-name {
+            color: var(--text-main);
+        }
+
+        /* === EFEITOS DA FESTA DE PONTOS === */
+        .status-festa {
+            border-color: var(--party-color) !important;
+            box-shadow: 0 0 50px var(--party-glow) !important;
+            background: rgba(255, 159, 67, 0.1) !important;
+            animation: bounce-party 0.6s infinite alternate cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+        }
+
+        @keyframes bounce-party {
+            0% {
+                transform: translateY(0) scale(1);
+            }
+
+            100% {
+                transform: translateY(clamp(-10px, -2vh, -25px)) scale(1.05);
+            }
+        }
+
+        /* Texto Flutuante de Pontos */
+        .floating-points {
+            position: absolute;
+            top: -25%;
+            font-size: clamp(16px, 2vw, 32px);
+            font-weight: 900;
+            color: #ff4757;
+            text-shadow: 0 5px 15px rgba(255, 71, 87, 0.4);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 50;
+            white-space: nowrap;
+        }
+
+        .floating-points.animate {
+            animation: floatUpAndFade 2.5s ease-out forwards;
+        }
+
+        @keyframes floatUpAndFade {
+            0% {
+                transform: translateY(0) scale(0.5);
+                opacity: 0;
+            }
+
+            20% {
+                transform: translateY(-40px) scale(1.2);
+                opacity: 1;
+            }
+
+            80% {
+                transform: translateY(-70px) scale(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-100px) scale(1);
+                opacity: 0;
+            }
+        }
+
+        /* Partículas de Confete */
+        .confetti {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            z-index: 90;
+            pointer-events: none;
+            opacity: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Banner de Notificação Gigante -->
+    <div id="action-banner" class="action-banner glass-panel"></div>
+
+    <!-- Fundo de Luzes Vivas -->
+    <div class="ambient-light light-1"></div>
+    <div class="ambient-light light-2"></div>
+    <div class="ambient-light light-3"></div>
+    <div class="ambient-light light-4"></div>
+
+    <!-- Pódios dos 8 Jogadores -->
+    <div class="players-dock">
+        <!-- Vítoria: Apenas "pensando", sem o ready-stamp -->
+        <div class="player-pod glass-panel thinking" id="p1">
+            <div class="player-avatar">🦊</div>
+            <div class="player-name">Vítoria</div>
+        </div>
+
+        <!-- Rodrigo: É o único que tem o selo de confirmação "ready-stamp" -->
+        <div class="player-pod glass-panel thinking" id="p2">
+            <div class="ready-stamp">✓</div>
+            <div class="player-avatar">🐼</div>
+            <div class="player-name">Rodrigo</div>
+        </div>
+
+        <div class="player-pod glass-panel thinking" id="p3">
+            <div class="player-avatar">🐸</div>
+            <div class="player-name">Cecília</div>
+        </div>
+
+        <div class="player-pod glass-panel thinking" id="p4">
+            <div class="player-avatar">🦁</div>
+            <div class="player-name">Adamor</div>
+        </div>
+
+        <div class="player-pod glass-panel thinking" id="p5">
+            <div class="player-avatar">🦄</div>
+            <div class="player-name">Catarina</div>
+        </div>
+
+        <div class="player-pod glass-panel thinking" id="p6">
+            <div class="player-avatar">🐧</div>
+            <div class="player-name">Guilherme</div>
+        </div>
+
+        <div class="player-pod glass-panel thinking" id="p7">
+            <div class="player-avatar">🐙</div>
+            <div class="player-name">Mônica</div>
+        </div>
+
+        <div class="player-pod glass-panel thinking" id="p8">
+            <div class="player-avatar">🐯</div>
+            <div class="player-name">Luciana</div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // SISTEMA DE CENA ROTEIRIZADA
+        // ==========================================
+
+        const coresConfete = ['#ff4757', '#1e90ff', '#2ed573', '#ffa502', '#9b59b6', '#f1c40f'];
+        let intervaloConfete;
+
+        // PASSO 1: Rodrigo (p2) faz sua jogada
+        function travarJogadaRodrigo() {
+            const podRodrigo = document.getElementById('p2');
+            podRodrigo.classList.remove('thinking');
+            podRodrigo.classList.add('locked');
+        }
+
+        // PASSO 2: Mostrar Título e soltar a festa
+        function dispararFestaDePontos() {
+            const banner = document.getElementById('action-banner');
+
+            // 1. Mostrar o Banner com o texto exato solicitado
+            banner.innerHTML = `🐼 Rodrigo selecionou 🎉 <span style="color:var(--party-color)">FESTA DE PONTOS!</span>`;
+            banner.classList.add('show');
+
+            // 2. Aplicar animação de pula-pula e brilho em TODOS os jogadores
+            const pods = document.querySelectorAll('.player-pod');
+            pods.forEach((pod, index) => {
+                // Tira a animação de pensar e o "locked" visual do Rodrigo para a festa sobrepor tudo
+                pod.classList.remove('thinking');
+
+                pod.classList.add('status-festa');
+                pod.style.animationDelay = `${index * 0.1}s`; // Cascata visual para pularem em sequência
+            });
+
+            // 3. Chuva de confetes!
+            iniciarConfetes();
+        }
+
+        // ==========================================
+        // GERADOR DE CONFETES
+        // ==========================================
+
+        function iniciarConfetes() {
+            if (intervaloConfete) clearInterval(intervaloConfete);
+            intervaloConfete = setInterval(() => {
+                for (let i = 0; i < 6; i++) criarParticulaConfete();
+            }, 80); // Cria muitos confetes rapidamente
+        }
+
+        function criarParticulaConfete() {
+            const confete = document.createElement('div');
+            confete.classList.add('confetti');
+
+            const cor = coresConfete[Math.floor(Math.random() * coresConfete.length)];
+            const posInicialX = Math.random() * window.innerWidth;
+            const tamanho = Math.random() * 10 + 10;
+            const rotacaoInicial = Math.random() * 360;
+            const duracao = Math.random() * 2 + 2.5;
+
+            confete.style.backgroundColor = cor;
+            confete.style.left = `${posInicialX}px`;
+            confete.style.top = '-30px';
+            confete.style.width = `${tamanho}px`;
+            confete.style.height = `${tamanho}px`;
+            if (Math.random() > 0.5) confete.style.borderRadius = '50%';
+
+            document.body.appendChild(confete);
+
+            const animacao = confete.animate([
+                { transform: `translate3d(0, 0, 0) rotate(${rotacaoInicial}deg)`, opacity: 1 },
+                { transform: `translate3d(${Math.random() * 200 - 100}px, ${window.innerHeight + 50}px, 0) rotate(${rotacaoInicial + 720}deg)`, opacity: 0 }
+            ], {
+                duration: duracao * 1000,
+                easing: 'cubic-bezier(.37,0,.63,1)'
+            });
+
+            animacao.onfinish = () => confete.remove();
+        }
+
+        // ==========================================
+        // INÍCIO DA SEQUÊNCIA (TIMELINE)
+        // ==========================================
+
+        // 1. Aos 0.8s: Rodrigo seleciona sua opção
+        setTimeout(() => {
+            travarJogadaRodrigo();
+        }, 800);
+
+        // 2. Aos 2s: O título desce e a festa começa para todos
+        setTimeout(() => {
+            dispararFestaDePontos();
+        }, 2000);
+
+    </script>
+</body>
+
+</html>

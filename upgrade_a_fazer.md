@@ -12,32 +12,66 @@ Branch de trabalho desta leva: `novos-poderes`.
 
 ## Estrutura da partida
 
-- [ ] **5 temas de 3 perguntas, cada tema seguido de um desafio.** Hoje `totalRodadas: 3`
-      e `perguntasPorRodada: 3` (server/sala.js:20-21) dão 9 perguntas, e a Ligação e a
-      Classificação acontecem uma única vez cada, juntas, antes da Pirâmide.
-      Passa para 5 temas de 3 perguntas (15 no total), e **depois de cada tema vem uma
-      Ligação ou uma Classificação** — 5 desafios por partida. Só então a Pirâmide.
-      A definir: se alterna fixo (Ligação, Classificação, Ligação...) ou se sorteia qual
-      dos dois cai em cada tema.
+- [ ] **5 temas de 3 perguntas, com dificuldade crescente.** Hoje `totalRodadas: 3` e
+      `perguntasPorRodada: 3` (server/sala.js:20-21) dão 9 perguntas.
+      Passa para 5 temas de 3 perguntas (15 no total), e os temas têm nível fixo:
+      **2 fáceis, 2 médios e 1 difícil**, nessa ordem. As 3 perguntas de um tema saem
+      todas do nível daquele tema.
+      Depois de cada tema vem um desafio — **alternando fixo**: Ligação no tema 1,
+      Classificação no tema 2, Ligação no 3, Classificação no 4, Ligação no 5. São 5
+      desafios por partida. Só então a Pirâmide.
       **Efeito no tempo de jogo:** cada pergunta custa hoje 53s fixos (10s de escolha de
       poder + 20s de alvo + 8s de leitura + 15s de resposta), mais revelação e mais a
       animação nova do passo 5 (até 16s). Com 15 perguntas e 5 desafios de 30s, a partida
       sai de uns 15 minutos para uns 30. Vale medir antes de testar com gente na sala.
 
-- [ ] **Não repetir desafio dentro da mesma partida.** Este item vira pré-requisito do
-      anterior. Existem só **6 conjuntos de Ligação e 6 de Classificação**
+- [ ] **Sortear pergunta por dificuldade.** O campo `dificuldade` já existe em todas as
+      344 perguntas, mas o servidor **não usa**: `sortearPergunta()` (server/perguntas.js)
+      filtra só por categoria e apenas repassa a dificuldade ao cliente
+      (server/perguntas.js:47). Precisa passar a receber o nível e filtrar por ele também.
+
+---
+
+## Banco de perguntas
+
+- [ ] **O nível difícil está quase vazio — isto bloqueia a dificuldade crescente.**
+      Distribuição real hoje:
+
+      | Tema | fácil | médio | difícil |
+      |---|---|---|---|
+      | Geografia | 23 | 16 | 4 |
+      | História | 19 | 20 | 4 |
+      | Ciência e Natureza | 24 | 16 | 3 |
+      | Esportes | 21 | 21 | **1** |
+      | Cinema e TV | 25 | 16 | **2** |
+      | Música | 20 | 17 | 6 |
+      | Games | 20 | 20 | 3 |
+      | Arte e Literatura | 14 | 24 | 5 |
+      | **Total** | **166** | **150** | **28** |
+
+      O tema difícil da partida precisa de 3 perguntas daquele nível. **Esportes (1) e
+      Cinema e TV (2) não conseguem montar um tema difícil.** Ciência e Games têm
+      exatamente 3, ou seja, cairiam sempre as mesmas três em toda partida. Só 4 dos 8
+      temas têm alguma folga.
+      Meta sugerida: pelo menos 12 perguntas por (tema × nível), o que levaria o difícil
+      de 28 para perto de 96. Os níveis fácil e médio já estão razoáveis.
+
+- [ ] **Mais temas e mais perguntas.** Com 5 temas usados por partida e 8 temas no
+      acervo, duas partidas seguidas repetem a maioria dos temas. Ampliar o acervo de
+      temas, e as perguntas de cada um, nos três níveis.
+
+- [ ] **Não repetir desafio dentro da mesma partida.** Pré-requisito da estrutura nova.
+      Existem só **6 conjuntos de Ligação e 6 de Classificação**
       (data/associacoes.json e data/classificacoes.json), e o sorteio hoje não tem
       memória nenhuma: `sortearConjuntoAssociacao()` e `sortearConjuntoClassificacao()`
       são chamados sem argumento, enquanto `sortearPergunta()` já recebe
       `this.idsPerguntasUsadas` e evita repetição.
       Com 5 desafios por partida saindo de 6 conjuntos sorteados às cegas, a chance de
-      **repetir um desafio na mesma partida é de 91%**. Na prática, quase toda partida
-      mostraria o mesmo desafio duas vezes.
+      **repetir um desafio na mesma partida é de 91%**.
       A correção é pequena: passar a lista de usados para as duas funções, igual já é
-      feito com as perguntas. Isso resolve a repetição dentro da partida.
-      Depois disso ainda vale escrever mais conjuntos: com 6 de cada e 5 desafios por
-      partida, toda partida mostraria quase todo o acervo, e a segunda partida da noite
-      pareceria igual à primeira.
+      feito com as perguntas.
+      Com o alternado fixo são 3 Ligações e 2 Classificações por partida, então o acervo
+      de Ligação aperta mais. Criar mais conjuntos dos dois tipos (já combinado).
 
 ---
 
@@ -75,15 +109,16 @@ public/controlador/controlador.js:1038.
       tela separada).
       **Tempo: 2 segundos por jogador que usou poder.** Teto de 16s com os 8 atacando.
       **No celular**, durante a sequência inteira: tela nova com "Olhe para a TV" no centro.
-      Protótipo visual em `teste-poderes.html`, com o dicionário `PODERES` classificando
-      cada poder em `ataque | defesa | global` — essa classificação deve ir para o servidor.
-      Três coisas que o protótipo ainda não resolve:
-      1. Posiciona dois pods nas laterais com `justify-content: space-between`. O jogo tem
-         de 2 a 8 jogadores, então precisa virar grade ou arco.
-      2. `limparTodosStatus()` zera os efeitos a cada poder novo. No jogo eles acumulam
+      Protótipos: `teste-poderes.html` (projétil, cena do escudo, dicionário `PODERES`
+      classificando cada poder em `ataque | defesa | global`) e
+      `teste-poderes-festaDePontos.html` (8 jogadores e a Festa de Pontos com confete).
+      O layout de 8 jogadores já está resolvido: os dois usam o `.players-dock` do
+      `teste.html`, com os pods lado a lado.
+      Duas coisas que os protótipos ainda não resolvem:
+      1. `limparTodosStatus()` zera os efeitos a cada poder novo. No jogo eles acumulam
          (`efeitosAtivos` é um array por alvo), então a sequência deve empilhar e terminar
          mostrando o estado final de todo mundo.
-      3. Na cena do escudo o protótipo revela a defesa antes de o ataque sair. Mais forte
+      2. Na cena do escudo o protótipo revela a defesa antes de o ataque sair. Mais forte
          ao contrário: o ataque voa, e o escudo só se revela no impacto.
       A Névoa borrar o nome do jogador na TV está ok: o efeito só existe durante esta
       animação, não durante a partida.
@@ -117,11 +152,10 @@ public/controlador/controlador.js:1038.
       senão uma pergunta valeria 400 e uma rodada sozinha decidiria a partida.
       Disponível **2 vezes na partida**: no tema 2 e no tema 4, o penúltimo antes da
       Pirâmide.
-      **Na tela:** aparece normalmente na sequência de "quem atacou quem", mas com visual
-      próprio, descrito em `teste-poderes-festaDePontos.html`. O **dobro só é revelado na
-      tela de pontuação** — durante a animação a mesa vê que alguém ativou, mas o efeito
-      nos pontos só aparece no placar.
-      Pendência: `teste-poderes-festaDePontos.html` existe no disco mas está vazio.
+      **Na tela:** aparece normalmente na sequência de "quem atacou quem", com o visual
+      próprio de `teste-poderes-festaDePontos.html` (confete e os pods pulando). O
+      **dobro só é revelado na tela de pontuação** — durante a animação a mesa vê que
+      alguém ativou, mas o efeito nos pontos só aparece no placar.
 
 - [ ] **Pedágio (novo).** Não mexe na tela do alvo.
       **Números:** leva **metade dos pontos que o alvo fizer**, e cada jogador pode usar
@@ -131,7 +165,8 @@ public/controlador/controlador.js:1038.
 
 - [ ] **Aposta (novo).** O jogador aposta **a favor** do alvo.
       **Números:** se o alvo **acertar**, ganha **+75**; se o alvo **errar**, perde
-      **-50**. O alvo não sabe que foi apostado, senão mudaria o comportamento dele.
+      **-50**. Cada jogador pode usar **3 vezes na partida inteira**. O alvo não sabe que
+      foi apostado, senão mudaria o comportamento dele.
       Isso inverte o sentido do poder: em vez de torcer contra alguém, você escolhe em
       quem confia — e mirar em quem sabe muito passa a ser o jogo.
       Ideia de tela: é o único poder que não se resolve na hora, então o dado pode ficar
