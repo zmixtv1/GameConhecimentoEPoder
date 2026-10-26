@@ -81,7 +81,7 @@ em `public/` saber com o que se parecer.
 
 ## Pirâmide do Conhecimento
 
-Referência visual: `piramide-final.html`. É uma pirâmide isométrica 3D de **8 níveis**,
+Referência visual: `teste-piramide-final.html`. É uma pirâmide isométrica 3D de **8 níveis**,
 onde o nível N é uma laje de N×N blocos — 204 blocos no total, base 8×8, topo 1×1.
 Os níveis são numerados **0 na base e 7 no topo** (`TOPO = TOTAL_ANDARES - 1`).
 
@@ -145,7 +145,7 @@ desses dois valores.
       acontece — é o que deixa a mesa ver quem vai ganhar. O servidor já transmite
       `progressoPiramide` a cada acerto, para todos e para a TV (server/sala.js:776-778),
       então o gancho existe; falta ligar a TV nele.
-      A `piramide-final.html` já resolve a animação inteira: salto com arco
+      A `teste-piramide-final.html` já resolve a animação inteira: salto com arco
       (`ALTURA_PULO`), easing cúbico, sombra que encolhe e clareia no ar, e `z-index`
       calculado pela posição na tela para o boneco nunca sumir atrás de um bloco. A
       corrida de lá é simulada com sorteio ponderado por velocidade; no jogo de verdade
