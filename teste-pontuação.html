@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz TV - Tela de Pontuação</title>
+
+    <!--
+      PROPOSTA NOVA da tela `tela-resultado` da TV.
+
+      Sequência da animação:
+        1. Título com a resposta certa + as 4 alternativas virando.
+        2. A certa fica verde, as erradas apagam, os avatares caem em cada uma.
+        3. O placar entra na ordem da RODADA ANTERIOR.
+        4. Aparece o "+pontos" de cada um e o total conta para cima.
+        5. As linhas deslizam para a nova posição, com seta de quem subiu/caiu
+           e coroa para o líder.
+
+      Todos os jogadores aparecem (antes a TV cortava em 5).
+      Para os pontos anteriores, cada jogador precisa de `ganho` (pontos
+      desta rodada): anterior = pontos - ganho.
+    -->
+
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            color-scheme: light;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --ink: #0f172a;
+            --ink-soft: #475569;
+            --azul: #1e90ff;
+            --verde: #2ed573;
+            --verde-escuro: #15a356;
+            --vermelho: #ff4757;
+            --ouro: #f5b301;
+            --prata: #a3afbf;
+            --bronze: #d9894a;
+            --borda: rgba(15, 23, 42, 0.1);
+            --glass-bg: rgba(255, 255, 255, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.9);
+            --glass-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+
+            /* Altura de cada linha do placar e espaço entre elas */
+            --linha-h: clamp(48px, 6.2vh, 68px);
+            --linha-gap: clamp(7px, 1vh, 11px);
+
+            font-family: "Outfit", system-ui, sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            min-height: 100vh;
+            min-height: 100dvh;
+            background-color: var(--bg);
+            background-image: radial-gradient(#cbd5e1 2px, transparent 2px);
+            background-size: 40px 40px;
+            background-position: center;
+            color: var(--ink);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: clamp(20px, 3vh, 40px) clamp(24px, 3vw, 60px);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .ambient-light {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(100px);
+            z-index: 0;
+            pointer-events: none;
+            animation: fluidMotion 20s infinite alternate ease-in-out;
+        }
+        .light-1 { top: -10%; left: -10%; width: 60vw; height: 60vw; background: rgba(226, 232, 240, 0.8); }
+        .light-2 { bottom: -20%; right: -10%; width: 50vw; height: 50vw; background: rgba(186, 230, 253, 0.4); animation-delay: -5s; }
+        .light-3 { top: 30%; left: 30%; width: 40vw; height: 40vw; background: rgba(255, 255, 255, 0.9); animation-delay: -10s; }
+        .light-4 { top: -20%; right: 10%; width: 45vw; height: 45vw; background: rgba(148, 163, 184, 0.25); animation-delay: -7s; }
+
+        @keyframes fluidMotion {
+            0% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(5vw, 10vh) scale(1.1); }
+            66% { transform: translate(-5vw, 5vh) scale(0.9); }
+            100% { transform: translate(10vw, -5vh) scale(1.05); }
+        }
+
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 2px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+        }
+
+        /* ===================== ESTRUTURA ===================== */
+
+        .tela {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 1680px;
+            display: flex;
+            flex-direction: column;
+            gap: clamp(16px, 3vh, 34px);
+        }
+
+        .cabecalho { text-align: center; }
+
+        .rotulo {
+            display: inline-block;
+            padding: 6px 18px;
+            border-radius: 100px;
+            font-size: clamp(14px, 1.3vw, 20px);
+            font-weight: 800;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--ink-soft);
+            opacity: 0;
+            animation: subir .5s ease forwards;
+        }
+
+        .titulo {
+            margin-top: 10px;
+            font-size: clamp(34px, 4.2vw, 72px);
+            font-weight: 900;
+            line-height: 1.05;
+            letter-spacing: -1px;
+            opacity: 0;
+            animation: subir .6s cubic-bezier(.2,.9,.3,1.2) .1s forwards;
+        }
+
+        .titulo .resposta { color: var(--verde-escuro); }
+
+        .subtitulo {
+            margin-top: 8px;
+            font-size: clamp(16px, 1.5vw, 24px);
+            font-weight: 700;
+            color: var(--ink-soft);
+            opacity: 0;
+            animation: subir .5s ease .25s forwards;
+        }
+
+        @keyframes subir {
+            from { opacity: 0; transform: translateY(14px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .conteudo {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+            gap: clamp(20px, 2.6vw, 48px);
+            align-items: start;
+        }
+
+        .secao-titulo {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: clamp(15px, 1.25vw, 20px);
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--ink-soft);
+        }
+
+        /* ===================== ALTERNATIVAS ===================== */
+
+        .alternativas {
+            display: flex;
+            flex-direction: column;
+            gap: clamp(10px, 1.4vh, 16px);
+        }
+
+        .alternativa {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            min-height: clamp(66px, 9vh, 96px);
+            padding: 12px 22px;
+            border-radius: 22px;
+            font-size: clamp(20px, 1.9vw, 32px);
+            font-weight: 800;
+            opacity: 0;
+            transform-origin: left center;
+            animation: flipIn .6s cubic-bezier(.175,.885,.32,1.275) forwards;
+            transition: opacity .5s ease, filter .5s ease, background .5s ease, border-color .5s ease, transform .5s ease;
+        }
+
+        @keyframes flipIn {
+            from { opacity: 0; transform: perspective(900px) rotateY(-90deg); }
+            to   { opacity: 1; transform: perspective(900px) rotateY(0deg); }
+        }
+
+        .alternativa .texto { flex: 1; min-width: 0; }
+
+        .alternativa.revelada.correta {
+            background: rgba(46, 213, 115, 0.18);
+            border-color: var(--verde);
+            box-shadow: 0 16px 40px rgba(46, 213, 115, 0.25);
+            transform: scale(1.02);
+        }
+
+        .alternativa.revelada.errada {
+            opacity: .55 !important;
+            filter: grayscale(.6);
+        }
+
+        .selo-certo {
+            flex: none;
+            width: clamp(30px, 2.4vw, 40px);
+            height: clamp(30px, 2.4vw, 40px);
+            border-radius: 50%;
+            background: var(--verde);
+            color: #fff;
+            display: grid;
+            place-items: center;
+            transform: scale(0);
+            transition: transform .4s cubic-bezier(.34,1.56,.64,1);
+        }
+        .alternativa.revelada .selo-certo { transform: scale(1); }
+
+        .avatares { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; max-width: 55%; }
+
+        .avatar {
+            flex: none;
+            width: clamp(36px, 2.9vw, 50px);
+            height: clamp(36px, 2.9vw, 50px);
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            font-size: clamp(20px, 1.6vw, 28px);
+            border: 2px solid var(--glass-border);
+            box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+        }
+
+        .avatares .avatar {
+            opacity: 0;
+            transform: translateY(-24px) scale(.6);
+        }
+        .avatares .avatar.caiu { animation: cair .45s cubic-bezier(.34,1.56,.64,1) forwards; }
+
+        @keyframes cair {
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .sem-resposta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 4px;
+            font-size: clamp(14px, 1.15vw, 19px);
+            font-weight: 700;
+            color: var(--ink-soft);
+            opacity: 0;
+            transition: opacity .4s ease;
+        }
+        .sem-resposta.visivel { opacity: 1; }
+        .sem-resposta .avatar { width: 34px; height: 34px; font-size: 19px; filter: grayscale(.4); }
+
+        /* ===================== PLACAR ===================== */
+
+        .placar {
+            position: relative;
+            list-style: none;
+            /* altura = n linhas, definida pelo JS */
+        }
+
+        .linha {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            height: var(--linha-h);
+            display: flex;
+            align-items: center;
+            gap: clamp(10px, 1vw, 16px);
+            padding: 0 clamp(12px, 1.2vw, 20px) 0 clamp(8px, .8vw, 12px);
+            border-radius: 16px;
+            opacity: 0;
+            transform: translate(40px, var(--y, 0px));
+            transition:
+                transform .9s cubic-bezier(.65,0,.35,1),
+                opacity .4s ease,
+                box-shadow .4s ease,
+                border-color .4s ease;
+        }
+        .linha.entrou { opacity: 1; transform: translate(0, var(--y, 0px)); }
+        .linha.lider {
+            border-color: rgba(245, 179, 1, 0.7);
+            box-shadow: 0 14px 34px rgba(245, 179, 1, 0.25);
+        }
+
+        .posicao {
+            flex: none;
+            width: clamp(34px, 2.6vw, 44px);
+            height: clamp(34px, 2.6vw, 44px);
+            border-radius: 12px;
+            display: grid;
+            place-items: center;
+            font-size: clamp(16px, 1.35vw, 22px);
+            font-weight: 900;
+            color: var(--ink-soft);
+            background: rgba(15, 23, 42, 0.06);
+            transition: background .4s ease, color .4s ease;
+        }
+        .posicao.p1 { background: var(--ouro); color: #fff; }
+        .posicao.p2 { background: var(--prata); color: #fff; }
+        .posicao.p3 { background: var(--bronze); color: #fff; }
+
+        .linha .avatar { position: relative; }
+
+        .coroa {
+            position: absolute;
+            top: -16px;
+            left: 50%;
+            font-size: 18px;
+            transform: translateX(-50%) scale(0) rotate(-20deg);
+            transition: transform .45s cubic-bezier(.34,1.56,.64,1);
+        }
+        .linha.lider .coroa { transform: translateX(-50%) scale(1) rotate(-12deg); }
+
+        .nome {
+            flex: 1;
+            min-width: 0;
+            font-size: clamp(18px, 1.6vw, 27px);
+            font-weight: 800;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .mudanca {
+            flex: none;
+            width: 3.2em;
+            font-size: clamp(13px, 1.05vw, 17px);
+            font-weight: 900;
+            text-align: center;
+            opacity: 0;
+            transform: scale(.6);
+            transition: opacity .35s ease, transform .35s cubic-bezier(.34,1.56,.64,1);
+        }
+        .mudanca.visivel { opacity: 1; transform: scale(1); }
+        .mudanca.subiu { color: var(--verde-escuro); }
+        .mudanca.caiu { color: var(--vermelho); }
+        .mudanca.igual { color: rgba(71, 85, 105, .5); }
+
+        .ganho {
+            flex: none;
+            min-width: 4.4em;
+            padding: 4px 10px;
+            border-radius: 100px;
+            font-size: clamp(14px, 1.15vw, 19px);
+            font-weight: 900;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+            opacity: 0;
+            transform: translateY(8px) scale(.7);
+            transition: opacity .3s ease, transform .4s cubic-bezier(.34,1.56,.64,1);
+        }
+        .ganho.visivel { opacity: 1; transform: translateY(0) scale(1); }
+        .ganho.positivo { background: rgba(46, 213, 115, 0.18); color: var(--verde-escuro); }
+        .ganho.zero { background: rgba(15, 23, 42, 0.06); color: rgba(71, 85, 105, .6); }
+
+        .pontos {
+            flex: none;
+            min-width: 4.2em;
+            text-align: right;
+            font-size: clamp(20px, 1.75vw, 30px);
+            font-weight: 900;
+            font-variant-numeric: tabular-nums;
+        }
+        .pontos small { font-size: .55em; font-weight: 800; color: var(--ink-soft); margin-left: 3px; }
+
+        .pontos.contando { color: var(--verde-escuro); }
+
+        .rodape {
+            text-align: center;
+            font-size: clamp(15px, 1.25vw, 21px);
+            font-weight: 700;
+            color: var(--ink-soft);
+            opacity: 0;
+            transition: opacity .5s ease;
+        }
+        .rodape.visivel { opacity: 1; }
+
+        .pontinhos::after {
+            content: '';
+            animation: pontinhos 1.4s steps(4) infinite;
+        }
+        @keyframes pontinhos {
+            0% { content: ''; } 25% { content: '.'; } 50% { content: '..'; } 75% { content: '...'; }
+        }
+
+        /* ---- só deste protótipo, não existe no jogo ---- */
+        .barra-prototipo {
+            position: fixed;
+            bottom: 16px;
+            right: 16px;
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 14px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.92);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--ink-soft);
+        }
+        .barra-prototipo button {
+            padding: 7px 14px;
+            border: 0;
+            border-radius: 8px;
+            background: #0f172a;
+            color: white;
+            font-weight: 800;
+            font-family: inherit;
+            cursor: pointer;
+        }
+
+        @media (max-width: 900px) {
+            body { overflow-y: auto; align-items: flex-start; }
+            .conteudo { grid-template-columns: 1fr; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="ambient-light light-1"></div>
+    <div class="ambient-light light-2"></div>
+    <div class="ambient-light light-3"></div>
+    <div class="ambient-light light-4"></div>
+
+    <div id="tela-resultado" class="tela">
+        <header class="cabecalho">
+            <span class="rotulo glass-panel" id="rotulo-rodada">Resultado da rodada</span>
+            <h1 class="titulo" id="resultado-titulo"></h1>
+            <p class="subtitulo" id="resultado-subtitulo"></p>
+        </header>
+
+        <div class="conteudo">
+            <section>
+                <div class="secao-titulo"><span>Respostas</span></div>
+                <div class="alternativas" id="alternativas-resultado"></div>
+                <div class="sem-resposta" id="sem-resposta"></div>
+            </section>
+
+            <section>
+                <div class="secao-titulo"><span>Placar</span><span id="placar-info"></span></div>
+                <ol class="placar" id="placar"></ol>
+            </section>
+        </div>
+
+        <p class="rodape" id="progresso-proximo"><span class="pontinhos">Aguardando jogadores confirmarem</span></p>
+    </div>
+
+    <div class="barra-prototipo">
+        <span>Protótipo</span>
+        <button id="botao-repetir" type="button">Repetir animação</button>
+    </div>
+
+    <script>
+    (() => {
+        'use strict';
+
+        // ===================== DADOS (iguais aos do jogo) =====================
+        // pontos = total DEPOIS desta rodada; ganho = pontos ganhos nesta rodada
+        const JOGADORES = [
+            { nome: 'Vítoria',   pontos: 1480, ganho: 280, avatar: { emoji: '🦊', cor: '#ff4757' } },
+            { nome: 'Rodrigo',   pontos: 1355, ganho: 310, avatar: { emoji: '🐼', cor: '#1e90ff' } },
+            { nome: 'Cecília',   pontos: 1290, ganho:   0, avatar: { emoji: '🐸', cor: '#2ed573' } },
+            { nome: 'Adamor',    pontos: 1290, ganho: 245, avatar: { emoji: '🦁', cor: '#ffa502' } },
+            { nome: 'Catarina',  pontos: 1105, ganho:   0, avatar: { emoji: '🦄', cor: '#9b59b6' } },
+            { nome: 'Guilherme', pontos:  980, ganho: 190, avatar: { emoji: '🐧', cor: '#00d2d3' } },
+            { nome: 'Mônica',    pontos:  845, ganho:   0, avatar: { emoji: '🐙', cor: '#ff6b81' } },
+            { nome: 'Luciana',   pontos:  720, ganho:   0, avatar: { emoji: '🐯', cor: '#ff7f50' } }
+        ];
+
+        const ALTERNATIVAS = ['Canadá', 'Rússia', 'China', 'Estados Unidos'];
+        const CORRETA = 1; // Rússia
+
+        const RESPOSTAS = [
+            { nome: 'Vítoria',   alternativaIndex: 1 },
+            { nome: 'Rodrigo',   alternativaIndex: 1 },
+            { nome: 'Cecília',   alternativaIndex: 0 },
+            { nome: 'Adamor',    alternativaIndex: 1 },
+            { nome: 'Catarina',  alternativaIndex: 3 },
+            { nome: 'Guilherme', alternativaIndex: 1 },
+            { nome: 'Mônica',    alternativaIndex: 0 },
+            { nome: 'Luciana',   alternativaIndex: null } // não respondeu a tempo
+        ];
+
+        // Agora todos aparecem; se um dia a sala crescer muito, limite aqui.
+        const TOP_PLACAR_TV = Infinity;
+
+        // Linha do tempo (ms)
+        const T = {
+            revelar: 1100,      // certa fica verde, erradas apagam
+            avatares: 1400,     // avatares caem nas alternativas
+            placar: 1900,       // placar entra na ordem anterior
+            ganhos: 3100,       // aparece o +pontos e o total conta
+            contagem: 1100,     // duração da contagem
+            reordenar: 4500,    // linhas deslizam para a nova posição
+            rodape: 5600
+        };
+
+        // ===================== AUXILIARES =====================
+        const $ = id => document.getElementById(id);
+        const timers = [];
+        const depois = (ms, fn) => timers.push(setTimeout(fn, ms));
+
+        function el(tag, classe, texto) {
+            const e = document.createElement(tag);
+            if (classe) e.className = classe;
+            if (texto !== undefined) e.textContent = texto;
+            return e;
+        }
+
+        function avatarEl(jogador) {
+            const a = el('span', 'avatar', jogador.avatar ? jogador.avatar.emoji : '❔');
+            a.style.background = jogador.avatar
+                ? `color-mix(in srgb, ${jogador.avatar.cor} 22%, white)`
+                : 'var(--surface)';
+            return a;
+        }
+
+        // Ordena por pontos (desc) e calcula posição com empate (1, 2, 3, 3, 5…)
+        function ranquear(lista, campo) {
+            const ordenado = [...lista].sort((a, b) => b[campo] - a[campo] || a.nome.localeCompare(b.nome));
+            return ordenado.map(j => ({
+                jogador: j,
+                posicao: lista.filter(o => o[campo] > j[campo]).length + 1
+            }));
+        }
+
+        // ===================== CABEÇALHO =====================
+        function renderizarCabecalho() {
+            const titulo = $('resultado-titulo');
+            titulo.replaceChildren('Resposta certa: ', el('span', 'resposta', ALTERNATIVAS[CORRETA]));
+
+            const acertos = RESPOSTAS.filter(r => r.alternativaIndex === CORRETA).length;
+            $('resultado-subtitulo').textContent =
+                acertos === 0 ? 'Ninguém acertou dessa vez!'
+                : acertos === RESPOSTAS.length ? 'Todo mundo acertou! 🎉'
+                : `${acertos} de ${RESPOSTAS.length} acertaram`;
+        }
+
+        // ===================== ALTERNATIVAS =====================
+        function renderizarAlternativas() {
+            const porAlternativa = ALTERNATIVAS.map(() => []);
+            const semResposta = [];
+            for (const r of RESPOSTAS) {
+                const jogador = JOGADORES.find(j => j.nome === r.nome) || r;
+                if (r.alternativaIndex !== null && porAlternativa[r.alternativaIndex]) porAlternativa[r.alternativaIndex].push(jogador);
+                else semResposta.push(jogador);
+            }
+
+            const cont = $('alternativas-resultado');
+            cont.replaceChildren();
+            const cards = ALTERNATIVAS.map((texto, i) => {
+                const card = el('div', 'alternativa glass-panel ' + (i === CORRETA ? 'correta' : 'errada'));
+                card.style.animationDelay = `${i * 0.09}s`;
+                card.append(el('span', 'texto', texto));
+
+                const avs = el('div', 'avatares');
+                porAlternativa[i].forEach(j => avs.append(avatarEl(j)));
+                card.append(avs);
+
+                if (i === CORRETA) {
+                    const selo = el('span', 'selo-certo');
+                    selo.innerHTML = '<svg viewBox="0 0 24 24" width="60%" height="60%" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+                    card.append(selo);
+                }
+                cont.append(card);
+                return card;
+            });
+
+            const sem = $('sem-resposta');
+            sem.classList.remove('visivel');
+            sem.replaceChildren();
+            if (semResposta.length) {
+                sem.append(el('span', '', 'Não responderam:'));
+                semResposta.forEach(j => sem.append(avatarEl(j)));
+            }
+
+            depois(T.revelar, () => cards.forEach(c => c.classList.add('revelada')));
+            depois(T.avatares, () => {
+                let atraso = 0;
+                // A correta primeiro, depois as outras
+                [cards[CORRETA], ...cards.filter((_, i) => i !== CORRETA)].forEach(c => {
+                    c.querySelectorAll('.avatar').forEach(a => {
+                        a.style.animationDelay = `${atraso}ms`;
+                        a.classList.add('caiu');
+                        atraso += 90;
+                    });
+                });
+                depois(atraso + 200, () => sem.classList.add('visivel'));
+            });
+        }
+
+        // ===================== PLACAR =====================
+        function renderizarPlacar() {
+            const lista = JOGADORES
+                .map(j => ({ ...j, anterior: j.pontos - (j.ganho || 0) }))
+                .slice(0, TOP_PLACAR_TV);
+
+            const antes = ranquear(lista, 'anterior');
+            const agora = ranquear(lista, 'pontos');
+
+            const indiceAntes = new Map(antes.map((r, i) => [r.jogador.nome, i]));
+            const indiceAgora = new Map(agora.map((r, i) => [r.jogador.nome, i]));
+            const posAntes = new Map(antes.map(r => [r.jogador.nome, r.posicao]));
+            const posAgora = new Map(agora.map(r => [r.jogador.nome, r.posicao]));
+
+            const ol = $('placar');
+            ol.replaceChildren();
+
+            const medir = v => {
+                const p = el('div');
+                p.style.cssText = `position:absolute;visibility:hidden;height:var(${v})`;
+                document.body.append(p);
+                const h = p.getBoundingClientRect().height;
+                p.remove();
+                return h;
+            };
+            const passo = medir('--linha-h') + medir('--linha-gap');
+            ol.style.height = `${lista.length * passo - medir('--linha-gap')}px`;
+            $('placar-info').textContent = `${lista.length} jogadores`;
+
+            const linhas = lista.map(j => {
+                const li = el('li', 'linha glass-panel');
+
+                const posicao = el('span', 'posicao');
+                const av = avatarEl(j);
+                av.append(el('span', 'coroa', '👑'));
+                const nome = el('span', 'nome', j.nome);
+                const mudanca = el('span', 'mudanca');
+                const ganho = el('span', 'ganho ' + (j.ganho > 0 ? 'positivo' : 'zero'), j.ganho > 0 ? `+${j.ganho}` : '+0');
+                const pontos = el('span', 'pontos');
+                const numero = el('span', '', String(j.anterior));
+                pontos.append(numero, el('small', '', 'pts'));
+
+                li.append(posicao, av, nome, mudanca, ganho, pontos);
+                ol.append(li);
+
+                const linha = { j, li, posicao, mudanca, ganho, pontos, numero };
+                colocar(linha, indiceAntes.get(j.nome), posAntes.get(j.nome));
+                return linha;
+            });
+
+            function colocar(linha, indice, pos) {
+                linha.li.style.setProperty('--y', `${indice * passo}px`);
+                linha.li.style.zIndex = String(100 - indice);
+                linha.posicao.textContent = `${pos}º`;
+                linha.posicao.className = 'posicao' + (pos <= 3 ? ` p${pos}` : '');
+            }
+
+            // 3) Entra na ordem anterior, uma linha de cada vez
+            depois(T.placar, () => {
+                linhas
+                    .slice()
+                    .sort((a, b) => indiceAntes.get(a.j.nome) - indiceAntes.get(b.j.nome))
+                    .forEach((l, i) => depois(i * 70, () => l.li.classList.add('entrou')));
+            });
+
+            // 4) +pontos aparece e o total conta para cima
+            depois(T.ganhos, () => {
+                linhas.forEach((l, i) => depois(i * 60, () => {
+                    l.ganho.classList.add('visivel');
+                    if (l.j.ganho > 0) contar(l, l.j.anterior, l.j.pontos, T.contagem);
+                }));
+            });
+
+            // 5) Desliza para a nova posição; setas e coroa do líder
+            depois(T.reordenar, () => {
+                const lider = agora[0];
+                linhas.forEach(l => {
+                    const nomeJ = l.j.nome;
+                    const iAntes = indiceAntes.get(nomeJ);
+                    const iAgora = indiceAgora.get(nomeJ);
+                    colocar(l, iAgora, posAgora.get(nomeJ));
+                    // Quem sobe passa por cima de quem desce durante o deslize
+                    if (iAgora < iAntes) l.li.style.zIndex = '300';
+
+                    const delta = posAntes.get(nomeJ) - posAgora.get(nomeJ);
+                    l.mudanca.textContent = delta > 0 ? `▲${delta}` : delta < 0 ? `▼${-delta}` : '•';
+                    l.mudanca.className = 'mudanca ' + (delta > 0 ? 'subiu' : delta < 0 ? 'caiu' : 'igual');
+                    depois(700, () => {
+                        l.mudanca.classList.add('visivel');
+                        l.li.style.zIndex = String(100 - iAgora);
+                    });
+
+                    l.li.classList.toggle('lider', lider && posAgora.get(nomeJ) === 1);
+                });
+            });
+        }
+
+        function contar(linha, de, ate, duracao) {
+            const t0 = performance.now();
+            linha.pontos.classList.add('contando');
+            (function passo(agora) {
+                const t = Math.min(1, (agora - t0) / duracao);
+                const e = 1 - Math.pow(1 - t, 3);
+                linha.numero.textContent = String(Math.round(de + (ate - de) * e));
+                if (t < 1) requestAnimationFrame(passo);
+                else setTimeout(() => linha.pontos.classList.remove('contando'), 400);
+            })(t0);
+        }
+
+        // ===================== MONTAGEM =====================
+        function reiniciarAnimacoesCss() {
+            // Reaplica as animações do cabeçalho ao repetir
+            document.querySelectorAll('.rotulo, .titulo, .subtitulo').forEach(e => {
+                e.style.animation = 'none';
+                void e.offsetWidth;
+                e.style.animation = '';
+            });
+        }
+
+        function montar() {
+            timers.splice(0).forEach(clearTimeout);
+            $('progresso-proximo').classList.remove('visivel');
+            reiniciarAnimacoesCss();
+            renderizarCabecalho();
+            renderizarAlternativas();
+            renderizarPlacar();
+            depois(T.rodape, () => $('progresso-proximo').classList.add('visivel'));
+        }
+
+        $('botao-repetir').addEventListener('click', montar);
+        if (document.fonts) document.fonts.ready.then(montar); else montar();
+
+        // Se a tela mudar de tamanho, remonta para recalcular as alturas
+        let redim;
+        window.addEventListener('resize', () => {
+            clearTimeout(redim);
+            redim = setTimeout(montar, 250);
+        });
+    })();
+    </script>
+</body>
+
+</html>

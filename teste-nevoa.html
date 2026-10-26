@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle Mobile - Névoa</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --text-main: #0f172a;
+            --text-muted: #475569;
+
+            --player-color: #1e90ff;
+            --player-glow: rgba(30, 144, 255, 0.3);
+            --player-glass: rgba(30, 144, 255, 0.15);
+
+            --glass-bg: rgba(255, 255, 255, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.9);
+            --glass-shadow: 0 15px 30px rgba(0, 0, 0, 0.06);
+
+            /* Cores do contorno do borrão (R, G, B) */
+            --halo-cor-1: 99, 102, 241;   /* violeta */
+            --halo-cor-2: 56, 189, 248;   /* azul-claro */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #000;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .mobile-screen {
+            width: 751px;
+            height: 336px;
+            position: relative;
+            overflow: hidden;
+            border-radius: 16px;
+            background-color: #f8fafc;
+            background-image: radial-gradient(#cbd5e1 2px, transparent 2px);
+            background-size: 40px 40px;
+            background-position: center;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            gap: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+        }
+
+        .ambient-light {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 0;
+            animation: fluidMotion 20s infinite alternate ease-in-out;
+        }
+
+        .light-1 { top: -10%; left: -10%; width: 400px; height: 400px; background: rgba(226, 232, 240, 0.8); }
+        .light-2 { bottom: -20%; right: -10%; width: 350px; height: 350px; background: rgba(186, 230, 253, 0.5); animation-delay: -5s; }
+        .light-3 { top: 30%; left: 30%; width: 250px; height: 250px; background: rgba(255, 255, 255, 0.9); animation-delay: -10s; }
+
+        @keyframes fluidMotion {
+            0% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(15px, 20px) scale(1.05); }
+            66% { transform: translate(-15px, 10px) scale(0.95); }
+            100% { transform: translate(25px, -15px) scale(1.02); }
+        }
+
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 2px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            z-index: 10;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            z-index: 10;
+        }
+
+        .player-identity {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 16px 8px 20px;
+            border-radius: 100px;
+            transition: all 0.3s ease;
+        }
+
+        .player-avatar {
+            font-size: 28px;
+            line-height: 1;
+            filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.15));
+        }
+
+        .player-name {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text-main);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Bônus de velocidade: cai conforme a névoa some */
+        .bonus {
+            min-width: 64px;
+            padding: 3px 9px;
+            border-radius: 100px;
+            background: #0f172a;
+            color: #fde68a;
+            font-size: 14px;
+            font-weight: 900;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+            transition: background .3s ease, color .3s ease;
+        }
+
+        .bonus.zero { background: rgba(15, 23, 42, 0.12); color: var(--text-muted); }
+        .bonus.locked { background: var(--player-color); color: #fff; }
+
+        .question-text {
+            flex: 1;
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text-main);
+            text-align: center;
+            line-height: 1.2;
+            text-shadow: 0 4px 15px rgba(255, 255, 255, 0.8);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .timer-module {
+            position: relative;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .timer-svg {
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            width: 70px;
+            height: 70px;
+            transform: rotate(-90deg);
+        }
+
+        .timer-bg { fill: none; stroke: rgba(255, 255, 255, 0.8); stroke-width: 6; }
+
+        .timer-ring {
+            fill: none;
+            stroke: var(--text-main);
+            stroke-width: 6;
+            stroke-linecap: round;
+            stroke-dasharray: 188;
+            stroke-dashoffset: 0;
+            transition: stroke-dashoffset 1s linear, stroke 0.3s ease;
+        }
+
+        .timer-value { font-size: 24px; font-weight: 900; color: var(--text-main); line-height: 1; }
+
+        .answers-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 18px;
+            z-index: 10;
+        }
+
+        .answer-btn {
+            position: relative;
+            overflow: hidden;
+            border-radius: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            font-weight: 900;
+            color: var(--text-main);
+            text-align: center;
+            padding: 20px;
+            cursor: pointer;
+            outline: none;
+            border: 2px solid var(--glass-border);
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .answer-btn:active:not(.locked-in):not(.disabled) {
+            transform: scale(0.96);
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: inset 2px 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .answer-btn.locked-in {
+            background: var(--player-glass);
+            border: 3px solid var(--player-color);
+            box-shadow: 0 15px 35px var(--player-glow);
+            color: var(--player-color);
+            transform: scale(1.03);
+        }
+
+        .answer-btn.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+            filter: grayscale(80%);
+        }
+
+        .player-identity.voted {
+            background: var(--player-glass);
+            border-color: var(--player-color);
+            color: var(--player-color);
+            box-shadow: 0 10px 25px var(--player-glow);
+        }
+
+        .player-identity.voted .player-name { color: var(--player-color); }
+
+        /* ===================== NÉVOA ===================== */
+
+        /* O texto da resposta fica borrado; o JS vai reduzindo --blur até 0 */
+        .answer-text {
+            position: relative;
+            z-index: 1;
+            filter: blur(var(--blur, 0px));
+            /* Contorno colorido no borrão (some junto com a névoa) */
+            text-shadow:
+                0 0 3px rgba(var(--halo-cor-1), calc(var(--halo, 0) * 0.7)),
+                0 0 8px rgba(var(--halo-cor-2), calc(var(--halo, 0) * 0.5));
+        }
+
+        /* Laterais em preto fosco (vinheta) que somem junto com o borrão */
+        .answer-btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            z-index: 0;
+            pointer-events: none;
+            opacity: var(--borda, 0);
+            background: radial-gradient(ellipse 80% 90% at center, rgba(10, 12, 18, 0) 55%, rgba(10, 12, 18, 0.22) 100%);
+            box-shadow: inset 0 0 18px 3px rgba(10, 12, 18, 0.2);
+        }
+
+        .fog-hint {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 7px;
+            z-index: 3;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            /* Escuro, com leve brilho branco para ler sobre a vinheta suave */
+            color: rgba(51, 65, 85, 0.85);
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+            pointer-events: none;
+            opacity: var(--hint, 1);
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <div class="mobile-screen">
+
+        <div class="ambient-light light-1"></div>
+        <div class="ambient-light light-2"></div>
+        <div class="ambient-light light-3"></div>
+
+        <div class="header">
+            <div class="player-identity glass-panel" id="player-id">
+                <span class="player-avatar">🐼</span>
+                <span class="player-name">Rodrigo</span>
+                <span class="bonus" id="bonus">⚡+1000</span>
+            </div>
+
+            <div class="question-text">
+                Qual é o maior país do mundo em extensão territorial?
+            </div>
+
+            <div class="timer-module glass-panel">
+                <svg class="timer-svg" viewBox="0 0 70 70">
+                    <circle class="timer-bg" cx="35" cy="35" r="30"></circle>
+                    <circle class="timer-ring" id="timer-ring" cx="35" cy="35" r="30"></circle>
+                </svg>
+                <span class="timer-value" id="timer-text">10</span>
+            </div>
+        </div>
+
+        <div class="answers-grid">
+            <button class="answer-btn glass-panel">Canadá</button>
+            <button class="answer-btn glass-panel">Rússia</button>
+            <button class="answer-btn glass-panel">China</button>
+            <button class="answer-btn glass-panel">Estados Unidos</button>
+        </div>
+
+    </div>
+
+    <script>
+        // ===================== RELÓGIO =====================
+        const TOTAL_TIME = 10;
+        let timeLeft = TOTAL_TIME;
+
+        const timerText = document.getElementById('timer-text');
+        const timerRing = document.getElementById('timer-ring');
+        const circumference = 2 * Math.PI * 30;
+
+        timerRing.style.strokeDasharray = circumference;
+        timerRing.style.strokeDashoffset = 0;
+
+        let gameClock;
+
+        function startTimer() {
+            gameClock = setInterval(() => {
+                timeLeft--;
+                timerText.textContent = timeLeft;
+
+                const percent = timeLeft / TOTAL_TIME;
+                timerRing.style.strokeDashoffset = circumference - (percent * circumference);
+
+                if (timeLeft <= 3 && timeLeft > 0) {
+                    timerRing.style.stroke = '#ff4757';
+                    timerText.style.color = '#ff4757';
+                    const module = document.querySelector('.timer-module');
+                    module.style.transform = 'scale(1.1)';
+                    module.style.borderColor = '#ff4757';
+                    setTimeout(() => module.style.transform = 'scale(1)', 200);
+                }
+
+                if (timeLeft <= 0) {
+                    clearInterval(gameClock);
+                    timerText.textContent = "0";
+                    disableAllButtons();
+                }
+            }, 1000);
+        }
+
+        startTimer();
+
+        // ===================== NÉVOA =====================
+        // A névoa some sozinha. O botão é clicável o tempo todo:
+        // chutar no borrão vale mais bônus; esperar enxergar faz o bônus cair.
+        const NEVOA_ATRASO = 400;     // ms parado no máximo antes de começar a clarear
+        const NEVOA_DURACAO = 7000;   // ms até ficar totalmente limpo (antes do tempo acabar)
+        const BLUR_MAX = 5;           // px de desfoque no início (suave: dá para ver o formato da palavra, mas é difícil ler)
+        const BONUS_MAX = 1000;       // bônus de velocidade no borrão total
+
+        const botoes = [...document.querySelectorAll('.answer-btn')];
+        const bonusEl = document.getElementById('bonus');
+        const inicioNevoa = performance.now();
+        let nevoaAtiva = true;
+        let bonusAtual = BONUS_MAX;
+
+        botoes.forEach(btn => {
+            const texto = document.createElement('span');
+            texto.className = 'answer-text';
+            texto.textContent = btn.textContent.trim();
+
+            const dica = document.createElement('span');
+            dica.className = 'fog-hint';
+            dica.textContent = '🌫️ Chute agora ou espere clarear';
+
+            btn.replaceChildren(texto, dica);
+            btn.addEventListener('click', () => lockAnswer(btn));
+        });
+
+        // Quanto de névoa ainda resta: 1 = tudo borrado, 0 = limpo
+        function nevoaRestante(agora = performance.now()) {
+            const t = Math.min(1, Math.max(0, (agora - inicioNevoa - NEVOA_ATRASO) / NEVOA_DURACAO));
+            // Clareia devagar no começo e mais rápido no fim (dá tempo de pensar no chute)
+            return 1 - t * t * (3 - 2 * t);
+        }
+
+        function pintarNevoa(btn, n) {
+            btn.style.setProperty('--blur', `${(BLUR_MAX * n).toFixed(2)}px`);
+            btn.style.setProperty('--halo', n.toFixed(3));
+            btn.style.setProperty('--borda', n.toFixed(3));
+            btn.style.setProperty('--hint', Math.max(0, (n - 0.45) / 0.55).toFixed(3));
+        }
+
+        function quadroNevoa(agora) {
+            if (!nevoaAtiva) return;
+            const n = nevoaRestante(agora);
+
+            botoes.forEach(btn => {
+                if (!btn.classList.contains('locked-in')) pintarNevoa(btn, n);
+            });
+
+            bonusAtual = Math.round(BONUS_MAX * n);
+            bonusEl.textContent = `⚡+${bonusAtual}`;
+            bonusEl.classList.toggle('zero', bonusAtual === 0);
+
+            if (n > 0 && timeLeft > 0) requestAnimationFrame(quadroNevoa);
+            else nevoaAtiva = false;
+        }
+
+        requestAnimationFrame(quadroNevoa);
+
+        // Revela rapidamente a alternativa escolhida (o jogador vê o que chutou)
+        function revelar(btn, de) {
+            const t0 = performance.now();
+            (function passo(agora) {
+                const t = Math.min(1, (agora - t0) / 400);
+                pintarNevoa(btn, de * (1 - t));
+                if (t < 1) requestAnimationFrame(passo);
+            })(t0);
+        }
+
+        // ===================== VOTO =====================
+        let hasVoted = false;
+
+        function lockAnswer(clickedButton) {
+            if (hasVoted || timeLeft <= 0) return;
+            hasVoted = true;
+
+            const nevoaNoClique = nevoaRestante();
+            const bonus = Math.round(BONUS_MAX * nevoaNoClique);
+
+            // Congela o bônus no valor do clique
+            bonusAtual = bonus;
+            bonusEl.textContent = `⚡+${bonus}`;
+            bonusEl.classList.remove('zero');
+            bonusEl.classList.add('locked');
+
+            botoes.forEach(btn => {
+                btn.classList.add(btn === clickedButton ? 'locked-in' : 'disabled');
+            });
+            revelar(clickedButton, nevoaNoClique);
+
+            document.getElementById('player-id').classList.add('voted');
+
+            // Aqui você dispararia seu Socket.io para o Raspberry Pi!
+            console.log('Panda votou em:', clickedButton.querySelector('.answer-text').textContent, {
+                bonus,
+                nevoa: Number(nevoaNoClique.toFixed(2))
+            });
+        }
+
+        function disableAllButtons() {
+            botoes.forEach(btn => {
+                if (!btn.classList.contains('locked-in')) btn.classList.add('disabled');
+            });
+        }
+    </script>
+</body>
+
+</html>

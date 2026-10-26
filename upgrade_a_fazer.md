@@ -40,7 +40,7 @@ em `public/` saber com o que se parecer.
       que resolve de saída o problema da primeira pergunta da partida: no começo ninguém
       tem pontos e não há em quem mirar com critério.
       O ritmo fica igual em todo tema, e as cotas continuam fazendo sentido: cada jogador
-      tem 8 usos limitados na partida (Escudo 3 + Aposta 3 + Pedágio 2) para 10 fases,
+      tem 6 usos limitados na partida (Escudo 3 + Aposta 3) para 10 fases,
       então ainda sobra espaço para o Congelamento, os Mordicadores e a Névoa, que são
       ilimitados. Com menos fases que isso, os ilimitados virariam conteúdo morto.
       A Festa de Pontos continua cabendo: os temas 2 e 4 têm fase de poder nas perguntas
@@ -185,8 +185,8 @@ desses dois valores.
 
 ## Jogos de Poder — reformulação
 
-A lista final fica com 7 poderes: Congelamento, Mordicadores, Névoa, Pedágio,
-Aposta, Escudo e Festa de Pontos.
+A lista final fica com 6 poderes: Congelamento, Mordicadores, Névoa, Aposta,
+Escudo e Festa de Pontos. O Pedágio foi cortado.
 
 Sequência de telas combinada:
 
@@ -207,7 +207,7 @@ Sequência de telas combinada:
 pergunta**, nunca por tema. Tudo que um poder tira, dá ou dobra se refere aos pontos
 daquela pergunta.
 
-**Limites de uso** — Escudo (3), Pedágio (2) e Aposta (3) são cotas **de cada jogador**
+**Limites de uso** — Escudo (3) e Aposta (3) são cotas **de cada jogador**
 na partida inteira. A Festa de Pontos é diferente: são 2 usos **da partida toda**, presos
 ao tema 2 e ao tema 4.
 
@@ -286,15 +286,10 @@ public/controlador/controlador.js:1038.
       **dobro só é revelado na tela de pontuação** — durante a animação a mesa vê que
       alguém ativou, mas o efeito nos pontos só aparece no placar.
 
-- [ ] **Pedágio (novo).** Não mexe na tela do alvo.
-      **Números:** leva **metade dos pontos que o alvo fizer naquela pergunta** — não do
-      tema inteiro, porque o poder é escolhido e resolvido por pergunta. Cada jogador
-      pode usar **2 vezes na partida inteira**. O alvo descobre na revelação.
-
 - [ ] **Aposta (novo).** O jogador aposta **a favor** do alvo.
-      **Números:** se o alvo **acertar**, ganha **+75**; se o alvo **errar**, perde
-      **-50**. Cada jogador pode usar **3 vezes na partida inteira**. O alvo não sabe que
-      foi apostado, senão mudaria o comportamento dele.
+      **Números:** se o alvo **acertar**, o apostador ganha **+75**. Se o alvo errar, não
+      acontece nada — a Aposta só acrescenta, nunca tira. Cada jogador pode usar **3 vezes
+      na partida inteira**. O alvo não sabe que foi apostado.
       Isso inverte o sentido do poder: em vez de torcer contra alguém, você escolhe em
       quem confia — e mirar em quem sabe muito passa a ser o jogo.
       Ideia de tela: é o único poder que não se resolve na hora, então o dado pode ficar

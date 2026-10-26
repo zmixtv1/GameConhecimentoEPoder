@@ -82,8 +82,7 @@ Saem dois poderes e entram três. A lista final tem sete.
 | **Névoa** 🌫️ | As alternativas do alvo aparecem borradas e clareiam em 5s. Cada ataque acumulado soma 1s. O borrão não aumenta — se aumentasse, dois ataques deixariam a tela ilegível e a resposta viraria sorte |
 | **Escudo** 🛡️ | Em vez de atacar, você se protege: anula todos os ataques daquela pergunta. **3 por partida** |
 | **Festa de Pontos** 🎉 | Todo mundo que acertar aquela pergunta ganha o dobro — adversários inclusive. Só existe **2 vezes na partida**, no tema 2 e no tema 4 |
-| **Pedágio** 💰 | Não mexe na tela do alvo. Se ele acertar, metade dos pontos daquela pergunta vai para você. **2 por partida** |
-| **Aposta** 🎲 | Você aposta **a favor** do alvo: +75 se ele acertar, −50 se errar. Ele não fica sabendo. **3 por partida** |
+| **Aposta** 🎲 | Você aposta **a favor** do alvo: +75 se ele acertar. Se errar, nada acontece — a Aposta só acrescenta. Ele não fica sabendo. **3 por partida** |
 
 **Princípio que vale para todos:** o poder é escolhido e resolvido **por pergunta**, nunca
 por tema. O que um poder tira, dá ou dobra se refere sempre aos pontos daquela pergunta.
@@ -265,8 +264,7 @@ Antes de cada pergunta, você escolhe um poder e uma vítima. São sete.
 
 | Poder | O que faz |
 |---|---|
-| **Pedágio** 💰 | Se o alvo acertar, metade dos pontos dele vai para você. Você mira em quem está indo bem, não em quem está perdido. **2 usos na partida** |
-| **Aposta** 🎲 | Você aposta a favor de alguém: +75 se ele acertar, −50 se errar. Ele nunca fica sabendo. Em vez de torcer contra, você escolhe em quem confia. **3 usos na partida** |
+| **Aposta** 🎲 | Você aposta a favor de alguém: +75 se ele acertar. Se errar, nada acontece. Ele nunca fica sabendo. Em vez de torcer contra, você escolhe em quem confia. **3 usos na partida** |
 
 ### Não atacam ninguém
 
