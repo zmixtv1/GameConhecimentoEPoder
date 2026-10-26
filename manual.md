@@ -2,26 +2,23 @@
 
 Este manual tem duas partes.
 
-A **Parte 1** é o resumo de tudo que foi decidido mudar no jogo, para quem já conhece o
-projeto e quer saber o que vem pela frente.
+A **Parte 1** é o resumo do que mudou nesta versão do jogo, para quem já conhecia o
+projeto.
 
-A **Parte 2** explica o jogo do zero, para quem nunca ouviu falar dele. Ela descreve o
-jogo **como vai ficar** depois das mudanças da Parte 1 — vários poderes e regras dali
-ainda não existem no código.
+A **Parte 2** explica o jogo do zero, para quem nunca ouviu falar dele.
 
-A fila de implementação, com os detalhes técnicos de cada item, está no
-[upgrade_a_fazer.md](upgrade_a_fazer.md). O trabalho acontece na branch `novos-poderes`.
+O que ainda falta fazer está no [upgrade_a_fazer.md](upgrade_a_fazer.md).
 
 ---
 
-# Parte 1 — O que vai mudar
+# Parte 1 — O que mudou nesta versão
 
 ## A partida fica maior e mais difícil no fim
 
-Hoje são 3 temas de 3 perguntas, e no fim uma Ligação e uma Classificação antes da
-Pirâmide. Passa a ser:
+Eram 3 temas de 3 perguntas, e no fim uma Ligação e uma Classificação antes da
+Pirâmide. Agora:
 
-| | Hoje | Depois |
+| | Antes | Agora |
 |---|---|---|
 | Temas | 3 | **5** |
 | Perguntas | 9 | **15** |
@@ -29,7 +26,7 @@ Pirâmide. Passa a ser:
 | Duração estimada | ~15 min | ~27 min |
 | Fases de escolha de poder | 1 por pergunta (15) | **10, só na 2ª e 3ª de cada tema** |
 
-Os temas passam a ter **nível fixo e crescente**: 2 fáceis, 2 médios e 1 difícil. As 3
+Os temas têm **nível fixo e crescente**: 2 fáceis, 2 médios e 1 difícil. As 3
 perguntas de um tema saem todas do nível daquele tema.
 
 Os desafios alternam: Ligação, Classificação, Ligação, Classificação, Ligação. São 3
@@ -37,8 +34,8 @@ Ligações e 2 Classificações por partida.
 
 ## Dois problemas de conteúdo que isso revela
 
-**O nível difícil está quase vazio.** O campo `dificuldade` já existe nas 344 perguntas,
-mas o servidor nunca usou — ele filtra só por tema. Olhando o acervo:
+**O nível difícil está quase vazio.** O campo `dificuldade` existe nas 344 perguntas, e
+agora o servidor sorteia por ele. Olhando o acervo:
 
 | | fácil | médio | difícil |
 |---|---|---|---|
@@ -46,20 +43,18 @@ mas o servidor nunca usou — ele filtra só por tema. Olhando o acervo:
 
 Um tema difícil precisa de 3 perguntas daquele nível. **Esportes tem 1 e Cinema e TV tem
 2** — nenhum dos dois consegue montar uma rodada difícil. Ciência e Games têm exatamente
-3, então cairiam sempre as mesmas. Só 4 dos 8 temas têm folga.
+3, então cairiam sempre as mesmas. Só 4 dos 8 temas têm folga. Enquanto o acervo não
+cresce, as portas do tema difícil só oferecem temas que ainda têm 3 perguntas daquele
+nível sem usar.
 
-**Os desafios vão se repetir.** Existem 6 conjuntos de Ligação e 6 de Classificação, e o
-sorteio deles não tem memória nenhuma — diferente das perguntas, que já evitam repetição.
-Com 5 desafios por partida saindo de 6 conjuntos sorteados às cegas, a chance de repetir
-dentro da mesma partida é de **91%**.
-
-A correção no código é pequena: passar a lista de usados, igual já é feito com as
-perguntas. Mas depois disso ainda falta escrever mais conjuntos, senão toda partida
-mostra quase todo o acervo.
+**Os desafios se repetiam.** Existem 6 conjuntos de Ligação e 6 de Classificação, e o
+sorteio não tinha memória: com 5 desafios por partida, a chance de repetir um dentro da
+mesma partida era de **91%**. Agora o sorteio não repete conjunto na mesma partida, mas
+ainda falta escrever mais conjuntos, senão toda partida mostra quase todo o acervo.
 
 ## Os Jogos de Poder são refeitos
 
-Saem dois poderes e entram três. A lista final tem sete.
+Saem dois poderes e entram quatro. A lista final tem seis.
 
 ### Saem
 
@@ -72,7 +67,7 @@ Saem dois poderes e entram três. A lista final tem sete.
 
 | Poder | O que faz |
 |---|---|
-| **Congelamento** 🧊 | **Muda.** Hoje é um painel único cobrindo as 4 respostas, com 3 toques para liberar tudo. Passa a ser **um bloco de gelo em cada alternativa**, 2 toques cada. Quem já decidiu paga menos que hoje; quem está em dúvida paga mais |
+| **Congelamento** 🧊 | **Mudou.** Era um painel único cobrindo as 4 respostas, com 3 toques para liberar tudo. Agora é **um bloco de gelo em cada alternativa**, 2 toques cada (+1 por ataque acumulado). Quem já decidiu paga menos que antes; quem está em dúvida paga mais |
 | **Mordicadores** 😬 | Come as letras das alternativas do alvo, 20% por ataque, até 70% |
 
 ### Entram
@@ -104,17 +99,17 @@ Terminada a sequência, o jogo segue normal e a pergunta aparece.
 
 ## A Pirâmide muda de tamanho e de regra
 
-| | Hoje | Depois |
+| | Antes | Agora |
 |---|---|---|
 | Tamanho | 10 degraus | **8 andares** |
 | Largada | Pelo **lugar** no placar | Pelos **pontos** |
 | 1º lugar precisa de | 2 acertos | **4 acertos** |
 | Último precisa de | 10 acertos | **8 acertos** |
 
-Hoje quem lidera por 10 pontos larga igual a quem lidera por 1000 — a pontuação não entra
-na conta, só a ordem de chegada. E a vantagem é brutal: 2 acertos contra 10.
+Antes, quem liderava por 10 pontos largava igual a quem liderava por 1000 — a pontuação
+não entrava na conta, só a ordem de chegada. E a vantagem era brutal: 2 acertos contra 10.
 
-A largada passa a ser calculada assim:
+A largada agora é calculada assim:
 
 ```
 MAX_PULOS = 4     // ninguém larga mais que 4 níveis acima da base
@@ -152,8 +147,8 @@ link.
 De **2 a 8 jogadores**. Todos na mesma rede Wi-Fi da casa.
 
 A graça não é só saber a resposta. É que, antes de cada pergunta, você pode **sabotar** um
-adversário — congelar a tela dele, embaçar as alternativas, roubar os pontos que ele
-fizer. E ele pode fazer o mesmo com você, sem você saber.
+adversário — congelar a tela dele, embaçar as alternativas, comer as letras das
+respostas. E ele pode fazer o mesmo com você.
 
 ## Como entrar
 
@@ -188,8 +183,9 @@ maioria. Serve para quando você é o único que sabe muito de um assunto.
 
 ### Passo 2 — Escolher o poder
 
-Em **10 segundos**, você escolhe qual poder quer usar nesta pergunta. Ou nenhum, se
-preferir guardar.
+Em **10 segundos**, você escolhe qual poder quer usar nesta pergunta, entre 4 opções: os
+3 de ataque aparecem sempre, e o 4º é sorteado entre Escudo, Aposta e Festa de Pontos
+(só entre os que você ainda pode usar). Se preferir guardar, toque em **Não usar poder**.
 
 **Nem toda pergunta tem essa fase.** A primeira pergunta de cada tema abre limpa, sem
 sabotagem — inclusive a primeira da partida inteira, quando ninguém tem pontos e não há
@@ -197,15 +193,19 @@ em quem mirar com critério. Os poderes entram na 2ª e na 3ª pergunta de cada 
 
 ### Passo 3 — Escolher o alvo
 
-Em **20 segundos**, você escolhe em quem usar. Mais de uma pessoa pode mirar na mesma
-vítima, e **os efeitos se acumulam** — dois congelamentos valem o dobro de toques.
+Em **20 segundos**, você escolhe em quem usar. Cada jogador aparece com o bicho, a
+posição e os pontos, do líder para baixo. Mais de uma pessoa pode mirar na mesma vítima,
+e **os efeitos se acumulam** — dois congelamentos pedem um toque a mais em cada gelo.
+Escudo e Festa de Pontos não têm alvo: valem na hora em que você escolhe.
 
 ### Passo 4 — A TV mostra quem atacou quem
 
 Todo mundo olha para a televisão. Um por um, na ordem em que entraram na sala, os
 jogadores aparecem lançando seus poderes. Quem estava de Escudo rebate o ataque.
 
-É o momento de rir e xingar o amigo. Dura 2 segundos por atacante.
+É o momento de rir e xingar o amigo. Dura 2 segundos por jogador que usou poder, e
+enquanto isso o celular de todo mundo mostra **"Olhe para a TV"**. A Aposta aparece sem
+dizer em quem foi: o alvo está olhando.
 
 ### Passo 5 — A pergunta
 
@@ -220,8 +220,9 @@ aparece: o gelo para quebrar, o borrão para esperar passar, as letras comidas.
 
 ### Passo 6 — O resultado
 
-A TV revela a resposta certa, quem acertou e como ficou o placar. Todo mundo confirma no
-celular e a próxima pergunta começa.
+A TV revela a resposta certa, quem acertou e como ficou o placar: cada um ganha o seu
+"+pontos" e as linhas trocam de lugar. Se teve Aposta, o placar mostra quem apostou em quem
+e se rendeu. Todo mundo confirma no celular e a próxima pergunta começa.
 
 ### Passo 7 — O desafio do tema
 
@@ -250,15 +251,16 @@ respondido. A velocidade só desempata entre quem acertou.
 
 ## Os poderes
 
-Antes de cada pergunta, você escolhe um poder e uma vítima. São sete.
+Na 2ª e na 3ª pergunta de cada tema, você escolhe um poder e, se ele pedir, um alvo.
+São seis.
 
 ### Atrapalham a tela do adversário
 
 | Poder | O que faz |
 |---|---|
-| **Congelamento** 🧊 | Cobre cada uma das 4 alternativas dele com um bloco de gelo. Ele precisa tocar 2 vezes para quebrar o gelo da resposta que quer. Quem sabe a resposta paga barato; quem está em dúvida quebra vários |
-| **Mordicadores** 😬 | Come as letras das alternativas dele. Ainda dá para ler, mas devagar |
-| **Névoa** 🌫️ | As alternativas dele ficam borradas e vão clareando em 5 segundos. Ele decide: chutar agora no borrão, ou esperar enxergar e perder o bônus de velocidade? |
+| **Congelamento** 🧊 | Cobre cada uma das 4 alternativas dele com um bloco de gelo. Ele precisa tocar 2 vezes para quebrar o gelo da resposta que quer (+1 toque por ataque acumulado), e o toque seguinte responde. Quem sabe a resposta paga barato; quem está em dúvida quebra vários |
+| **Mordicadores** 😬 | Come as letras das alternativas dele: 20% por ataque, até 70%. Ainda dá para ler, mas devagar |
+| **Névoa** 🌫️ | As alternativas dele ficam borradas e vão clareando em 5 segundos (+1s por ataque acumulado). O celular dele mostra o bônus de velocidade caindo. Ele decide: chutar agora no borrão, ou esperar enxergar e perder o bônus? |
 
 ### Mexem com os pontos, não com a tela
 
@@ -271,7 +273,7 @@ Antes de cada pergunta, você escolhe um poder e uma vítima. São sete.
 | Poder | O que faz |
 |---|---|
 | **Escudo** 🛡️ | Anula todos os ataques que vierem contra você nesta pergunta. **3 usos na partida** |
-| **Festa de Pontos** 🎉 | Todo mundo que acertar ganha o dobro — inclusive seus adversários. Vale quando você tem certeza e acha que os outros não têm. Se todo mundo acertar, você ajudou a mesa de graça. Só aparece **2 vezes na partida** |
+| **Festa de Pontos** 🎉 | Todo mundo que acertar ganha o dobro — inclusive seus adversários. Vale quando você tem certeza e acha que os outros não têm. Se todo mundo acertar, você ajudou a mesa de graça. Só aparece **2 vezes na partida**, uma no tema 2 e outra no tema 4. O dobro vale só para o acerto: o bônus de velocidade não dobra |
 
 ## A Pirâmide do Conhecimento
 
@@ -279,9 +281,9 @@ Antes de cada pergunta, você escolhe um poder e uma vítima. São sete.
 
 **A pontuação acumulada deixa de valer para ganhar.** Ela só decide **onde você começa**.
 
-A pirâmide tem 8 andares, e todo mundo começa no chão, na frente dela. Quem fez mais pontos
-já larga alguns andares acima — no máximo 4
-níveis acima da base. Quem ficou em último começa lá embaixo.
+A pirâmide tem 8 andares. Antes da corrida, a TV mostra os pontos de cada um virando o
+andar de largada: quem fez mais pontos já larga alguns andares acima — no máximo no
+andar 4. Quem ficou em último começa no chão.
 
 Na prática: o primeiro colocado precisa de **4 respostas certas** para chegar ao topo, e o
 último precisa de **8**. É vantagem de verdade, mas não é partida ganha.
@@ -299,9 +301,19 @@ Na TV, os bichos sobem de nível em nível enquanto a corrida acontece, e a mesa
 quem está prestes a chegar. **O primeiro que alcançar o topo vence a partida**, não
 importa quantos pontos tenha feito até ali.
 
+## O fim
+
+A TV mostra o pódio: o 3º sobe, o 2º sobe, rufar, e o campeão sobe com coroa e confete.
+Do 2º lugar em diante vale o andar alcançado; quem parou no mesmo andar é desempatado
+pelos pontos das rodadas.
+
+No celular, cada um vê a própria colocação, quem venceu (e se foi virada), e o placar das
+rodadas com o caminho de cada um na pirâmide. O anfitrião tem o botão **Jogar de novo**,
+que leva todo mundo de volta para a escolha dos bichos.
+
 ---
 
 ## Em uma frase
 
-Cinco rodadas para fazer pontos sabotando os amigos, e uma corrida final onde os pontos
+Cinco temas para fazer pontos sabotando os amigos, e uma corrida final onde os pontos
 só decidem a sua vantagem de largada — não quem ganha.

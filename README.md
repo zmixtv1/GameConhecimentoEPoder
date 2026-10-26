@@ -209,20 +209,19 @@ cat /run/user/$(id -u)/dominio-pelo-saber/servidor.log
 cd ~/GameConhecimentoEPoder/server && npm start
 ```
 
-**Cabo e Wi-Fi ao mesmo tempo, não.** O servidor usa o primeiro IP que encontra, e pode anunciar no QR code a interface errada. Deixe só uma das duas ativa.
+**Cabo e Wi-Fi ao mesmo tempo funcionam.** O servidor anuncia no QR code o IP da interface que sai para o roteador (a rota padrão), que é onde os celulares do mesmo Wi-Fi conseguem chegar.
 
 ## Como é uma partida
 
 | Fase | O que acontece |
 |---|---|
-| **3 rodadas × 3 perguntas** | Cada rodada abre com 4 portas de temas; a mais votada vence. Antes de cada pergunta, dá para usar um **Jogo de Poder** para sabotar a tela de outro jogador. |
-| **Desafio de Ligação** | Ligar pares relacionados (país ↔ capital, por exemplo) contra o tempo. |
-| **Desafio de Classificação** | Separar itens entre duas categorias (Marvel ou DC, por exemplo). |
-| **Pirâmide do Conhecimento** | Finale de 10 degraus. A pontuação acumulada só define a largada: quem está na frente começa mais perto do topo. Cada acerto sobe um degrau, quem chega ao topo primeiro vence — e aqui dá para errar e tentar de novo. |
+| **5 temas × 3 perguntas** | Cada tema abre com 4 portas; a mais votada vence. Os temas ficam mais difíceis: 2 fáceis, 2 médios e 1 difícil. Na 2ª e na 3ª pergunta de cada tema há um **Jogo de Poder** antes da pergunta, e a TV mostra quem atacou quem. |
+| **Um desafio por tema** | Alternando: Ligação (ligar pares contra o tempo) nos temas 1, 3 e 5, Classificação (separar itens em duas categorias) nos temas 2 e 4. |
+| **Pirâmide do Conhecimento** | Finale de 8 andares. A TV mostra os pontos de cada um virando o andar de largada (do chão até o andar 4). Cada acerto sobe um andar, quem chega ao topo primeiro vence — e aqui dá para errar e tentar de novo. |
 
 Detalhes úteis na hora de jogar:
 
-- **Poderes de sabotagem:** Congelamento, Gosma, Bombolha e Mordicadores. Vários jogadores podem mirar a mesma pessoa, e os efeitos se acumulam.
+- **Jogos de Poder:** três de ataque, sempre oferecidos (Congelamento, Mordicadores e Névoa), e um especial sorteado a cada pergunta entre Escudo, Aposta e Festa de Pontos. Vários jogadores podem mirar a mesma pessoa, e os efeitos se acumulam. Detalhes no [manual](manual.md).
 - **Garantir a porta:** cada jogador pode, **uma única vez na partida**, forçar a abertura da sua porta mesmo contra a maioria.
 - **Caiu a conexão?** O celular volta sozinho para o mesmo lugar, com pontos e animal, se reconectar em até **1 minuto**. Depois disso o jogador é removido da partida.
 - **No fim da partida**, só o anfitrião pode reiniciar ou levar todos de volta ao lobby. Se o anfitrião sair, outra pessoa assume automaticamente.
@@ -236,7 +235,7 @@ cd server
 npm test
 ```
 
-São 123 testes do motor do jogo (sala, placar, poderes, reconexão, partida completa). Levam cerca de 1min30, porque alguns esperam timers reais.
+São 150 testes do motor do jogo (sala, placar, poderes, Pirâmide, reconexão, partida completa). Levam cerca de 35 segundos, porque alguns esperam timers reais.
 
 ---
 
@@ -249,7 +248,9 @@ server/            servidor Node (HTTP + WebSocket) e todo o motor do jogo
   sala.js          o jogo: estados, rodadas, pontuação, poderes
   tests/           testes automatizados
 public/tv/         tela da TV (o que todos olham)
+  telas/           as telas animadas: poderes, pontuação, largada, corrida, pódio
 public/controlador/ tela do celular (o controle de cada jogador)
+  telas/           escolha de poder e de alvo, gelo e névoa, fim de jogo
 data/              banco de conteúdo: perguntas, ligações, classificações
 docs/              documentação da mecânica original do jogo
 raspberry-pi/      instalador e atalhos para rodar o jogo no Pi
