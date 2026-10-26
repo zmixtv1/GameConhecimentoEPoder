@@ -19,9 +19,14 @@ function embaralhar(lista) {
 // Sorteia só o CONJUNTO de itens (categorias + itens na ordem original).
 // Não embaralha aqui - cada jogador recebe sua própria ordem, senão todo
 // mundo veria os itens na mesma posição na tela.
-function sortearConjuntoClassificacao() {
+//
+// idsExcluidos evita repetir um conjunto que já caiu na mesma partida (ver
+// associacoes.js). Se o acervo esgotar, volta a permitir repetição.
+function sortearConjuntoClassificacao(idsExcluidos = []) {
   const banco = carregarBanco();
-  const escolhido = banco[Math.floor(Math.random() * banco.length)];
+  const ineditos = banco.filter((c) => !idsExcluidos.includes(c.id));
+  const candidatos = ineditos.length > 0 ? ineditos : banco;
+  const escolhido = candidatos[Math.floor(Math.random() * candidatos.length)];
   return { id: escolhido.id, categoriaA: escolhido.categoriaA, categoriaB: escolhido.categoriaB, itens: escolhido.itens };
 }
 

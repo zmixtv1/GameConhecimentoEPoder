@@ -5,9 +5,14 @@
 const WebSocket = require("ws");
 const { criarServidor } = require("../app");
 const { ANIMAIS } = require("../animais");
+const { PODERES_ATAQUE } = require("../sala");
 
 // Configuração usada nos testes: tudo bem mais rápido que uma partida real,
 // pra suíte inteira rodar em segundos em vez de minutos.
+//
+// A partida de teste é curta - 2 temas, o primeiro com Ligação e o segundo
+// com Classificação - mas tem tudo que a de verdade tem: pergunta sem poder
+// abrindo o tema, fase de poder nas outras, os dois desafios e a Pirâmide.
 const CONFIG_TESTE = {
   tempoLimitePortaMs: 300,
   tempoEscolhaPoderMs: 300,
@@ -18,7 +23,21 @@ const CONFIG_TESTE = {
   tempoLimiteSortingMs: 300,
   pausaAposPortaMs: 30,
   pausaAposPortaGarantidaMs: 60,
-  piramideDegraus: 4, // baixo de propósito, pra testar sem precisar simular dezenas de acertos
+  tempoAnimacaoPorPoderMs: 30,
+  largadaAberturaMs: 10,
+  largadaPorJogadorMs: 10,
+  largadaPorPuloMs: 5,
+  largadaFechamentoMs: 10,
+  pausaVencedorPiramideMs: 40,
+
+  totalRodadas: 2,
+  dificuldadesPorRodada: ["facil", "dificil"],
+  desafiosPorRodada: ["linking", "sorting"],
+  temasComFesta: [2],
+
+  // baixo de propósito, pra testar sem precisar simular dezenas de acertos
+  piramideAndares: 4,
+  piramideMaxPulos: 2,
 };
 
 function subirServidorDeTeste(opcoes = {}) {
@@ -89,6 +108,11 @@ function criarCliente(porta) {
     });
   }
 
+  // descarta o que já chegou desse tipo (pra não confundir com o próximo)
+  function descartar(tipo) {
+    filas.delete(tipo);
+  }
+
   function enviar(objeto) {
     ws.send(JSON.stringify(objeto));
   }
@@ -97,7 +121,7 @@ function criarCliente(porta) {
     ws.close();
   }
 
-  return { ws, aberto, esperar, enviar, fechar };
+  return { ws, aberto, esperar, descartar, enviar, fechar };
 }
 
 // Faz um jogador entrar na sala e devolve o cliente já pronto (após
@@ -119,20 +143,68 @@ async function entrarNaSala(porta, nome, codigoSala, { escolherAnimal = true } =
   return { cliente, jogadorId: boasVindas.jogadorId, token: boasVindas.token, ehAnfitriao: boasVindas.ehAnfitriao, animalId };
 }
 
-// Faz N jogadores entrarem, o anfitrião iniciar a partida, todos escolherem
-// a primeira porta, e para assim que a escolha de poder chega - útil pra
-// testar a etapa de "qual poder usar".
-async function iniciarPartidaAteEscolhaPoder(porta, sala, nomes) {
+async function entrarTodos(porta, sala, nomes) {
   const jogadores = [];
-  for (const nome of nomes) {
-    jogadores.push(await entrarNaSala(porta, nome, sala.codigo));
-  }
-  jogadores[0].cliente.enviar({ type: "iniciarPartida" });
+  for (const nome of nomes) jogadores.push(await entrarNaSala(porta, nome, sala.codigo));
+  return jogadores;
+}
+
+// Todos votam na primeira porta e esperam o tema ser anunciado.
+async function escolherPorta(jogadores) {
   await Promise.all(jogadores.map((j) => j.cliente.esperar("escolhaPorta")));
   for (const j of jogadores) j.cliente.enviar({ type: "escolherPorta", indice: 0 });
   await Promise.all(jogadores.map((j) => j.cliente.esperar("portaEscolhida")));
+}
+
+// Entra, inicia e vota na porta: para quando a 1ª pergunta do tema chega -
+// ela não tem fase de poder.
+async function chegarNaPrimeiraPergunta(porta, sala, nomes) {
+  const jogadores = await entrarTodos(porta, sala, nomes);
+  jogadores[0].cliente.enviar({ type: "iniciarPartida" });
+  await escolherPorta(jogadores);
+  const perguntas = await Promise.all(jogadores.map((j) => j.cliente.esperar("novaPergunta")));
+  return { jogadores, perguntas };
+}
+
+// Responde a pergunta que está na tela (todos acertando, por padrão) e espera
+// o resultado. Assume que "novaPergunta" já foi consumida.
+async function responderPergunta(jogadores, sala, { acertam = true } = {}) {
+  await Promise.all(jogadores.map((j) => j.cliente.esperar("iniciarResposta")));
+  const certa = sala.perguntaAtual.indiceCorreto;
+  const indice = acertam ? certa : (certa + 1) % 4;
+  for (const j of jogadores) j.cliente.enviar({ type: "responder", alternativaIndex: indice });
+  return Promise.all(jogadores.map((j) => j.cliente.esperar("resultadoPergunta")));
+}
+
+async function confirmar(jogadores) {
+  for (const j of jogadores) j.cliente.enviar({ type: "continuar" });
+}
+
+// Ninguém usa poder: todos apertam "Não usar poder" e a fase anda na hora.
+// Sem poder usado, não há animação - a pergunta vem direto.
+async function pularEscolhaDePoder(jogadores) {
+  await Promise.all(jogadores.map((j) => j.cliente.esperar("escolhaPoder")));
+  for (const j of jogadores) j.cliente.enviar({ type: "escolherPoder", tipo: null });
+  await Promise.all(jogadores.map((j) => j.cliente.esperar("escolhaAlvo")));
+}
+
+// Joga a 1ª pergunta do tema e para quando a escolha de poder da 2ª chega.
+async function iniciarPartidaAteEscolhaPoder(porta, sala, nomes) {
+  const { jogadores } = await chegarNaPrimeiraPergunta(porta, sala, nomes);
+  await responderPergunta(jogadores, sala);
+  await confirmar(jogadores);
   const escolhasPoder = await Promise.all(jogadores.map((j) => j.cliente.esperar("escolhaPoder")));
   return { jogadores, escolhasPoder };
+}
+
+// Garante que um poder especial esteja na oferta deste jogador nesta
+// pergunta. O 4º poder é sorteado; nos testes isso precisa ser previsível.
+function forcarOferta(sala, jogadorId, tipo) {
+  const usos = tipo === "escudo" || tipo === "aposta" ? sala._usos(jogadorId)[tipo] : 1;
+  sala.ofertasPoder.set(jogadorId, [
+    ...PODERES_ATAQUE.map((t) => ({ tipo: t, usos: null })),
+    { tipo, usos },
+  ]);
 }
 
 // Continua de onde iniciarPartidaAteEscolhaPoder parou: cada jogador escolhe
@@ -141,55 +213,37 @@ async function iniciarPartidaAteEscolhaPoder(porta, sala, nomes) {
 async function avancarAteEscolhaAlvo(porta, sala, nomes, tipos) {
   const { jogadores } = await iniciarPartidaAteEscolhaPoder(porta, sala, nomes);
   jogadores.forEach((j, i) => {
-    if (tipos[i]) j.cliente.enviar({ type: "escolherPoder", tipo: tipos[i] });
+    const tipo = tipos[i];
+    if (tipo && !PODERES_ATAQUE.includes(tipo)) forcarOferta(sala, j.jogadorId, tipo);
+    j.cliente.enviar({ type: "escolherPoder", tipo: tipo || null });
   });
   const escolhas = await Promise.all(jogadores.map((j) => j.cliente.esperar("escolhaAlvo")));
   return { jogadores, escolhas };
 }
 
-// Pula a escolha de poder (ninguém escolhe nada, a fase se resolve pelo
-// timeout curto da config de teste) e chega até a próxima pergunta.
-async function pularEscolhaDePoder(jogadores) {
-  await Promise.all(jogadores.map((j) => j.cliente.esperar("escolhaPoder")));
-  await Promise.all(jogadores.map((j) => j.cliente.esperar("escolhaAlvo")));
+// Joga um tema inteiro (porta + perguntas, sempre acertando, sem usar poder)
+// e para logo depois de confirmar o resultado da última pergunta - o desafio
+// do tema vem em seguida.
+async function jogarTema(jogadores, sala) {
+  await escolherPorta(jogadores);
+  for (let n = 1; n <= sala.cfg.perguntasPorRodada; n++) {
+    if (sala.cfg.perguntasComPoder.includes(n)) await pularEscolhaDePoder(jogadores);
+    await Promise.all(jogadores.map((j) => j.cliente.esperar("novaPergunta")));
+    await responderPergunta(jogadores, sala);
+    await confirmar(jogadores);
+  }
 }
 
-// Joga as 3 Battle Rounds inteiras (sempre acertando, todos confirmando,
-// sem usar Jogos de Poder) e para assim que o desafio de Linking começa.
-// Útil pra testar Linking/Sorting sem repetir esse bloco enorme em cada teste.
+// Joga o 1º tema e para assim que o desafio de Ligação dele começa.
 async function avancarAteLinking(porta, sala, nomes) {
-  const jogadores = [];
-  for (const nome of nomes) {
-    jogadores.push(await entrarNaSala(porta, nome, sala.codigo));
-  }
+  const jogadores = await entrarTodos(porta, sala, nomes);
   jogadores[0].cliente.enviar({ type: "iniciarPartida" });
-
-  for (let rodada = 0; rodada < sala.cfg.totalRodadas; rodada++) {
-    await Promise.all(jogadores.map((j) => j.cliente.esperar("escolhaPorta")));
-    for (const j of jogadores) j.cliente.enviar({ type: "escolherPorta", indice: 0 });
-    await Promise.all(jogadores.map((j) => j.cliente.esperar("portaEscolhida")));
-
-    for (let pergunta = 0; pergunta < sala.cfg.perguntasPorRodada; pergunta++) {
-      await pularEscolhaDePoder(jogadores);
-      await Promise.all(jogadores.map((j) => j.cliente.esperar("novaPergunta")));
-      await Promise.all(jogadores.map((j) => j.cliente.esperar("iniciarResposta")));
-      const indiceCorreto = sala.perguntaAtual.indiceCorreto;
-      for (const j of jogadores) j.cliente.enviar({ type: "responder", alternativaIndex: indiceCorreto });
-      await Promise.all(jogadores.map((j) => j.cliente.esperar("resultadoPergunta")));
-      for (const j of jogadores) j.cliente.enviar({ type: "continuar" });
-    }
-  }
-
+  await jogarTema(jogadores, sala);
   await Promise.all(jogadores.map((j) => j.cliente.esperar("iniciarLinking")));
   return { jogadores };
 }
 
-// Continua de onde avancarAteLinking parou: completa o Linking (todos
-// acertando todos os pares, cada um com seu próprio embaralhamento) e para
-// assim que o Sorting começa.
-async function avancarAteSorting(porta, sala, nomes) {
-  const { jogadores } = await avancarAteLinking(porta, sala, nomes);
-
+function completarLinking(jogadores, sala) {
   const totalPares = sala.linkingAtual.pares.length;
   for (const j of jogadores) {
     const progresso = sala.linkingAtual.progresso.get(j.jogadorId);
@@ -198,41 +252,60 @@ async function avancarAteSorting(porta, sala, nomes) {
       j.cliente.enviar({ type: "tentarPar", esquerdaIndex, direitaIndex });
     }
   }
-  await Promise.all(jogadores.map((j) => j.cliente.esperar("resultadoLinking")));
-  for (const j of jogadores) j.cliente.enviar({ type: "continuar" });
-
-  await Promise.all(jogadores.map((j) => j.cliente.esperar("iniciarSorting")));
-  return { jogadores };
 }
 
-// Continua de onde avancarAteSorting parou: completa o Sorting (todos
-// acertando tudo, cada um com sua própria ordem/gabarito) e para assim que a
-// Pirâmide do Conhecimento começa, já com a primeira pergunta de cada um.
-async function avancarAtePiramide(porta, sala, nomes) {
-  const { jogadores } = await avancarAteSorting(porta, sala, nomes);
-
+function completarSorting(jogadores, sala) {
   for (const j of jogadores) {
     const progresso = sala.sortingAtual.progresso.get(j.jogadorId);
     for (let itemIndex = 0; itemIndex < progresso.itens.length; itemIndex++) {
       j.cliente.enviar({ type: "classificarItem", itemIndex, categoria: progresso.gabarito[itemIndex] });
     }
   }
-  await Promise.all(jogadores.map((j) => j.cliente.esperar("resultadoSorting")));
-  for (const j of jogadores) j.cliente.enviar({ type: "continuar" });
+}
 
+// Continua de onde avancarAteLinking parou: completa a Ligação, joga o 2º
+// tema e para assim que a Classificação dele começa.
+async function avancarAteSorting(porta, sala, nomes) {
+  const { jogadores } = await avancarAteLinking(porta, sala, nomes);
+  completarLinking(jogadores, sala);
+  await Promise.all(jogadores.map((j) => j.cliente.esperar("resultadoLinking")));
+  await confirmar(jogadores);
+  await jogarTema(jogadores, sala);
+  await Promise.all(jogadores.map((j) => j.cliente.esperar("iniciarSorting")));
+  return { jogadores };
+}
+
+// Continua de onde avancarAteSorting parou: completa a Classificação, passa
+// pela largada e para assim que a corrida da Pirâmide começa, já com a
+// primeira pergunta de cada um.
+async function avancarAtePiramide(porta, sala, nomes) {
+  const { jogadores } = await avancarAteSorting(porta, sala, nomes);
+  completarSorting(jogadores, sala);
+  await Promise.all(jogadores.map((j) => j.cliente.esperar("resultadoSorting")));
+  await confirmar(jogadores);
+  const largadas = await Promise.all(jogadores.map((j) => j.cliente.esperar("largadaPiramide")));
   await Promise.all(jogadores.map((j) => j.cliente.esperar("iniciarPiramide")));
   const perguntas = await Promise.all(jogadores.map((j) => j.cliente.esperar("novaPerguntaPiramide")));
-  return { jogadores, perguntas };
+  return { jogadores, perguntas, largadas };
 }
 
 module.exports = {
   subirServidorDeTeste,
   criarCliente,
   entrarNaSala,
+  entrarTodos,
+  escolherPorta,
+  chegarNaPrimeiraPergunta,
+  responderPergunta,
+  confirmar,
   iniciarPartidaAteEscolhaPoder,
+  forcarOferta,
   avancarAteEscolhaAlvo,
   pularEscolhaDePoder,
+  jogarTema,
   avancarAteLinking,
+  completarLinking,
+  completarSorting,
   avancarAteSorting,
   avancarAtePiramide,
   CONFIG_TESTE,

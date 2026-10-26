@@ -3,13 +3,13 @@ const assert = require("node:assert/strict");
 const {
   subirServidorDeTeste,
   criarCliente,
-  entrarNaSala,
-  pularEscolhaDePoder,
+  chegarNaPrimeiraPergunta,
   avancarAteLinking,
   avancarAteSorting,
 } = require("./ajuda");
 
-const PARTIDA_CURTA = { totalRodadas: 1, perguntasPorRodada: 1 };
+// uma pergunta por tema: a 1ª não tem fase de poder, então vai direto
+const PARTIDA_CURTA = { perguntasPorRodada: 1 };
 
 // Todo mundo tem que receber EXATAMENTE o mesmo placar, já com os pontos desta
 // fase somados pra todos. O bug que isso pega: o placar era montado dentro do
@@ -45,16 +45,7 @@ test("pergunta: todos os jogadores (e a TV) recebem o mesmo placar, já com os p
   tv.enviar({ type: "identificarTv" });
   await tv.esperar("estadoSala");
 
-  const jogadores = [];
-  for (const nome of ["Ana", "Bruno", "Carla"]) {
-    jogadores.push(await entrarNaSala(porta, nome, sala.codigo));
-  }
-  jogadores[0].cliente.enviar({ type: "iniciarPartida" });
-  await Promise.all(jogadores.map((j) => j.cliente.esperar("escolhaPorta")));
-  for (const j of jogadores) j.cliente.enviar({ type: "escolherPorta", indice: 0 });
-  await Promise.all(jogadores.map((j) => j.cliente.esperar("portaEscolhida")));
-  await pularEscolhaDePoder(jogadores);
-  await Promise.all(jogadores.map((j) => j.cliente.esperar("novaPergunta")));
+  const { jogadores } = await chegarNaPrimeiraPergunta(porta, sala, ["Ana", "Bruno", "Carla"]);
   await Promise.all(jogadores.map((j) => j.cliente.esperar("iniciarResposta")));
 
   // os três acertam, em momentos diferentes: pontuações diferentes entre si
@@ -67,8 +58,17 @@ test("pergunta: todos os jogadores (e a TV) recebem o mesmo placar, já com os p
   const resultados = await Promise.all(jogadores.map((j) => j.cliente.esperar("resultadoPergunta")));
   const resultadoTv = await tv.esperar("resultadoPergunta");
 
+  // A TV recebe, além do placar, quanto cada um ganhou nesta pergunta - é o
+  // que deixa a tela montar a ordem anterior e deslizar as linhas. Tirando
+  // esse campo, o placar dela tem que ser o mesmo dos celulares.
+  for (const linha of resultadoTv.placar) {
+    const i = jogadores.findIndex((j) => j.jogadorId === linha.id);
+    assert.equal(linha.ganho, resultados[i].seuResultado.pontosGanhos);
+  }
+  const placarTvSemGanho = resultadoTv.placar.map(({ ganho, ...resto }) => resto);
+
   const placar = conferirPlacaresIguais(
-    [...resultados.map((r) => r.placar), resultadoTv.placar],
+    [...resultados.map((r) => r.placar), placarTvSemGanho],
     "pergunta"
   );
   conferirOrdenado(placar);
@@ -89,16 +89,7 @@ test("pergunta: jogadores com pontuações diferentes nunca ficam na mesma posi�
   });
   t.after(fechar);
 
-  const jogadores = [];
-  for (const nome of ["Ana", "Bruno", "Carla"]) {
-    jogadores.push(await entrarNaSala(porta, nome, sala.codigo));
-  }
-  jogadores[0].cliente.enviar({ type: "iniciarPartida" });
-  await Promise.all(jogadores.map((j) => j.cliente.esperar("escolhaPorta")));
-  for (const j of jogadores) j.cliente.enviar({ type: "escolherPorta", indice: 0 });
-  await Promise.all(jogadores.map((j) => j.cliente.esperar("portaEscolhida")));
-  await pularEscolhaDePoder(jogadores);
-  await Promise.all(jogadores.map((j) => j.cliente.esperar("novaPergunta")));
+  const { jogadores } = await chegarNaPrimeiraPergunta(porta, sala, ["Ana", "Bruno", "Carla"]);
   await Promise.all(jogadores.map((j) => j.cliente.esperar("iniciarResposta")));
 
   const indiceCorreto = sala.perguntaAtual.indiceCorreto;

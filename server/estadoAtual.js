@@ -34,8 +34,10 @@ function enviarEstadoAoJogador(sala, jogador) {
     }
 
     case "escolha_poder": {
+      // a oferta é a mesma que ele já tinha recebido: o 4º poder não muda
       enviar("escolhaPoder", {
         ...sala._payloadEscolhaPoder,
+        oferta: sala.ofertasPoder.get(id) || [],
         tempoLimiteMs: restante(sala, cfg.tempoEscolhaPoderMs),
         jaEscolheu: sala.poderesEscolhidos.has(id),
       });
@@ -43,20 +45,19 @@ function enviarEstadoAoJogador(sala, jogador) {
     }
 
     case "escolha_alvo": {
-      const tipo = sala.poderesEscolhidos.get(id);
       const tempoLimiteMs = restante(sala, cfg.tempoEscolhaAlvoMs);
-      if (tipo && !sala.alvosEscolhidos.has(id)) {
-        enviar("escolhaAlvo", {
-          temPoder: true,
-          tipo,
-          alvosPossiveis: [...sala.jogadores.values()]
-            .filter((j) => j.id !== id)
-            .map((j) => ({ id: j.id, nome: j.nome })),
-          tempoLimiteMs,
-        });
+      const payload = sala._payloadEscolhaAlvo(id, tempoLimiteMs);
+      // já escolheu o alvo antes de cair: só espera
+      if (payload.precisaAlvo && sala.alvosEscolhidos.has(id)) {
+        enviar("escolhaAlvo", { temPoder: true, precisaAlvo: false, tipo: payload.tipo, jaUsou: true, tempoLimiteMs });
       } else {
-        enviar("escolhaAlvo", { temPoder: false, jaUsou: !!tipo, tempoLimiteMs });
+        enviar("escolhaAlvo", payload);
       }
+      break;
+    }
+
+    case "animacao_poderes": {
+      enviar("olheParaTv", { duracaoMs: restante(sala, sala._payloadAnimacao.duracaoMs) });
       break;
     }
 
@@ -74,6 +75,7 @@ function enviarEstadoAoJogador(sala, jogador) {
       enviar("iniciarResposta", {
         tempoLimiteMs: restante(sala, cfg.tempoLimitePerguntaMs, sala.perguntaAtual.iniciadaEm),
         efeitosAtivos: sala.efeitosAtivos.get(id) || [],
+        escudo: sala._resumoEscudo(id),
         respostaDada: resposta ? resposta.alternativaIndex : null,
       });
       break;
@@ -81,8 +83,7 @@ function enviarEstadoAoJogador(sala, jogador) {
 
     case "revelacao":
     case "revelacao_linking":
-    case "revelacao_sorting":
-    case "revelacao_piramide": {
+    case "revelacao_sorting": {
       const resultado = resultadoDoJogador(sala, id);
       if (resultado) {
         enviar(resultado.type, { ...resultado.payload, jaConfirmou: sala.confirmacoesProximo.has(id) });
@@ -120,9 +121,17 @@ function enviarEstadoAoJogador(sala, jogador) {
       break;
     }
 
+    case "largada_piramide": {
+      enviar("largadaPiramide", {
+        ...sala._payloadLargada,
+        duracaoMs: restante(sala, sala._payloadLargada.duracaoMs),
+      });
+      break;
+    }
+
     case "piramide": {
       enviar("iniciarPiramide", {
-        totalDegraus: cfg.piramideDegraus,
+        totalAndares: cfg.piramideAndares,
         jogadores: sala._progressoPiramideParaTodos(),
       });
       const p = sala.piramideAtual.progresso.get(id);
@@ -136,6 +145,15 @@ function enviarEstadoAoJogador(sala, jogador) {
           enviar("respostaErradaPiramide", { alternativaIndex });
         }
       }
+      break;
+    }
+
+    case "vitoria_piramide": {
+      enviar("vencedorPiramide", {
+        vencedorId: sala.piramideAtual.vencedorId,
+        vencedorNome: sala.piramideAtual.vencedorNome,
+        jogadores: sala._progressoPiramideParaTodos(),
+      });
       break;
     }
 
@@ -183,6 +201,13 @@ function enviarEstadoATv(sala) {
       break;
     }
 
+    case "animacao_poderes": {
+      // recomeça a sequência do início: é curta, e a próxima pergunta já vem
+      // assim que o tempo dela acabar no servidor
+      enviar("animacaoPoderes", sala._payloadAnimacao);
+      break;
+    }
+
     case "leitura": {
       enviar("novaPergunta", {
         ...sala._payloadNovaPergunta,
@@ -206,8 +231,7 @@ function enviarEstadoATv(sala) {
 
     case "revelacao":
     case "revelacao_linking":
-    case "revelacao_sorting":
-    case "revelacao_piramide": {
+    case "revelacao_sorting": {
       const resultado = sala._resultadoAtual.tv || sala._resultadoAtual.comum;
       if (resultado) {
         enviar(resultado.type, resultado.payload);
@@ -235,9 +259,27 @@ function enviarEstadoATv(sala) {
       break;
     }
 
+    case "largada_piramide": {
+      enviar("largadaPiramide", sala._payloadLargada);
+      break;
+    }
+
     case "piramide": {
       enviar("iniciarPiramide", {
-        totalDegraus: cfg.piramideDegraus,
+        totalAndares: cfg.piramideAndares,
+        jogadores: sala._progressoPiramideParaTodos(),
+      });
+      break;
+    }
+
+    case "vitoria_piramide": {
+      enviar("iniciarPiramide", {
+        totalAndares: cfg.piramideAndares,
+        jogadores: sala._progressoPiramideParaTodos(),
+      });
+      enviar("vencedorPiramide", {
+        vencedorId: sala.piramideAtual.vencedorId,
+        vencedorNome: sala.piramideAtual.vencedorNome,
         jogadores: sala._progressoPiramideParaTodos(),
       });
       break;

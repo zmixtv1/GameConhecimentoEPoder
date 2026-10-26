@@ -4,7 +4,7 @@ const {
   subirServidorDeTeste,
   criarCliente,
   entrarNaSala,
-  pularEscolhaDePoder,
+  iniciarPartidaAteEscolhaPoder,
   avancarAteLinking,
   avancarAteSorting,
   avancarAtePiramide,
@@ -18,7 +18,7 @@ const FASES_LONGAS = {
   tempoLimiteLinkingMs: 6000,
   tempoLimiteSortingMs: 6000,
 };
-const PARTIDA_CURTA = { totalRodadas: 1, perguntasPorRodada: 1 };
+const PARTIDA_CURTA = { perguntasPorRodada: 1 };
 
 // ---------- utilitários ----------
 
@@ -57,7 +57,6 @@ async function ateJanelaDeResposta(porta, sala, nomes) {
   await Promise.all(jogadores.map((j) => j.cliente.esperar("escolhaPorta")));
   for (const j of jogadores) j.cliente.enviar({ type: "escolherPorta", indice: 0 });
   await Promise.all(jogadores.map((j) => j.cliente.esperar("portaEscolhida")));
-  await pularEscolhaDePoder(jogadores);
   await Promise.all(jogadores.map((j) => j.cliente.esperar("novaPergunta")));
   await Promise.all(jogadores.map((j) => j.cliente.esperar("iniciarResposta")));
   return jogadores;
@@ -381,27 +380,22 @@ test("fase de porta: quem volta recebe as portas e a informação de que já vot
   assert.ok(volta.tempoLimiteMs <= 4000);
 });
 
-test("fase de poder: quem volta recebe a escolha de poder com o tempo que falta", async (t) => {
+test("fase de poder: quem volta recebe a mesma oferta, com o tempo que falta", async (t) => {
   const { porta, sala, fechar } = await subirServidorDeTeste({ ...FASES_LONGAS, tempoEscolhaPoderMs: 4000 });
   t.after(fechar);
-  const ana = await entrarNaSala(porta, "Ana", sala.codigo);
-  const bruno = await entrarNaSala(porta, "Bruno", sala.codigo);
-  const carla = await entrarNaSala(porta, "Carla", sala.codigo); // 3: a queda de um não encerra
-  ana.cliente.enviar({ type: "iniciarPartida" });
-  await ana.cliente.esperar("escolhaPorta");
-  await bruno.cliente.esperar("escolhaPorta");
-  await carla.cliente.esperar("escolhaPorta");
-  ana.cliente.enviar({ type: "escolherPorta", indice: 0 });
-  bruno.cliente.enviar({ type: "escolherPorta", indice: 0 });
-  carla.cliente.enviar({ type: "escolherPorta", indice: 0 });
-  await bruno.cliente.esperar("escolhaPoder");
+  // 3 jogadores: a queda de um não encerra a partida
+  const { jogadores, escolhasPoder } = await iniciarPartidaAteEscolhaPoder(porta, sala, ["Ana", "Bruno", "Carla"]);
+  const [ana, bruno] = jogadores;
+  const ofertaOriginal = escolhasPoder[1].oferta;
   bruno.cliente.fechar();
   await esperarLista(ana.cliente, (l) => l.some((j) => j.nome === "Bruno" && !j.conectado));
 
   const novo = await reconectar(porta, sala, bruno.token);
   await novo.esperar("reconectado");
   const volta = await novo.esperar("escolhaPoder");
-  assert.ok(volta.tiposDisponiveis.length > 0);
+  // o 4º poder não pode ser sorteado de novo: senão bastava recarregar a
+  // página até cair o Escudo
+  assert.deepEqual(volta.oferta, ofertaOriginal);
   assert.equal(volta.jaEscolheu, false);
   assert.ok(volta.tempoLimiteMs <= 4000);
 });
@@ -455,7 +449,7 @@ test("Sorting: quem volta mantém os itens já classificados", async (t) => {
 });
 
 test("Pirâmide: quem volta recebe a mesma pergunta, as alternativas já erradas e a posição", async (t) => {
-  const { porta, sala, fechar } = await subirServidorDeTeste({ ...FASES_LONGAS, ...PARTIDA_CURTA, piramideDegraus: 6 });
+  const { porta, sala, fechar } = await subirServidorDeTeste({ ...FASES_LONGAS, ...PARTIDA_CURTA, piramideAndares: 6 });
   t.after(fechar);
   const { jogadores, perguntas } = await avancarAtePiramide(porta, sala, ["Ana", "Bruno", "Carla"]);
   const [ana, bruno] = jogadores;
@@ -474,7 +468,7 @@ test("Pirâmide: quem volta recebe a mesma pergunta, as alternativas já erradas
   const jaErrada = await novo.esperar("respostaErradaPiramide");
 
   assert.equal(boasVindas.estado, "piramide");
-  assert.equal(inicio.totalDegraus, 6);
+  assert.equal(inicio.totalAndares, 6);
   assert.equal(pergunta.pergunta, perguntas[0].pergunta);
   assert.deepEqual(pergunta.alternativas, perguntas[0].alternativas);
   assert.equal(jaErrada.alternativaIndex, errada);
@@ -493,7 +487,6 @@ test("TV que reconecta no meio da pergunta recebe a pergunta, o timer e quem já
   await Promise.all(jogadores.map((j) => j.cliente.esperar("escolhaPorta")));
   for (const j of jogadores) j.cliente.enviar({ type: "escolherPorta", indice: 0 });
   await Promise.all(jogadores.map((j) => j.cliente.esperar("portaEscolhida")));
-  await pularEscolhaDePoder(jogadores);
   await Promise.all(jogadores.map((j) => j.cliente.esperar("iniciarResposta")));
   ana.cliente.enviar({ type: "responder", alternativaIndex: 0 });
   await esperarCondicao(() => sala.perguntaAtual.respostas.has(ana.jogadorId));
@@ -554,4 +547,60 @@ test("TV que reconecta antes de a partida começar continua só vendo o lobby", 
   const estado = await tv.esperar("estadoSala");
   assert.equal(estado.estado, "lobby");
   await assert.rejects(() => tv.esperar("novaPergunta", 150));
+});
+
+// ---------- fases novas ----------
+
+test("animação de poderes: celular que volta é mandado olhar pra TV, e a TV que volta recebe a sequência", async (t) => {
+  // animação longa pra dar tempo de derrubar e voltar no meio dela
+  const { porta, sala, fechar } = await subirServidorDeTeste({ ...FASES_LONGAS, tempoAnimacaoPorPoderMs: 3000 });
+  t.after(fechar);
+  const { jogadores } = await iniciarPartidaAteEscolhaPoder(porta, sala, ["Ana", "Bruno", "Carla"]);
+  const [ana, bruno, carla] = jogadores;
+  ana.cliente.enviar({ type: "escolherPoder", tipo: "congelamento" });
+  bruno.cliente.enviar({ type: "escolherPoder", tipo: null });
+  carla.cliente.enviar({ type: "escolherPoder", tipo: null });
+  await ana.cliente.esperar("escolhaAlvo");
+  ana.cliente.enviar({ type: "escolherAlvoPoder", alvoId: bruno.jogadorId });
+  await bruno.cliente.esperar("olheParaTv");
+
+  bruno.cliente.fechar();
+  await esperarLista(ana.cliente, (l) => l.some((j) => j.nome === "Bruno" && !j.conectado));
+  const novo = await reconectar(porta, sala, bruno.token);
+  await novo.esperar("reconectado");
+  const olhe = await novo.esperar("olheParaTv");
+  assert.ok(olhe.duracaoMs > 0 && olhe.duracaoMs <= 3000, "manda só o tempo que ainda falta");
+
+  const tv = criarCliente(porta);
+  await tv.aberto();
+  tv.enviar({ type: "identificarTv" });
+  const animacao = await tv.esperar("animacaoPoderes");
+  assert.equal(animacao.sequencia.length, 1);
+  assert.equal(animacao.sequencia[0].alvoId, bruno.jogadorId);
+});
+
+test("largada: quem volta durante a conversão recebe as largadas de todo mundo", async (t) => {
+  const { porta, sala, fechar } = await subirServidorDeTeste({
+    ...FASES_LONGAS, ...PARTIDA_CURTA, largadaFechamentoMs: 3000,
+  });
+  t.after(fechar);
+  const { jogadores } = await avancarAteSorting(porta, sala, ["Ana", "Bruno", "Carla"]);
+  const [ana, bruno] = jogadores;
+  for (const j of jogadores) {
+    const p = sala.sortingAtual.progresso.get(j.jogadorId);
+    for (let i = 0; i < p.itens.length; i++) j.cliente.enviar({ type: "classificarItem", itemIndex: i, categoria: p.gabarito[i] });
+  }
+  await Promise.all(jogadores.map((j) => j.cliente.esperar("resultadoSorting")));
+  for (const j of jogadores) j.cliente.enviar({ type: "continuar" });
+  const original = await bruno.cliente.esperar("largadaPiramide");
+
+  bruno.cliente.fechar();
+  await esperarLista(ana.cliente, (l) => l.some((j) => j.nome === "Bruno" && !j.conectado));
+  const novo = await reconectar(porta, sala, bruno.token);
+  const boasVindas = await novo.esperar("reconectado");
+  const volta = await novo.esperar("largadaPiramide");
+
+  assert.equal(boasVindas.estado, "largada_piramide");
+  assert.deepEqual(volta.jogadores, original.jogadores);
+  assert.ok(volta.duracaoMs <= original.duracaoMs);
 });

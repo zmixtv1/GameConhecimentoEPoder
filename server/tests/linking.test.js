@@ -136,7 +136,7 @@ test("quando todos completam antes do tempo, revela na hora (sem esperar o timeo
   assert.equal(resultadoAna.paresCorretos, totalPares);
 });
 
-test("depois do resultado, precisa de todos confirmarem 'continuar' pra ir pro Sorting", async (t) => {
+test("depois do resultado, precisa de todos confirmarem 'continuar' pra ir pro próximo tema", async (t) => {
   const { porta, sala, fechar } = await subirServidorDeTeste();
   t.after(fechar);
 
@@ -154,8 +154,10 @@ test("depois do resultado, precisa de todos confirmarem 'continuar' pra ir pro S
   await Promise.all([ana.cliente.esperar("resultadoLinking"), bruno.cliente.esperar("resultadoLinking")]);
 
   ana.cliente.enviar({ type: "continuar" });
-  await assert.rejects(() => ana.cliente.esperar("iniciarSorting", 150));
+  await assert.rejects(() => ana.cliente.esperar("escolhaPorta", 150));
 
+  // a Ligação fecha o tema 1: depois dela vem a porta do tema 2
   bruno.cliente.enviar({ type: "continuar" });
-  await ana.cliente.esperar("iniciarSorting", 2000);
+  const porta2 = await ana.cliente.esperar("escolhaPorta", 2000);
+  assert.equal(porta2.rodadaAtual, 2);
 });

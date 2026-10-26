@@ -4,7 +4,7 @@ const {
   subirServidorDeTeste,
   criarCliente,
   entrarNaSala,
-  pularEscolhaDePoder,
+  completarLinking,
 } = require("./ajuda");
 
 const FASES_LONGAS = {
@@ -24,14 +24,14 @@ async function ateJanelaDeResposta(porta, sala, nomes) {
   await Promise.all(jogadores.map((j) => j.cliente.esperar("escolhaPorta")));
   for (const j of jogadores) j.cliente.enviar({ type: "escolherPorta", indice: 0 });
   await Promise.all(jogadores.map((j) => j.cliente.esperar("portaEscolhida")));
-  await pularEscolhaDePoder(jogadores);
+  // a 1ª pergunta do tema vem direto, sem fase de poder
   await Promise.all(jogadores.map((j) => j.cliente.esperar("novaPergunta")));
   await Promise.all(jogadores.map((j) => j.cliente.esperar("iniciarResposta")));
   return jogadores;
 }
 
-// joga a partida inteira (1 rodada, 1 pergunta, Linking, Sorting e Pirâmide)
-// até a tela de fim de partida
+// joga a partida inteira até a tela de fim. Com 1 tema de 1 pergunta, ela é:
+// a pergunta, a Ligação do tema, a largada, a corrida e o pódio.
 async function ateFimDePartida(porta, sala, nomes) {
   const jogadores = await ateJanelaDeResposta(porta, sala, nomes);
   const indiceCorreto = sala.perguntaAtual.indiceCorreto;
@@ -40,37 +40,22 @@ async function ateFimDePartida(porta, sala, nomes) {
   for (const j of jogadores) j.cliente.enviar({ type: "continuar" });
 
   await Promise.all(jogadores.map((j) => j.cliente.esperar("iniciarLinking")));
-  const totalPares = sala.linkingAtual.pares.length;
-  for (const j of jogadores) {
-    const p = sala.linkingAtual.progresso.get(j.jogadorId);
-    for (let i = 0; i < totalPares; i++) {
-      j.cliente.enviar({ type: "tentarPar", esquerdaIndex: i, direitaIndex: p.direitaEmbaralhadaIndices.indexOf(i) });
-    }
-  }
+  completarLinking(jogadores, sala);
   await Promise.all(jogadores.map((j) => j.cliente.esperar("resultadoLinking")));
   for (const j of jogadores) j.cliente.enviar({ type: "continuar" });
 
-  await Promise.all(jogadores.map((j) => j.cliente.esperar("iniciarSorting")));
-  for (const j of jogadores) {
-    const p = sala.sortingAtual.progresso.get(j.jogadorId);
-    for (let i = 0; i < p.itens.length; i++) {
-      j.cliente.enviar({ type: "classificarItem", itemIndex: i, categoria: p.gabarito[i] });
-    }
-  }
-  await Promise.all(jogadores.map((j) => j.cliente.esperar("resultadoSorting")));
-  for (const j of jogadores) j.cliente.enviar({ type: "continuar" });
-
+  await Promise.all(jogadores.map((j) => j.cliente.esperar("largadaPiramide")));
   await Promise.all(jogadores.map((j) => j.cliente.esperar("iniciarPiramide")));
   await Promise.all(jogadores.map((j) => j.cliente.esperar("novaPerguntaPiramide")));
   const vencedor = jogadores[0];
-  const passos = sala.cfg.piramideDegraus - sala.piramideAtual.progresso.get(vencedor.jogadorId).posicao;
+  const passos = sala.cfg.piramideAndares - sala.piramideAtual.progresso.get(vencedor.jogadorId).posicao;
   for (let i = 0; i < passos; i++) {
     const p = sala.piramideAtual.progresso.get(vencedor.jogadorId);
     vencedor.cliente.enviar({ type: "responderPiramide", alternativaIndex: p.perguntaAtual.indiceCorreto });
     if (i < passos - 1) await vencedor.cliente.esperar("novaPerguntaPiramide");
   }
-  await Promise.all(jogadores.map((j) => j.cliente.esperar("resultadoPiramide", 3000)));
-  for (const j of jogadores) j.cliente.enviar({ type: "continuar" });
+  // depois da vitória o pódio vem sozinho
+  await Promise.all(jogadores.map((j) => j.cliente.esperar("vencedorPiramide", 3000)));
   await Promise.all(jogadores.map((j) => j.cliente.esperar("fimDePartida", 3000)));
   return jogadores;
 }

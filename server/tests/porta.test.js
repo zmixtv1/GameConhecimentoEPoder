@@ -81,6 +81,7 @@ test("o poder devolvido continua disponível na rodada seguinte, e aí funciona"
   const { porta, sala, fechar } = await subirServidorDeTeste({
     ...PORTA_LONGA,
     perguntasPorRodada: 1,
+    desafiosPorRodada: [], // sem desafio, o tema 1 acaba e já vem a porta do tema 2
     tempoEscolhaPoderMs: 150,
     tempoEscolhaAlvoMs: 150,
     tempoLeituraMs: 80,
@@ -182,12 +183,12 @@ test("a tela do tema fica mais tempo no ar quando a porta foi garantida", async 
   ana.cliente.enviar({ type: "escolherPorta", indice: 1, garantir: true });
   await ana.cliente.esperar("portaEscolhida", 1500);
 
-  // com a pausa normal (80ms) a próxima fase já teria começado
+  // com a pausa normal (80ms) a 1ª pergunta do tema já teria aparecido
   await assert.rejects(
-    () => ana.cliente.esperar("escolhaPoder", 400),
+    () => ana.cliente.esperar("novaPergunta", 400),
     "a tela do tema tem que ficar mais tempo quando a porta foi garantida"
   );
-  await ana.cliente.esperar("escolhaPoder", 1500);
+  await ana.cliente.esperar("novaPergunta", 1500);
 });
 
 test("sem garantia, a pausa da tela do tema continua a normal", async (t) => {
@@ -202,5 +203,46 @@ test("sem garantia, a pausa da tela do tema continua a normal", async (t) => {
 
   ana.cliente.enviar({ type: "escolherPorta", indice: 1 });
   await ana.cliente.esperar("portaEscolhida", 2000);
-  await ana.cliente.esperar("escolhaPoder", 800); // pausa curta, como antes
+  await ana.cliente.esperar("novaPergunta", 800); // pausa curta, como antes
+});
+
+test("a porta só oferece tema com pergunta suficiente no nível do tema", async (t) => {
+  // tema difícil logo de cara: Esportes tem 1 pergunta difícil e Cinema e TV
+  // tem 2, então nenhum dos dois aguenta as 3 perguntas do tema
+  const { porta, sala, fechar } = await subirServidorDeTeste({ dificuldadesPorRodada: ["dificil"] });
+  t.after(fechar);
+  const banco = require("../../data/perguntas.json");
+  const { portas } = await ateEscolhaDePorta(porta, sala, ["Ana", "Bruno"]);
+
+  assert.equal(portas.length, 4);
+  for (const tema of portas) {
+    const dificeis = banco.filter((p) => p.categoria === tema && p.dificuldade === "dificil").length;
+    assert.ok(dificeis >= sala.cfg.perguntasPorRodada, `${tema} só tem ${dificeis} perguntas difíceis`);
+  }
+});
+
+test("as perguntas de um tema saem do nível dele", async (t) => {
+  const { porta, sala, fechar } = await subirServidorDeTeste({ dificuldadesPorRodada: ["medio"] });
+  t.after(fechar);
+  const { jogadores } = await ateEscolhaDePorta(porta, sala, ["Ana", "Bruno"]);
+  for (const j of jogadores) j.cliente.enviar({ type: "escolherPorta", indice: 0 });
+  const pergunta = await jogadores[0].cliente.esperar("novaPergunta", 2000);
+  assert.equal(pergunta.dificuldade, "medio");
+});
+
+test("a porta prefere temas que ainda não foram jogados na partida", async (t) => {
+  const { porta, sala, fechar } = await subirServidorDeTeste({ perguntasPorRodada: 1, desafiosPorRodada: [] });
+  t.after(fechar);
+  const { jogadores } = await ateEscolhaDePorta(porta, sala, ["Ana", "Bruno"]);
+  for (const j of jogadores) j.cliente.enviar({ type: "escolherPorta", indice: 0 });
+  const { categoria } = await jogadores[0].cliente.esperar("portaEscolhida", 2000);
+
+  await Promise.all(jogadores.map((j) => j.cliente.esperar("novaPergunta", 2000)));
+  await Promise.all(jogadores.map((j) => j.cliente.esperar("iniciarResposta", 2000)));
+  for (const j of jogadores) j.cliente.enviar({ type: "responder", alternativaIndex: 0 });
+  await Promise.all(jogadores.map((j) => j.cliente.esperar("resultadoPergunta", 2000)));
+  for (const j of jogadores) j.cliente.enviar({ type: "continuar" });
+
+  const tema2 = await jogadores[0].cliente.esperar("escolhaPorta", 2000);
+  assert.ok(!tema2.portas.includes(categoria), `${categoria} já foi jogado e voltou a ser oferecido`);
 });

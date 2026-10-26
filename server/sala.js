@@ -6,19 +6,31 @@ const { sortearConjuntoClassificacao, embaralharParaJogador: embaralharClassific
 const { ANIMAIS, buscarAnimal } = require("./animais");
 const { enviarEstadoAoJogador, enviarEstadoATv } = require("./estadoAtual");
 
-// Jogos de Poder implementados nesta etapa. Festa de Pontos e Aposta ficaram
-// de fora de propósito: o efeito exato deles não está documentado em
-// nenhuma fonte pública que encontramos, então preferi não inventar uma
-// regra e ter que desfazer depois.
-const TIPOS_DE_PODER = ["congelamento", "gosma", "bombolha", "mordicadores"];
+// Os seis Jogos de Poder. Os três de ataque atrapalham a tela do alvo e não
+// têm limite de uso; os três especiais têm cota e não atacam ninguém.
+const PODERES_ATAQUE = ["congelamento", "mordicadores", "nevoa"];
+const PODERES_ESPECIAIS = ["escudo", "aposta", "festa"];
+const TIPOS_DE_PODER = [...PODERES_ATAQUE, ...PODERES_ESPECIAIS];
+// Precisam que o jogador escolha um alvo. Escudo e Festa valem sem alvo.
+const PODERES_COM_ALVO = [...PODERES_ATAQUE, "aposta"];
 
 // Valores usados numa partida de verdade. Testes automatizados passam um
 // objeto de opções menor pro construtor, pra não precisar esperar segundos
 // reais de leitura/timeout a cada asserção.
 const PADROES = {
   maxJogadores: ANIMAIS.length, // um animal por jogador
-  totalRodadas: 3,
+
+  // A partida: 5 temas de 3 perguntas, ficando mais difíceis, e depois de
+  // cada tema um desafio - Ligação e Classificação alternando.
+  totalRodadas: 5,
   perguntasPorRodada: 3,
+  dificuldadesPorRodada: ["facil", "facil", "medio", "medio", "dificil"],
+  desafiosPorRodada: ["linking", "sorting", "linking", "sorting", "linking"],
+
+  // A escolha de poder acontece só nestas perguntas de cada tema (contando a
+  // partir de 1). A primeira de cada tema abre limpa: no começo ninguém tem
+  // pontos e não há em quem mirar com critério.
+  perguntasComPoder: [2, 3],
 
   tempoLimitePortaMs: 10000,
   tempoEscolhaPoderMs: 10000, // tempo pra escolher qual poder usar (ou nenhum)
@@ -28,6 +40,15 @@ const PADROES = {
   pontosBaseAcerto: 100,
   bonusVelocidadeMax: 100,
 
+  // Jogos de Poder
+  usosEscudo: 3, // por jogador, na partida inteira
+  usosAposta: 3, // por jogador, na partida inteira
+  premioAposta: 75, // só acrescenta: alvo errou, nada acontece
+  temasComFesta: [2, 4], // Festa de Pontos aparece uma vez em cada um destes temas
+  multiplicadorFesta: 2, // dobra só o acerto base, não o bônus de velocidade
+  // a TV mostra quem atacou quem: um momento por jogador que usou poder
+  tempoAnimacaoPorPoderMs: 2000,
+
   tempoLimiteLinkingMs: 30000,
   pontosPorParLinking: 40,
   bonusVelocidadeLinkingMax: 100, // só pra quem completa todos os pares
@@ -35,7 +56,20 @@ const PADROES = {
   tempoLimiteSortingMs: 30000,
   pontosPorItemSorting: 25, // sem bônus de velocidade, igual ao jogo original
 
-  piramideDegraus: 10, // quantos acertos seguidos (a partir da própria largada) pra vencer
+  // Pirâmide: o chão é 0, os andares vão de 1 a `piramideAndares` e o topo é o
+  // último. A pontuação das rodadas só decide de que andar cada um larga.
+  piramideAndares: 8,
+  piramideMaxPulos: 4, // ninguém larga mais alto que isso
+  piramideCurva: 1.5, // >1 faz a vantagem crescer devagar no meio da tabela
+  piramidePesoPontos: 0.5, // o resto do peso vem da colocação no placar
+  // A TV mostra a pontuação virando andar antes da corrida. A duração acompanha
+  // a animação: uma abertura, um tanto por jogador e por andar pulado, e o fim.
+  largadaAberturaMs: 1000,
+  largadaPorJogadorMs: 520,
+  largadaPorPuloMs: 300,
+  largadaFechamentoMs: 3200,
+  // quem chega ao topo fica uns segundos comemorando antes do pódio
+  pausaVencedorPiramideMs: 3500,
 
   pausaAposPortaMs: 2500, // tempo pra ler "o tema escolhido foi..."
   // quando alguém garante a porta, a votação é cortada e a tela do tema aparece
@@ -63,9 +97,9 @@ class Sala {
     this.codigo = gerarCodigoSala();
     // id -> { id, nome, pontos, ehAnfitriao, animalId, avatar, token, conectado, ws, timeoutRemocao }
     this.jogadores = new Map();
-    // lobby | escolha_porta | escolha_poder | escolha_alvo | leitura | pergunta
-    // | revelacao | linking | revelacao_linking | sorting | revelacao_sorting
-    // | piramide | revelacao_piramide | fim
+    // lobby | escolha_porta | escolha_poder | escolha_alvo | animacao_poderes
+    // | leitura | pergunta | revelacao | linking | revelacao_linking | sorting
+    // | revelacao_sorting | largada_piramide | piramide | vitoria_piramide | fim
     this.estado = "lobby";
     this.tvWs = null;
     this.linkControlador = null; // definido de fora (index.js), quando o IP local é conhecido
@@ -77,6 +111,9 @@ class Sala {
     this.perguntaNaRodada = 0;
     this.categoriaRodadaAtual = null;
     this.idsPerguntasUsadas = [];
+    this.temasJogados = []; // pra porta preferir assuntos novos
+    this.idsAssociacoesUsadas = []; // pra não repetir desafio na mesma partida
+    this.idsClassificacoesUsadas = [];
 
     // fase de escolha de porta
     this.portasAtuais = [];
@@ -93,13 +130,24 @@ class Sala {
     this._timeoutLeitura = null;
     this._timeoutPergunta = null;
 
-    // Jogos de Poder da pergunta atual - agora em duas escolhas sequenciais:
-    // primeiro qual poder usar, depois em quem usar.
-    this.poderesEscolhidos = new Map(); // jogadorId -> tipo escolhido (só de quem escolheu)
-    this.alvosEscolhidos = new Set(); // jogadorId que já resolveu a fase de alvo (escolheu ou não tinha poder)
-    this.efeitosAtivos = new Map(); // jogadorId (alvo) -> [{ tipo, deId, deNome }]
+    // Jogos de Poder da pergunta atual, em duas escolhas sequenciais: primeiro
+    // qual poder usar, depois em quem usar.
+    this.ofertasPoder = new Map(); // jogadorId -> [{ tipo, usos }] oferecidos nesta pergunta
+    this.poderesEscolhidos = new Map(); // jogadorId -> tipo, ou null se escolheu não usar
+    this.alvosEscolhidos = new Set(); // jogadorId que já resolveu a fase de alvo (escolheu ou não precisava)
+    this.alvoDe = new Map(); // jogadorId -> alvoId, de quem usou poder com alvo
+    this.efeitosAtivos = new Map(); // jogadorId (alvo) -> [{ tipo, deId, deNome }] que passaram pelo escudo
+    this.protegidos = new Set(); // quem usou Escudo nesta pergunta
+    this.apostas = []; // [{ apostadorId, alvoId }] desta pergunta
+    this.festaAtiva = false; // alguém ativou a Festa de Pontos nesta pergunta
+    this.sequenciaPoderes = []; // o que a TV anima, na ordem
     this._timeoutEscolhaPoder = null;
     this._timeoutEscolhaAlvo = null;
+    this._timeoutAnimacao = null;
+
+    // cotas da partida inteira
+    this.usosPoder = new Map(); // jogadorId -> { escudo, aposta } restantes
+    this.festaUsadaNosTemas = new Set(); // rodadas em que a Festa já foi usada
 
     // fase de Linking (desafio de associação)
     this.linkingAtual = null;
@@ -112,6 +160,8 @@ class Sala {
     // fase da Pirâmide do Conhecimento (finale) - corrida individual, cada
     // jogador tem sua própria pergunta e avança no próprio ritmo.
     this.piramideAtual = null;
+    this._timeoutLargada = null;
+    this._timeoutVencedor = null;
 
     // fase de revelação (todos precisam confirmar pra avançar) - genérica,
     // serve tanto pra pergunta simples quanto pra Linking e Sorting.
@@ -125,6 +175,8 @@ class Sala {
     this._payloadPortaBase = null;
     this._payloadPortaEscolhida = null;
     this._payloadEscolhaPoder = null;
+    this._payloadAnimacao = null;
+    this._payloadLargada = null;
     this._payloadNovaPergunta = null;
     this._payloadFim = null;
     this._resultadoAtual = { porJogador: new Map(), tv: null, comum: null };
@@ -249,8 +301,8 @@ class Sala {
   _cancelarTimersDeFase() {
     for (const t of [
       this._timeoutPorta, this._timeoutPausaPorta, this._timeoutLeitura, this._timeoutPergunta,
-      this._timeoutEscolhaPoder, this._timeoutEscolhaAlvo, this._timeoutLinking,
-      this._timeoutSorting,
+      this._timeoutEscolhaPoder, this._timeoutEscolhaAlvo, this._timeoutAnimacao,
+      this._timeoutLinking, this._timeoutSorting, this._timeoutLargada, this._timeoutVencedor,
     ]) {
       clearTimeout(t);
     }
@@ -286,14 +338,17 @@ class Sala {
     this.perguntaNaRodada = 0;
     this.categoriaRodadaAtual = null;
     this.idsPerguntasUsadas = [];
+    this.temasJogados = [];
+    this.idsAssociacoesUsadas = [];
+    this.idsClassificacoesUsadas = [];
     this.portasAtuais = [];
     this.escolhasPorta = new Map();
     this.garantiasPorta = [];
     this.jogadoresQueUsaramPoderPorta = new Set(); // todo mundo recupera o poder da porta
     this.perguntaAtual = null;
-    this.poderesEscolhidos = new Map();
-    this.alvosEscolhidos = new Set();
-    this.efeitosAtivos = new Map();
+    this._limparPoderesDaPergunta();
+    this.usosPoder = new Map(); // as cotas voltam cheias na próxima partida
+    this.festaUsadaNosTemas = new Set();
     this.linkingAtual = null;
     this.sortingAtual = null;
     this.piramideAtual = null;
@@ -303,6 +358,8 @@ class Sala {
     this._payloadPortaBase = null;
     this._payloadPortaEscolhida = null;
     this._payloadEscolhaPoder = null;
+    this._payloadAnimacao = null;
+    this._payloadLargada = null;
     this._payloadNovaPergunta = null;
     this._payloadFim = null;
     this._resetarResultado();
@@ -501,6 +558,9 @@ class Sala {
     if ([...this.jogadores.values()].some((j) => !j.animalId)) {
       return { erro: "Todos os jogadores precisam escolher um animal antes de iniciar." };
     }
+    this.usosPoder = new Map();
+    for (const id of this.jogadores.keys()) this._usos(id); // cotas cheias pra todo mundo
+    this.festaUsadaNosTemas = new Set();
     this.rodadaAtual = 1;
     this._iniciarEscolhaPorta();
     return { ok: true };
@@ -589,18 +649,42 @@ class Sala {
     return { ok: true };
   }
 
+  // `tipo` null (ou "nenhum") é o botão "Não usar poder": registra a decisão
+  // pra fase poder acabar assim que todos tiverem decidido, sem esperar o tempo.
   registrarEscolhaPoder(jogadorId, tipo) {
     if (this.estado !== "escolha_poder") {
       return { erro: "Não há escolha de poder em aberto no momento." };
-    }
-    if (!TIPOS_DE_PODER.includes(tipo)) {
-      return { erro: "Tipo de poder inválido." };
     }
     if (this.poderesEscolhidos.has(jogadorId)) {
       return { erro: "Você já escolheu seu poder nesta pergunta." };
     }
 
-    this.poderesEscolhidos.set(jogadorId, tipo);
+    if (tipo === null || tipo === undefined || tipo === "nenhum") {
+      this.poderesEscolhidos.set(jogadorId, null);
+    } else {
+      if (!TIPOS_DE_PODER.includes(tipo)) {
+        return { erro: "Tipo de poder inválido." };
+      }
+      // só vale o que foi oferecido a este jogador nesta pergunta - é o que
+      // garante as cotas e a Festa só nos temas dela
+      const oferta = this.ofertasPoder.get(jogadorId) || [];
+      if (!oferta.some((o) => o.tipo === tipo)) {
+        return { erro: "Esse poder não está disponível pra você nesta pergunta." };
+      }
+      this.poderesEscolhidos.set(jogadorId, tipo);
+
+      // Escudo e Festa não têm alvo: valem na hora em que são escolhidos.
+      if (tipo === "escudo") {
+        this._usos(jogadorId).escudo--;
+        this.protegidos.add(jogadorId);
+      }
+      if (tipo === "festa") {
+        // dois jogadores podem ter recebido a Festa na mesma pergunta; a festa
+        // não acumula (dobro é dobro) e o tema só gasta a dele uma vez
+        this.festaAtiva = true;
+        this.festaUsadaNosTemas.add(this.rodadaAtual);
+      }
+    }
 
     if (this._todosAtivosEm(this.poderesEscolhidos)) {
       clearTimeout(this._timeoutEscolhaPoder);
@@ -614,8 +698,12 @@ class Sala {
     if (this.estado !== "escolha_alvo") {
       return { erro: "Não há escolha de alvo em aberto no momento." };
     }
-    if (!this.poderesEscolhidos.has(jogadorId)) {
+    const tipo = this.poderesEscolhidos.get(jogadorId);
+    if (!tipo) {
       return { erro: "Você não escolheu um poder pra usar nesta pergunta." };
+    }
+    if (!PODERES_COM_ALVO.includes(tipo)) {
+      return { erro: "Esse poder não precisa de alvo." };
     }
     if (this.alvosEscolhidos.has(jogadorId)) {
       return { erro: "Você já escolheu seu alvo nesta pergunta." };
@@ -629,18 +717,22 @@ class Sala {
     }
 
     const jogador = this.jogadores.get(jogadorId);
-    const tipo = this.poderesEscolhidos.get(jogadorId);
     this.alvosEscolhidos.add(jogadorId);
+    this.alvoDe.set(jogadorId, alvoId);
 
-    if (!this.efeitosAtivos.has(alvoId)) this.efeitosAtivos.set(alvoId, []);
-    this.efeitosAtivos.get(alvoId).push({ tipo, deId: jogadorId, deNome: jogador.nome });
-
-    this._enviar(alvo.ws, "atingidoPorPoder", {
-      tipo,
-      deNome: jogador.nome,
-      efeitosAtivos: this.efeitosAtivos.get(alvoId),
-    });
-    this._enviarParaTv("usoDePoder", { tipo, deNome: jogador.nome, alvoNome: alvo.nome });
+    if (tipo === "aposta") {
+      // a cota só sai quando a aposta é feita de verdade, com alvo. E nada é
+      // mandado pro alvo: ele não pode saber que foi apostado, senão muda o
+      // jeito de responder.
+      this._usos(jogadorId).aposta--;
+      this.apostas.push({ apostadorId: jogadorId, alvoId });
+    } else if (!this.protegidos.has(alvoId)) {
+      // ataque que bate em escudo é descartado aqui mesmo: não chega à tela
+      this.efeitosAtivos.set(alvoId, [
+        ...(this.efeitosAtivos.get(alvoId) || []),
+        { tipo, deId: jogadorId, deNome: jogador.nome },
+      ]);
+    }
 
     if (this._todosAtivosEm(this.alvosEscolhidos)) {
       clearTimeout(this._timeoutEscolhaAlvo);
@@ -772,12 +864,16 @@ class Sala {
       return { ok: true };
     }
 
+    // cada acerto sobe um andar
     progresso.posicao++;
-    const progressoParaTodos = { jogadores: this._progressoPiramideParaTodos() };
+    const progressoParaTodos = {
+      jogadores: this._progressoPiramideParaTodos(),
+      subiuId: jogadorId, // a TV anima o pulo de quem acabou de acertar
+    };
     this._transmitirParaTodos("progressoPiramide", progressoParaTodos);
     this._enviarParaTv("progressoPiramide", progressoParaTodos);
 
-    if (progresso.posicao >= this.cfg.piramideDegraus) {
+    if (progresso.posicao >= this.cfg.piramideAndares) {
       this._vencerPiramide(jogadorId);
     } else {
       this._proximaPerguntaPiramide(jogadorId);
@@ -818,17 +914,30 @@ class Sala {
 
   // ---------- internos: escolha de porta ----------
 
+  // nível das perguntas do tema atual ("facil" | "medio" | "dificil")
+  _dificuldadeDaRodada() {
+    const lista = this.cfg.dificuldadesPorRodada || [];
+    return lista[this.rodadaAtual - 1] || null;
+  }
+
   _iniciarEscolhaPorta() {
     this.estado = "escolha_porta";
     this.perguntaNaRodada = 0;
     this.categoriaRodadaAtual = null;
-    this.portasAtuais = sortearPortas(4);
+    // só entra porta de tema que aguenta as perguntas da rodada no nível dela
+    this.portasAtuais = sortearPortas(4, {
+      dificuldade: this._dificuldadeDaRodada(),
+      idsExcluidos: this.idsPerguntasUsadas,
+      temasJogados: this.temasJogados,
+      minimo: this.cfg.perguntasPorRodada,
+    });
     this.escolhasPorta = new Map();
     this.garantiasPorta = [];
 
     const payloadBase = {
       rodadaAtual: this.rodadaAtual,
       totalRodadas: this.cfg.totalRodadas,
+      dificuldade: this._dificuldadeDaRodada(),
       portas: this.portasAtuais,
       tempoLimiteMs: this.cfg.tempoLimitePortaMs,
     };
@@ -881,6 +990,7 @@ class Sala {
     }
 
     this.categoriaRodadaAtual = this.portasAtuais[indiceVencedor];
+    this.temasJogados.push(this.categoriaRodadaAtual);
 
     const payload = { categoria: this.categoriaRodadaAtual, contagens, garantidaPorNome };
     this._payloadPortaEscolhida = payload;
@@ -891,29 +1001,87 @@ class Sala {
       ? this.cfg.pausaAposPortaGarantidaMs
       : this.cfg.pausaAposPortaMs;
     this._timeoutPausaPorta = setTimeout(() => {
-      if (this.estado === "escolha_porta") this._iniciarEscolhaPoder();
+      if (this.estado === "escolha_porta") this._prepararProximaPergunta();
     }, pausaMs);
+  }
+
+  // Entre uma pergunta e outra do mesmo tema: decide se a próxima tem fase de
+  // poder antes (só a 2ª e a 3ª, por padrão) ou se vai direto pra pergunta.
+  _prepararProximaPergunta() {
+    const proxima = this.perguntaNaRodada + 1;
+    if ((this.cfg.perguntasComPoder || []).includes(proxima)) {
+      this._iniciarEscolhaPoder();
+    } else {
+      this._limparPoderesDaPergunta(); // pergunta limpa: nada da anterior sobra
+      this._proximaPerguntaDaRodada();
+    }
   }
 
   // ---------- internos: Jogos de Poder (escolha em duas etapas) ----------
 
-  _iniciarEscolhaPoder() {
-    this.estado = "escolha_poder";
+  _usos(jogadorId) {
+    if (!this.usosPoder.has(jogadorId)) {
+      this.usosPoder.set(jogadorId, { escudo: this.cfg.usosEscudo, aposta: this.cfg.usosAposta });
+    }
+    return this.usosPoder.get(jogadorId);
+  }
+
+  // A Festa existe uma vez em cada tema da lista, sem passar de um pro outro.
+  // Devolve quantas ainda restam na partida a partir deste tema (0 = fora).
+  _festasRestantes() {
+    const temas = this.cfg.temasComFesta || [];
+    if (!temas.includes(this.rodadaAtual) || this.festaUsadaNosTemas.has(this.rodadaAtual)) return 0;
+    return temas.filter((t) => t >= this.rodadaAtual && !this.festaUsadaNosTemas.has(t)).length;
+  }
+
+  // Os 3 de ataque sempre aparecem; o 4º é sorteado entre os especiais que o
+  // jogador ainda pode usar. É sorteado aqui, e não no celular, para ficar
+  // igual se ele recarregar a página.
+  _montarOferta(jogadorId) {
+    const fixos = PODERES_ATAQUE.map((tipo) => ({ tipo, usos: null }));
+    const usos = this._usos(jogadorId);
+    const especiais = [];
+    if (usos.escudo > 0) especiais.push({ tipo: "escudo", usos: usos.escudo });
+    if (usos.aposta > 0) especiais.push({ tipo: "aposta", usos: usos.aposta });
+    const festas = this._festasRestantes();
+    if (festas > 0) especiais.push({ tipo: "festa", usos: festas });
+    if (especiais.length === 0) return fixos;
+    return [...fixos, especiais[Math.floor(Math.random() * especiais.length)]];
+  }
+
+  // Zera tudo que é da pergunta (não as cotas, que são da partida).
+  _limparPoderesDaPergunta() {
+    this.ofertasPoder = new Map();
     this.poderesEscolhidos = new Map();
     this.alvosEscolhidos = new Set();
+    this.alvoDe = new Map();
     this.efeitosAtivos = new Map();
+    this.protegidos = new Set();
+    this.apostas = [];
+    this.festaAtiva = false;
+    this.sequenciaPoderes = [];
+  }
+
+  _iniciarEscolhaPoder() {
+    this.estado = "escolha_poder";
+    this._limparPoderesDaPergunta();
 
     const payload = {
       rodadaAtual: this.rodadaAtual,
       totalRodadas: this.cfg.totalRodadas,
       perguntaNaRodada: this.perguntaNaRodada + 1,
       totalPerguntasPorRodada: this.cfg.perguntasPorRodada,
-      tiposDisponiveis: TIPOS_DE_PODER,
       tempoLimiteMs: this.cfg.tempoEscolhaPoderMs,
     };
     this._payloadEscolhaPoder = payload;
     this._inicioFase = Date.now();
-    this._transmitirParaTodos("escolhaPoder", payload);
+
+    // cada um recebe a própria oferta (o 4º poder e os usos são pessoais)
+    for (const [id, jogador] of this.jogadores) {
+      const oferta = this._montarOferta(id);
+      this.ofertasPoder.set(id, oferta);
+      this._enviar(jogador.ws, "escolhaPoder", { ...payload, oferta });
+    }
     this._enviarParaTv("escolhaPoder", payload);
 
     this._timeoutEscolhaPoder = setTimeout(() => {
@@ -926,29 +1094,46 @@ class Sala {
     this._iniciarEscolhaAlvo();
   }
 
+  // Os outros jogadores, do líder para baixo, com animal e pontos: é o que
+  // ajuda a decidir em quem usar o poder. Empate divide a posição.
+  _alvosPossiveis(jogadorId) {
+    const placar = this._placar();
+    return placar
+      .filter((j) => j.id !== jogadorId)
+      .map((j) => ({
+        id: j.id,
+        nome: j.nome,
+        avatar: j.avatar,
+        pontos: j.pontos,
+        posicao: placar.filter((o) => o.pontos > j.pontos).length + 1,
+      }));
+  }
+
+  _payloadEscolhaAlvo(jogadorId, tempoLimiteMs) {
+    const tipo = this.poderesEscolhidos.get(jogadorId) ?? null;
+    if (!tipo) return { temPoder: false, precisaAlvo: false, tipo: null, tempoLimiteMs };
+    if (!PODERES_COM_ALVO.includes(tipo)) {
+      // Escudo e Festa já valeram na escolha: o celular só confirma e espera
+      return { temPoder: true, precisaAlvo: false, tipo, tempoLimiteMs };
+    }
+    return {
+      temPoder: true,
+      precisaAlvo: true,
+      tipo,
+      alvosPossiveis: this._alvosPossiveis(jogadorId),
+      tempoLimiteMs,
+    };
+  }
+
   _iniciarEscolhaAlvo() {
     this.estado = "escolha_alvo";
     this.alvosEscolhidos = new Set();
     this._inicioFase = Date.now();
 
     for (const [id, jogador] of this.jogadores) {
-      const tipo = this.poderesEscolhidos.get(id);
-      if (tipo) {
-        this._enviar(jogador.ws, "escolhaAlvo", {
-          temPoder: true,
-          tipo,
-          alvosPossiveis: [...this.jogadores.values()]
-            .filter((j) => j.id !== id)
-            .map((j) => ({ id: j.id, nome: j.nome })),
-          tempoLimiteMs: this.cfg.tempoEscolhaAlvoMs,
-        });
-      } else {
-        this._enviar(jogador.ws, "escolhaAlvo", {
-          temPoder: false,
-          tempoLimiteMs: this.cfg.tempoEscolhaAlvoMs,
-        });
-        this.alvosEscolhidos.add(id); // não escolheu poder, não há o que resolver
-      }
+      const payload = this._payloadEscolhaAlvo(id, this.cfg.tempoEscolhaAlvoMs);
+      this._enviar(jogador.ws, "escolhaAlvo", payload);
+      if (!payload.precisaAlvo) this.alvosEscolhidos.add(id); // não há alvo pra esperar
     }
     this._enviarParaTv("escolhaAlvo", { tempoLimiteMs: this.cfg.tempoEscolhaAlvoMs });
 
@@ -956,7 +1141,7 @@ class Sala {
       if (this.estado === "escolha_alvo") this._resolverEscolhaAlvo();
     }, this.cfg.tempoEscolhaAlvoMs + 500);
 
-    // se ninguém escolheu poder algum, não há por que esperar
+    // se ninguém precisa escolher alvo, não há por que esperar
     if (this._todosAtivosEm(this.alvosEscolhidos)) {
       clearTimeout(this._timeoutEscolhaAlvo);
       this._resolverEscolhaAlvo();
@@ -965,14 +1150,81 @@ class Sala {
 
   _resolverEscolhaAlvo() {
     if (this.estado !== "escolha_alvo") return;
-    this._proximaPerguntaDaRodada();
+    this.sequenciaPoderes = this._montarSequenciaPoderes();
+    if (this.sequenciaPoderes.length === 0) {
+      this._proximaPerguntaDaRodada(); // ninguém usou nada: nada pra mostrar
+      return;
+    }
+    this._iniciarAnimacaoPoderes();
+  }
+
+  // O que a TV mostra, um momento por jogador que usou poder, na ordem em que
+  // entraram na sala (`this.jogadores` é um Map, já itera nessa ordem).
+  //
+  // Os escudos vão por último de propósito: o ataque voa achando que vai
+  // acertar, e a defesa só se revela no impacto. O momento do próprio escudo
+  // depois conta quantos ataques ele segurou.
+  //
+  // A Aposta não diz em quem foi: o alvo está olhando para a TV, e saber que
+  // foi apostado mudaria o jeito de ele responder. Revela no placar.
+  _montarSequenciaPoderes() {
+    const momentos = [];
+    const escudos = [];
+    for (const [id] of this.jogadores) {
+      const tipo = this.poderesEscolhidos.get(id);
+      if (!tipo) continue;
+      if (tipo === "escudo") {
+        escudos.push(id);
+        continue;
+      }
+      if (tipo === "festa") {
+        momentos.push({ tipo, deId: id });
+        continue;
+      }
+      const alvoId = this.alvoDe.get(id);
+      // escolheu poder com alvo mas não escolheu o alvo a tempo: não usou
+      if (!alvoId || !this.jogadores.has(alvoId)) continue;
+      if (tipo === "aposta") {
+        momentos.push({ tipo, deId: id });
+        continue;
+      }
+      momentos.push({ tipo, deId: id, alvoId, bloqueado: this.protegidos.has(alvoId) });
+    }
+    for (const id of escudos) {
+      const bloqueios = momentos.filter((m) => m.alvoId === id && m.bloqueado).length;
+      momentos.push({ tipo: "escudo", deId: id, bloqueios });
+    }
+    return momentos;
+  }
+
+  _iniciarAnimacaoPoderes() {
+    this.estado = "animacao_poderes";
+    this._inicioFase = Date.now();
+    const duracaoMs = this.sequenciaPoderes.length * this.cfg.tempoAnimacaoPorPoderMs;
+    const payload = {
+      sequencia: this.sequenciaPoderes,
+      jogadores: this._listaJogadoresPublica(),
+      duracaoPorPoderMs: this.cfg.tempoAnimacaoPorPoderMs,
+      duracaoMs,
+    };
+    this._payloadAnimacao = payload;
+    this._enviarParaTv("animacaoPoderes", payload);
+    this._transmitirParaTodos("olheParaTv", { duracaoMs });
+
+    this._timeoutAnimacao = setTimeout(() => {
+      if (this.estado === "animacao_poderes") this._proximaPerguntaDaRodada();
+    }, duracaoMs);
   }
 
   // ---------- internos: perguntas ----------
 
   _proximaPerguntaDaRodada() {
     this.perguntaNaRodada++;
-    const sorteada = sortearPergunta(this.categoriaRodadaAtual, this.idsPerguntasUsadas);
+    const sorteada = sortearPergunta(
+      this.categoriaRodadaAtual,
+      this.idsPerguntasUsadas,
+      this._dificuldadeDaRodada()
+    );
     this.idsPerguntasUsadas.push(sorteada.id);
 
     this.perguntaAtual = {
@@ -989,9 +1241,11 @@ class Sala {
       totalPerguntasPorRodada: this.cfg.perguntasPorRodada,
       pergunta: sorteada.pergunta,
       categoria: sorteada.categoria,
+      dificuldade: sorteada.dificuldade,
       alternativas: sorteada.alternativas,
       tempoLeituraMs: this.cfg.tempoLeituraMs,
       tempoLimiteMs: this.cfg.tempoLimitePerguntaMs,
+      festaAtiva: this.festaAtiva,
     };
     this._payloadNovaPergunta = payload;
     this._inicioFase = Date.now();
@@ -1010,6 +1264,7 @@ class Sala {
       this._enviar(jogador.ws, "iniciarResposta", {
         tempoLimiteMs: this.cfg.tempoLimitePerguntaMs,
         efeitosAtivos: this.efeitosAtivos.get(id) || [],
+        escudo: this._resumoEscudo(id),
       });
     }
     this._enviarParaTv("iniciarResposta", { tempoLimiteMs: this.cfg.tempoLimitePerguntaMs });
@@ -1025,27 +1280,50 @@ class Sala {
     this._resetarResultado();
 
     const { indiceCorreto, respostas } = this.perguntaAtual;
+    // Festa de Pontos dobra só o acerto base; o bônus de velocidade fica igual,
+    // senão uma pergunta sozinha valeria 400 e decidiria a partida.
+    const base = this.cfg.pontosBaseAcerto * (this.festaAtiva ? this.cfg.multiplicadorFesta : 1);
 
     // Primeiro soma os pontos de TODO MUNDO; só depois monta o placar. Montar
     // o placar dentro deste laço daria, pra quem é processado antes, um placar
     // com os outros ainda sem os pontos da rodada (dois jogadores chegavam a
     // ver a mesma posição com pontuações diferentes).
     const ganhos = new Map();
-    for (const [id, jogador] of this.jogadores) {
+    for (const [id] of this.jogadores) {
       const resposta = respostas.get(id);
       const acertou = !!resposta && resposta.alternativaIndex === indiceCorreto;
-      let pontosGanhos = 0;
-
+      let pontosPergunta = 0;
       if (acertou) {
-        const fracaoRestante = Math.max(
-          0,
-          1 - resposta.tempoMs / this.cfg.tempoLimitePerguntaMs
-        );
-        pontosGanhos =
-          this.cfg.pontosBaseAcerto + Math.round(this.cfg.bonusVelocidadeMax * fracaoRestante);
-        jogador.pontos += pontosGanhos;
+        const fracaoRestante = Math.max(0, 1 - resposta.tempoMs / this.cfg.tempoLimitePerguntaMs);
+        pontosPergunta = base + Math.round(this.cfg.bonusVelocidadeMax * fracaoRestante);
       }
-      ganhos.set(id, { acertou, pontosGanhos, respondeu: !!resposta });
+      ganhos.set(id, { acertou, respondeu: !!resposta, pontosPergunta, aposta: null });
+    }
+
+    // Aposta: quem apostou ganha o prêmio se o alvo acertou. Só acrescenta.
+    const apostasResolvidas = [];
+    for (const { apostadorId, alvoId } of this.apostas) {
+      const apostador = this.jogadores.get(apostadorId);
+      const alvo = this.jogadores.get(alvoId);
+      if (!apostador) continue; // saiu da partida
+      const ganhou = !!alvo && ganhos.get(alvoId).acertou;
+      const premio = ganhou ? this.cfg.premioAposta : 0;
+      const resolvida = {
+        apostadorId,
+        apostadorNome: apostador.nome,
+        alvoId,
+        alvoNome: alvo ? alvo.nome : null,
+        ganhou,
+        premio,
+      };
+      apostasResolvidas.push(resolvida);
+      ganhos.get(apostadorId).aposta = resolvida;
+    }
+
+    for (const [id, jogador] of this.jogadores) {
+      const g = ganhos.get(id);
+      g.pontosGanhos = g.pontosPergunta + (g.aposta ? g.aposta.premio : 0);
+      jogador.pontos += g.pontosGanhos;
     }
 
     const placarFinal = this._placar(); // igual pra todos os celulares e pra TV
@@ -1053,10 +1331,13 @@ class Sala {
       this._enviarResultado(id, "resultadoPergunta", {
         respostaCorretaIndex: indiceCorreto,
         seuResultado: ganhos.get(id),
+        festaAtiva: this.festaAtiva,
         placar: placarFinal,
       });
     }
 
+    // A TV precisa do ganho de cada um nesta pergunta pra montar o placar na
+    // ordem anterior e depois deslizar as linhas para a posição nova.
     this._enviarResultadoTv("resultadoPergunta", {
       alternativas: this.perguntaAtual.alternativas,
       respostaCorretaIndex: indiceCorreto,
@@ -1064,17 +1345,48 @@ class Sala {
         const resposta = respostas.get(j.id);
         return { id: j.id, nome: j.nome, alternativaIndex: resposta ? resposta.alternativaIndex : null };
       }),
-      placar: placarFinal,
+      placar: placarFinal.map((j) => ({ ...j, ganho: ganhos.get(j.id).pontosGanhos })),
+      apostas: apostasResolvidas,
+      festaAtiva: this.festaAtiva,
     });
 
     this._faseRevelacaoAtual = "pergunta";
     this._iniciarEsperaConfirmacao();
   }
 
+  // O que o celular de quem usou Escudo mostra: quantos ataques ele segurou.
+  _resumoEscudo(jogadorId) {
+    if (!this.protegidos.has(jogadorId)) return null;
+    const bloqueados = [...this.alvoDe]
+      .filter(([deId, alvoId]) => alvoId === jogadorId && PODERES_ATAQUE.includes(this.poderesEscolhidos.get(deId)))
+      .length;
+    return { bloqueados };
+  }
+
   // ---------- internos: Linking (desafio de associação) ----------
 
+  // Depois das perguntas de cada tema vem o desafio dele. Sem desafio
+  // configurado pra rodada, segue direto.
+  _iniciarDesafioDaRodada() {
+    const desafio = (this.cfg.desafiosPorRodada || [])[this.rodadaAtual - 1];
+    if (desafio === "linking") return this._iniciarLinking();
+    if (desafio === "sorting") return this._iniciarSorting();
+    this._aposDesafio();
+  }
+
+  // Fim do tema: o próximo, ou a Pirâmide se esse era o último.
+  _aposDesafio() {
+    if (this.rodadaAtual < this.cfg.totalRodadas) {
+      this.rodadaAtual++;
+      this._iniciarEscolhaPorta();
+      return;
+    }
+    this._iniciarLargadaPiramide();
+  }
+
   _iniciarLinking() {
-    const conjunto = sortearConjuntoAssociacao();
+    const conjunto = sortearConjuntoAssociacao(this.idsAssociacoesUsadas);
+    this.idsAssociacoesUsadas.push(conjunto.id);
     this.linkingAtual = {
       id: conjunto.id,
       tema: conjunto.tema,
@@ -1157,7 +1469,7 @@ class Sala {
 
     this._enviarResultadoTv("resultadoLinking", {
       pares: this.linkingAtual.pares,
-      placar: placarFinal,
+      placar: placarFinal.map((j) => ({ ...j, ganho: ganhos.get(j.id).pontosGanhos })),
     });
 
     this._faseRevelacaoAtual = "linking";
@@ -1167,7 +1479,8 @@ class Sala {
   // ---------- internos: Sorting (desafio de classificação) ----------
 
   _iniciarSorting() {
-    const conjunto = sortearConjuntoClassificacao();
+    const conjunto = sortearConjuntoClassificacao(this.idsClassificacoesUsadas);
+    this.idsClassificacoesUsadas.push(conjunto.id);
     this.sortingAtual = {
       id: conjunto.id,
       categoriaA: conjunto.categoriaA,
@@ -1250,7 +1563,7 @@ class Sala {
       categoriaA: this.sortingAtual.categoriaA,
       categoriaB: this.sortingAtual.categoriaB,
       gabarito: gabaritoCompleto,
-      placar: placarFinal,
+      placar: placarFinal.map((j) => ({ ...j, ganho: ganhos.get(j.id).pontosGanhos })),
     });
 
     this._faseRevelacaoAtual = "sorting";
@@ -1259,35 +1572,88 @@ class Sala {
 
   // ---------- internos: Pirâmide do Conhecimento (finale) ----------
 
-  _iniciarPiramide() {
-    this.estado = "piramide";
+  // A pontuação das rodadas vira o andar de largada. Não ganha a partida:
+  // quem chega ao topo primeiro é quem vence.
+  //
+  //   tPontos = (pontos - MENOR) / (MAIOR - MENOR)   0 a 1
+  //   tLugar  = (n - 1 - colocação) / (n - 1)        1 = primeiro, 0 = último
+  //   t       = peso × tPontos + (1 - peso) × tLugar
+  //   pulos   = arredondar(maxPulos × t^curva)       andar de largada (0 = chão)
+  //
+  // Metade vem da colocação porque só com pontos um líder disparado estica a
+  // faixa e achata todo o resto no chão; a colocação garante que o placar
+  // sempre vire andares diferentes, e os pontos mantêm a proporção.
+  _calcularLargada() {
+    const placar = this._placar();
+    const pontos = placar.map((j) => j.pontos);
+    const maior = Math.max(...pontos);
+    const menor = Math.min(...pontos);
+    const faixa = maior - menor;
+    const n = placar.length;
+    const { piramideMaxPulos: maxPulos, piramideCurva: curva, piramidePesoPontos: peso } = this.cfg;
 
-    // a pontuação acumulada até aqui só decide a largada - a partir daqui
-    // quem chega primeiro no topo é quem vence a partida de verdade.
-    const placarAntesDaPiramide = this._placar();
-    const total = placarAntesDaPiramide.length;
-    const alturaMaximaLargada = Math.max(0, this.cfg.piramideDegraus - 2);
+    return placar.map((j) => {
+      const tPontos = faixa === 0 ? 0 : (j.pontos - menor) / faixa;
+      const colocacao = placar.findIndex((o) => o.pontos === j.pontos); // empate divide o lugar
+      const tLugar = n <= 1 ? 0 : (n - 1 - colocacao) / (n - 1);
+      const t = peso * tPontos + (1 - peso) * tLugar;
+      const pulos = Math.round(maxPulos * Math.pow(t, curva));
+      return {
+        id: j.id,
+        nome: j.nome,
+        avatar: j.avatar,
+        pontos: j.pontos,
+        colocacao: colocacao + 1,
+        pulos,
+        largada: pulos,
+        faltam: this.cfg.piramideAndares - pulos,
+      };
+    });
+  }
+
+  // Antes da corrida, a TV mostra a pontuação de cada um virando andar.
+  _iniciarLargadaPiramide() {
+    this.estado = "largada_piramide";
+    const largada = this._calcularLargada();
 
     this.piramideAtual = { progresso: new Map() };
+    for (const j of largada) {
+      this.piramideAtual.progresso.set(j.id, { posicao: j.largada, largada: j.largada, perguntaAtual: null });
+    }
 
-    placarAntesDaPiramide.forEach((jogadorPlacar, rank) => {
-      const posicaoInicial =
-        total > 1 ? Math.round((alturaMaximaLargada * (total - 1 - rank)) / (total - 1)) : 0;
-      this.piramideAtual.progresso.set(jogadorPlacar.id, {
-        posicao: posicaoInicial,
-        perguntaAtual: null,
-      });
-    });
+    const c = this.cfg;
+    const totalPulos = largada.reduce((soma, j) => soma + j.pulos, 0);
+    const duracaoMs =
+      c.largadaAberturaMs + largada.length * c.largadaPorJogadorMs +
+      totalPulos * c.largadaPorPuloMs + c.largadaFechamentoMs;
 
     const payload = {
-      totalDegraus: this.cfg.piramideDegraus,
+      totalAndares: c.piramideAndares,
+      maxPulos: c.piramideMaxPulos,
+      jogadores: largada,
+      duracaoMs,
+    };
+    this._payloadLargada = payload;
+    this._inicioFase = Date.now();
+    this._transmitirParaTodos("largadaPiramide", payload);
+    this._enviarParaTv("largadaPiramide", payload);
+
+    this._timeoutLargada = setTimeout(() => {
+      if (this.estado === "largada_piramide") this._iniciarPiramide();
+    }, duracaoMs);
+  }
+
+  _iniciarPiramide() {
+    this.estado = "piramide";
+    const payload = {
+      totalAndares: this.cfg.piramideAndares,
       jogadores: this._progressoPiramideParaTodos(),
     };
     this._transmitirParaTodos("iniciarPiramide", payload);
     this._enviarParaTv("iniciarPiramide", payload);
 
     for (const jogadorId of this.piramideAtual.progresso.keys()) {
-      this._proximaPerguntaPiramide(jogadorId);
+      if (this.jogadores.has(jogadorId)) this._proximaPerguntaPiramide(jogadorId);
     }
   }
 
@@ -1313,16 +1679,22 @@ class Sala {
   }
 
   _progressoPiramideParaTodos() {
-    return [...this.jogadores.values()].map((j) => ({
-      id: j.id,
-      nome: j.nome,
-      posicao: this.piramideAtual.progresso.get(j.id)?.posicao ?? 0,
-    }));
+    return [...this.jogadores.values()].map((j) => {
+      const p = this.piramideAtual.progresso.get(j.id);
+      return {
+        id: j.id,
+        nome: j.nome,
+        avatar: j.avatar,
+        posicao: p?.posicao ?? 0, // 0 = chão, piramideAndares = topo
+        largada: p?.largada ?? 0,
+      };
+    });
   }
 
+  // Alguém chegou ao topo. A TV deixa o vencedor comemorando no alto da
+  // pirâmide uns segundos, e depois vem o pódio - sem precisar de "continuar".
   _vencerPiramide(vencedorId) {
-    this.estado = "revelacao_piramide";
-    this._resetarResultado();
+    this.estado = "vitoria_piramide";
     const vencedor = this.jogadores.get(vencedorId);
     this.piramideAtual.vencedorId = vencedorId;
     this.piramideAtual.vencedorNome = vencedor.nome;
@@ -1333,13 +1705,43 @@ class Sala {
     }
 
     const payload = {
+      vencedorId,
       vencedorNome: vencedor.nome,
-      posicoesFinais: this._progressoPiramideParaTodos(),
+      jogadores: this._progressoPiramideParaTodos(),
     };
-    this._enviarResultadoComum("resultadoPiramide", payload);
+    this._transmitirParaTodos("vencedorPiramide", payload);
+    this._enviarParaTv("vencedorPiramide", payload);
 
-    this._faseRevelacaoAtual = "piramide";
-    this._iniciarEsperaConfirmacao();
+    this._timeoutVencedor = setTimeout(() => {
+      if (this.estado === "vitoria_piramide") this._finalizarPartida();
+    }, this.cfg.pausaVencedorPiramideMs);
+  }
+
+  // 1º é quem chegou ao topo, e só isso. Do 2º em diante vale o andar
+  // alcançado; os pontos das rodadas só desempatam quem parou no mesmo andar.
+  _classificacaoFinal() {
+    const progresso = this.piramideAtual?.progresso;
+    const topo = this.cfg.piramideAndares;
+    const lista = [...this.jogadores.values()].map((j) => {
+      const p = progresso?.get(j.id);
+      const andarFinal = p?.posicao ?? 0;
+      return {
+        id: j.id,
+        nome: j.nome,
+        avatar: j.avatar,
+        pontos: j.pontos,
+        largada: p?.largada ?? 0,
+        andarFinal,
+        chegouAoTopo: andarFinal >= topo,
+      };
+    });
+    lista.sort(
+      (a, b) =>
+        Number(b.chegouAoTopo) - Number(a.chegouAoTopo) ||
+        b.andarFinal - a.andarFinal ||
+        b.pontos - a.pontos
+    );
+    return lista.map((j, i) => ({ ...j, colocacao: i + 1 }));
   }
 
   // ---------- internos: confirmação genérica pra avançar ----------
@@ -1352,37 +1754,30 @@ class Sala {
     this._aguardandoConfirmacao = true;
   }
 
+  // Ordem de cada tema: perguntas (com ou sem fase de poder) → desafio do
+  // tema → próximo tema. Depois do último tema vem a Pirâmide.
   _avancarAposResultado() {
     if (this._faseRevelacaoAtual === "pergunta") {
       if (this.perguntaNaRodada < this.cfg.perguntasPorRodada) {
-        this._iniciarEscolhaPoder();
+        this._prepararProximaPergunta();
         return;
       }
-      if (this.rodadaAtual < this.cfg.totalRodadas) {
-        this.rodadaAtual++;
-        this._iniciarEscolhaPorta();
-        return;
-      }
-      this._iniciarLinking();
+      this._iniciarDesafioDaRodada();
       return;
     }
-    if (this._faseRevelacaoAtual === "linking") {
-      this._iniciarSorting();
-      return;
-    }
-    if (this._faseRevelacaoAtual === "sorting") {
-      this._iniciarPiramide();
-      return;
-    }
-    // depois da Pirâmide, a partida termina de vez.
-    this._finalizarPartida();
+    // resultado de Ligação ou Classificação: o tema acabou
+    this._aposDesafio();
   }
 
   _finalizarPartida() {
     this.estado = "fim";
+    const classificacao = this._classificacaoFinal();
     const payload = {
-      placarFinal: this._placar(),
+      classificacao,
+      totalAndares: this.cfg.piramideAndares,
+      vencedorId: this.piramideAtual?.vencedorId ?? null,
       vencedorNome: this.piramideAtual?.vencedorNome ?? null,
+      placarFinal: this._placar(), // pontos das rodadas, a história da partida
     };
     this._payloadFim = payload;
     this._transmitirParaTodos("fimDePartida", payload);
@@ -1408,16 +1803,9 @@ class Sala {
     this._enviarParaTv(type, payload);
   }
 
-  // mesmo resultado pra todos os celulares e pra TV
-  _enviarResultadoComum(type, payload) {
-    this._resultadoAtual.comum = { type, payload };
-    this._transmitirParaTodos(type, payload);
-    this._enviarParaTv(type, payload);
-  }
-
   _placar() {
     return [...this.jogadores.values()]
-      .map((j) => ({ id: j.id, nome: j.nome, pontos: j.pontos }))
+      .map((j) => ({ id: j.id, nome: j.nome, avatar: j.avatar, pontos: j.pontos }))
       .sort((a, b) => b.pontos - a.pontos);
   }
 
@@ -1460,4 +1848,4 @@ class Sala {
   }
 }
 
-module.exports = { Sala, PADROES, TIPOS_DE_PODER };
+module.exports = { Sala, PADROES, TIPOS_DE_PODER, PODERES_ATAQUE, PODERES_ESPECIAIS, PODERES_COM_ALVO };

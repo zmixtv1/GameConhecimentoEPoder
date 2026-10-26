@@ -20,9 +20,15 @@ function embaralhar(lista) {
 // embaralha nada aqui - cada jogador recebe seu próprio embaralhamento da
 // coluna da direita, senão todo mundo veria a mesma ordem na tela (e dava
 // pra "colar" só olhando o celular do vizinho).
-function sortearConjuntoAssociacao() {
+//
+// idsExcluidos evita repetir um conjunto que já caiu na mesma partida - com
+// um desafio por tema, sortear às cegas repetia em quase toda partida. Se o
+// acervo esgotar, volta a permitir repetição em vez de travar o jogo.
+function sortearConjuntoAssociacao(idsExcluidos = []) {
   const banco = carregarBanco();
-  const escolhido = banco[Math.floor(Math.random() * banco.length)];
+  const ineditos = banco.filter((c) => !idsExcluidos.includes(c.id));
+  const candidatos = ineditos.length > 0 ? ineditos : banco;
+  const escolhido = candidatos[Math.floor(Math.random() * candidatos.length)];
   return { id: escolhido.id, tema: escolhido.tema, pares: escolhido.pares };
 }
 

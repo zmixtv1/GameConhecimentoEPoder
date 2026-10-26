@@ -1,6 +1,10 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { subirServidorDeTeste, criarCliente, entrarNaSala, pularEscolhaDePoder } = require("./ajuda");
+const { PADROES } = require("../sala");
+const {
+  subirServidorDeTeste, criarCliente, entrarNaSala, pularEscolhaDePoder,
+  escolherPorta, responderPergunta, confirmar, completarLinking, completarSorting,
+} = require("./ajuda");
 
 test("TV: recebe o código da sala e a lista de jogadores ao se identificar", async (t) => {
   const { porta, fechar } = await subirServidorDeTeste();
@@ -153,8 +157,7 @@ test("responder durante a fase de leitura é rejeitado pelo servidor", async (t)
   ana.cliente.enviar({ type: "escolherPorta", indice: 0 });
   bruno.cliente.enviar({ type: "escolherPorta", indice: 0 });
   await ana.cliente.esperar("portaEscolhida");
-  await pularEscolhaDePoder([ana, bruno]);
-  await ana.cliente.esperar("novaPergunta");
+  await ana.cliente.esperar("novaPergunta"); // a 1ª do tema vem sem fase de poder
 
   ana.cliente.enviar({ type: "responder", alternativaIndex: 0 });
   const erro = await ana.cliente.esperar("erroAcao");
@@ -180,7 +183,6 @@ async function avancarAtePergunta(porta, sala, nomesExtras = []) {
   bruno.cliente.enviar({ type: "escolherPorta", indice: 0 });
   await ana.cliente.esperar("portaEscolhida");
   await bruno.cliente.esperar("portaEscolhida");
-  await pularEscolhaDePoder([ana, bruno]);
   await ana.cliente.esperar("novaPergunta");
   await bruno.cliente.esperar("novaPergunta");
   await ana.cliente.esperar("iniciarResposta");
@@ -237,11 +239,12 @@ test("só avança depois que TODOS confirmarem 'próxima pergunta'", async (t) =
 
   ana.cliente.enviar({ type: "continuar" });
 
-  // só a Ana confirmou: ainda não deve ter chegado a próxima pergunta (2ª da rodada)
-  await assert.rejects(() => ana.cliente.esperar("novaPergunta", 150));
+  // só a Ana confirmou: ainda não deve ter começado a 2ª pergunta do tema
+  await assert.rejects(() => ana.cliente.esperar("escolhaPoder", 150));
 
+  // a 2ª pergunta tem fase de poder antes
   bruno.cliente.enviar({ type: "continuar" });
-  const proxima = await ana.cliente.esperar("novaPergunta", 2000);
+  const proxima = await ana.cliente.esperar("escolhaPoder", 2000);
   assert.equal(proxima.perguntaNaRodada, 2);
 });
 
@@ -263,105 +266,93 @@ test("desconexão do último jogador pendente libera o avanço sozinha", async (
   sala.registrarContinuar(carla.id);
   bruno.cliente.fechar(); // Bruno sai sem confirmar
 
-  const proxima = await ana.cliente.esperar("novaPergunta", 2000);
+  const proxima = await ana.cliente.esperar("escolhaPoder", 2000);
   assert.equal(proxima.perguntaNaRodada, 2);
 });
 
-test("partida completa (3 rodadas + Linking + Sorting) termina em fimDePartida com placar ordenado", async (t) => {
-  const { porta, sala, fechar } = await subirServidorDeTeste();
+// A partida com a estrutura de verdade - 5 temas ficando mais difíceis, uma
+// Ligação ou Classificação depois de cada um, e a Pirâmide de 8 andares -
+// só com os tempos encurtados. A Ana acerta tudo e o Bruno erra tudo.
+test("partida completa com a estrutura real: 5 temas, 5 desafios, largada, corrida e pódio", async (t) => {
+  const { porta, sala, fechar } = await subirServidorDeTeste({
+    totalRodadas: PADROES.totalRodadas,
+    dificuldadesPorRodada: PADROES.dificuldadesPorRodada,
+    desafiosPorRodada: PADROES.desafiosPorRodada,
+    temasComFesta: PADROES.temasComFesta,
+    piramideAndares: PADROES.piramideAndares,
+    piramideMaxPulos: PADROES.piramideMaxPulos,
+  });
   t.after(fechar);
 
   const ana = await entrarNaSala(porta, "Ana", sala.codigo);
   const bruno = await entrarNaSala(porta, "Bruno", sala.codigo);
+  const jogadores = [ana, bruno];
   ana.cliente.enviar({ type: "iniciarPartida" });
 
-  for (let rodada = 0; rodada < 3; rodada++) {
-    await Promise.all([ana.cliente.esperar("escolhaPorta"), bruno.cliente.esperar("escolhaPorta")]);
-    ana.cliente.enviar({ type: "escolherPorta", indice: 0 });
-    bruno.cliente.enviar({ type: "escolherPorta", indice: 0 });
-    await Promise.all([ana.cliente.esperar("portaEscolhida"), bruno.cliente.esperar("portaEscolhida")]);
+  const temas = [];
+  const desafios = [];
+  for (let rodada = 1; rodada <= PADROES.totalRodadas; rodada++) {
+    await escolherPorta(jogadores);
+    temas.push(sala.categoriaRodadaAtual);
 
-    for (let pergunta = 0; pergunta < 3; pergunta++) {
-      await pularEscolhaDePoder([ana, bruno]);
-      await Promise.all([ana.cliente.esperar("novaPergunta"), bruno.cliente.esperar("novaPergunta")]);
-      await Promise.all([ana.cliente.esperar("iniciarResposta"), bruno.cliente.esperar("iniciarResposta")]);
-      const indiceCorreto = sala.perguntaAtual.indiceCorreto;
-      ana.cliente.enviar({ type: "responder", alternativaIndex: indiceCorreto });
-      bruno.cliente.enviar({ type: "responder", alternativaIndex: (indiceCorreto + 1) % 4 });
-      await Promise.all([ana.cliente.esperar("resultadoPergunta"), bruno.cliente.esperar("resultadoPergunta")]);
-      ana.cliente.enviar({ type: "continuar" });
-      bruno.cliente.enviar({ type: "continuar" });
+    for (let n = 1; n <= PADROES.perguntasPorRodada; n++) {
+      if (PADROES.perguntasComPoder.includes(n)) await pularEscolhaDePoder(jogadores);
+      const [pergunta] = await Promise.all(jogadores.map((j) => j.cliente.esperar("novaPergunta")));
+      assert.equal(pergunta.dificuldade, PADROES.dificuldadesPorRodada[rodada - 1],
+        `tema ${rodada}, pergunta ${n}: veio no nível errado`);
+
+      await Promise.all(jogadores.map((j) => j.cliente.esperar("iniciarResposta")));
+      const certa = sala.perguntaAtual.indiceCorreto;
+      ana.cliente.enviar({ type: "responder", alternativaIndex: certa });
+      bruno.cliente.enviar({ type: "responder", alternativaIndex: (certa + 1) % 4 });
+      await Promise.all(jogadores.map((j) => j.cliente.esperar("resultadoPergunta")));
+      await confirmar(jogadores);
     }
+
+    // o desafio do tema, alternando
+    if (PADROES.desafiosPorRodada[rodada - 1] === "linking") {
+      await Promise.all(jogadores.map((j) => j.cliente.esperar("iniciarLinking")));
+      desafios.push(`linking:${sala.linkingAtual.id}`);
+      completarLinking(jogadores, sala);
+      await Promise.all(jogadores.map((j) => j.cliente.esperar("resultadoLinking")));
+    } else {
+      await Promise.all(jogadores.map((j) => j.cliente.esperar("iniciarSorting")));
+      desafios.push(`sorting:${sala.sortingAtual.id}`);
+      completarSorting(jogadores, sala);
+      await Promise.all(jogadores.map((j) => j.cliente.esperar("resultadoSorting")));
+    }
+    await confirmar(jogadores);
   }
 
-  // Linking: os dois acertam todos os pares (cada um com seu próprio embaralhamento)
-  await Promise.all([ana.cliente.esperar("iniciarLinking"), bruno.cliente.esperar("iniciarLinking")]);
-  const totalPares = sala.linkingAtual.pares.length;
-  for (const j of [ana, bruno]) {
-    const progresso = sala.linkingAtual.progresso.get(j.jogadorId);
-    for (let esquerdaIndex = 0; esquerdaIndex < totalPares; esquerdaIndex++) {
-      const direitaIndex = progresso.direitaEmbaralhadaIndices.indexOf(esquerdaIndex);
-      j.cliente.enviar({ type: "tentarPar", esquerdaIndex, direitaIndex });
-    }
-  }
-  await Promise.all([ana.cliente.esperar("resultadoLinking"), bruno.cliente.esperar("resultadoLinking")]);
-  ana.cliente.enviar({ type: "continuar" });
-  bruno.cliente.enviar({ type: "continuar" });
+  assert.equal(new Set(temas).size, 5, `os 5 temas deveriam ser diferentes: ${temas.join(", ")}`);
+  assert.deepEqual(desafios.map((d) => d.split(":")[0]), PADROES.desafiosPorRodada);
+  assert.equal(new Set(desafios).size, 5, `nenhum desafio pode repetir na partida: ${desafios.join(", ")}`);
 
-  // Sorting: os dois classificam tudo certo (cada um com sua própria ordem/gabarito)
-  await Promise.all([ana.cliente.esperar("iniciarSorting"), bruno.cliente.esperar("iniciarSorting")]);
-  for (const j of [ana, bruno]) {
-    const progresso = sala.sortingAtual.progresso.get(j.jogadorId);
-    for (let itemIndex = 0; itemIndex < progresso.itens.length; itemIndex++) {
-      j.cliente.enviar({ type: "classificarItem", itemIndex, categoria: progresso.gabarito[itemIndex] });
-    }
-  }
-  await Promise.all([ana.cliente.esperar("resultadoSorting"), bruno.cliente.esperar("resultadoSorting")]);
-  ana.cliente.enviar({ type: "continuar" });
-  bruno.cliente.enviar({ type: "continuar" });
+  // a largada: a Ana fez muito mais pontos e larga no teto; o Bruno, no chão
+  const largada = await ana.cliente.esperar("largadaPiramide", 5000);
+  assert.equal(largada.jogadores.find((j) => j.nome === "Ana").largada, PADROES.piramideMaxPulos);
+  assert.equal(largada.jogadores.find((j) => j.nome === "Bruno").largada, 0);
 
-  // Pirâmide: só a Ana joga, respondendo certo até vencer a corrida. O
-  // número de acertos necessários é calculado na hora (depende da largada).
-  await Promise.all([ana.cliente.esperar("iniciarPiramide"), bruno.cliente.esperar("iniciarPiramide")]);
-  // cada jogador já recebe a primeira pergunta da pirâmide junto - precisa
-  // consumir essa mensagem antes do loop, senão o próximo "esperar" pega essa
-  // (desatualizada) em vez de esperar a pergunta nova de verdade.
-  await Promise.all([ana.cliente.esperar("novaPerguntaPiramide"), bruno.cliente.esperar("novaPerguntaPiramide")]);
-  const posicaoInicialAna = sala.piramideAtual.progresso.get(ana.jogadorId).posicao;
-  const passosRestantes = sala.cfg.piramideDegraus - posicaoInicialAna;
-
-  for (let i = 0; i < passosRestantes; i++) {
-    const progressoPiramide = sala.piramideAtual.progresso.get(ana.jogadorId);
-    const indiceCorretoPiramide = progressoPiramide.perguntaAtual.indiceCorreto;
-    ana.cliente.enviar({ type: "responderPiramide", alternativaIndex: indiceCorretoPiramide });
-    if (i < passosRestantes - 1) {
-      await ana.cliente.esperar("novaPerguntaPiramide");
-    }
+  // a corrida: só a Ana responde, acertando até o topo
+  await Promise.all(jogadores.map((j) => j.cliente.esperar("iniciarPiramide", 5000)));
+  await Promise.all(jogadores.map((j) => j.cliente.esperar("novaPerguntaPiramide")));
+  const passos = PADROES.piramideAndares - sala.piramideAtual.progresso.get(ana.jogadorId).posicao;
+  assert.equal(passos, PADROES.piramideAndares - PADROES.piramideMaxPulos, "o líder precisa de 4 acertos");
+  for (let i = 0; i < passos; i++) {
+    const p = sala.piramideAtual.progresso.get(ana.jogadorId);
+    ana.cliente.enviar({ type: "responderPiramide", alternativaIndex: p.perguntaAtual.indiceCorreto });
+    if (i < passos - 1) await ana.cliente.esperar("novaPerguntaPiramide");
   }
 
-  const [resultadoPiramideAna, resultadoPiramideBruno] = await Promise.all([
-    ana.cliente.esperar("resultadoPiramide", 3000),
-    bruno.cliente.esperar("resultadoPiramide", 3000),
-  ]);
-  assert.equal(resultadoPiramideAna.vencedorNome, "Ana");
-  assert.equal(resultadoPiramideBruno.vencedorNome, "Ana");
+  const vitoria = await bruno.cliente.esperar("vencedorPiramide", 3000);
+  assert.equal(vitoria.vencedorNome, "Ana");
 
-  ana.cliente.enviar({ type: "continuar" });
-  bruno.cliente.enviar({ type: "continuar" });
-
-  const [fimAna, fimBruno] = await Promise.all([
-    ana.cliente.esperar("fimDePartida", 3000),
-    bruno.cliente.esperar("fimDePartida", 3000),
-  ]);
-
+  // o pódio vem sozinho, igual pra todo mundo
+  const [fimAna, fimBruno] = await Promise.all(jogadores.map((j) => j.cliente.esperar("fimDePartida", 5000)));
   assert.deepEqual(fimAna, fimBruno);
   assert.equal(fimAna.vencedorNome, "Ana");
-  assert.equal(fimAna.placarFinal.length, 2);
-  // Ana sempre acertou as perguntas simples, Bruno sempre errou de propósito -> Ana deve estar na frente
+  assert.deepEqual(fimAna.classificacao.map((j) => j.nome), ["Ana", "Bruno"]);
+  assert.equal(fimAna.classificacao[0].andarFinal, PADROES.piramideAndares);
   assert.equal(fimAna.placarFinal[0].nome, "Ana");
   assert.ok(fimAna.placarFinal[0].pontos > fimAna.placarFinal[1].pontos);
-  const pontuacoesDecrescentes = fimAna.placarFinal.every(
-    (jogador, i, lista) => i === 0 || lista[i - 1].pontos >= jogador.pontos
-  );
-  assert.ok(pontuacoesDecrescentes, "placar final deveria estar ordenado do maior pro menor");
 });
