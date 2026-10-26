@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz TV - Pontuação vira andar da Pirâmide</title>
+
+    <!--
+      BASE SIMPLES, de propósito. Serve para a lógica ficar à mostra e depois
+      virar uma tela bonita.
+
+      O que esta tela faz: pega a pontuação das 5 rodadas e converte no nível
+      onde cada jogador começa a Pirâmide. É o momento entre a última rodada e
+      a corrida, quando a TV anuncia as posições de largada.
+
+      A FÓRMULA (os três números no rodapé mexem nela ao vivo):
+
+        MENOR = menor pontuação da sala
+        MAIOR = maior pontuação da sala
+
+        para cada jogador:
+          tPontos = (pontos - MENOR) / (MAIOR - MENOR)   // 0 a 1
+          tLugar  = (n - 1 - colocação) / (n - 1)        // 1 = primeiro, 0 = último
+          t       = PESO × tPontos + (1 - PESO) × tLugar
+          pulos   = arredondar(MAX_PULOS × t^CURVA)      // 0 a MAX_PULOS
+          nível   = pulos                                // 0 = base, 7 = topo
+
+      POR QUE METADE PONTOS E METADE COLOCAÇÃO: só com pontos, um jogador muito
+      disparado estica a faixa e achata todo o resto. Com 3400 contra 2300, do
+      2º ao 8º largavam todos juntos na base. A parte da colocação garante que o
+      placar sempre vire níveis diferentes; a dos pontos mantém a proporção.
+
+      O QUE A TELA PROFISSIONAL PRECISA MOSTRAR, no mínimo:
+        - a pontuação final de cada um
+        - quantos níveis cada um pula (0 a 4)
+        - onde isso coloca a pessoa na pirâmide
+        - quantos acertos faltam para o topo (nível 7)
+      E idealmente animar: placar -> conversão -> bonecos aparecendo na pirâmide.
+    -->
+
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Outfit", system-ui, sans-serif; }
+
+        body {
+            background: #f8fafc;
+            background-image: radial-gradient(#cbd5e1 2px, transparent 2px);
+            background-size: 40px 40px;
+            color: #0f172a;
+            min-height: 100vh;
+            padding: 24px 24px 120px;
+        }
+
+        h1 { font-size: 28px; font-weight: 900; text-align: center; margin-bottom: 4px; }
+        .sub { text-align: center; color: #475569; font-size: 14px; margin-bottom: 22px; }
+
+        .colunas { display: grid; grid-template-columns: 1.15fr 1fr; gap: 24px; max-width: 1200px; margin: 0 auto; }
+        @media (max-width: 900px) { .colunas { grid-template-columns: 1fr; } }
+
+        h2 { font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #475569; margin-bottom: 10px; }
+
+        /* ---- tabela da conversão ---- */
+        table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 6px 20px rgba(0,0,0,.06); }
+        th, td { padding: 9px 10px; text-align: right; font-size: 14px; }
+        th { background: #0f172a; color: #fff; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; font-weight: 800; }
+        th:nth-child(1), td:nth-child(1) { text-align: left; }
+        tbody tr + tr { border-top: 1px solid #e2e8f0; }
+        td.destaque { font-weight: 900; color: #1e90ff; font-size: 17px; }
+        .bicho { font-size: 20px; margin-right: 6px; }
+        .conta { color: #94a3b8; font-size: 12px; font-variant-numeric: tabular-nums; }
+
+        /* ---- pirâmide esquemática ---- */
+        .piramide { display: flex; flex-direction: column-reverse; gap: 4px; background: #fff; padding: 14px; border-radius: 12px; box-shadow: 0 6px 20px rgba(0,0,0,.06); }
+        .nivel { display: flex; align-items: center; gap: 10px; min-height: 42px; }
+        .nivel-rotulo { flex: none; width: 92px; font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: .05em; }
+        .nivel-barra { flex: 1; display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 8px; background: #f1f5f9; min-height: 34px; }
+        .nivel.topo .nivel-barra { background: rgba(241,196,15,.25); }
+        .nivel.topo .nivel-rotulo { color: #a16207; }
+        .ocupante { font-size: 22px; line-height: 1; }
+        .vazio { color: #cbd5e1; font-size: 12px; font-weight: 700; }
+
+        /* ---- controles ---- */
+        .controles {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: rgba(255,255,255,.96);
+            border-top: 1px solid #e2e8f0;
+            padding: 12px 20px;
+            display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; align-items: center;
+            box-shadow: 0 -6px 20px rgba(0,0,0,.05);
+        }
+        .ctrl { display: flex; flex-direction: column; gap: 2px; min-width: 170px; }
+        .ctrl label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: #475569; }
+        .ctrl .valor { font-weight: 900; color: #1e90ff; }
+        input[type=range] { width: 100%; accent-color: #1e90ff; }
+        .nota { font-size: 12px; color: #64748b; max-width: 330px; line-height: 1.35; }
+    </style>
+</head>
+
+<body>
+    <h1>Pontuação vira andar da Pirâmide</h1>
+    <p class="sub">Tela entre a última rodada e a corrida: onde cada um começa a escalar</p>
+
+    <div class="colunas">
+        <div>
+            <h2>A conversão, jogador por jogador</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Jogador</th>
+                        <th>Pontos</th>
+                        <th>t pontos</th>
+                        <th>t lugar</th>
+                        <th>t</th>
+                        <th>Pulos</th>
+                        <th>Nível</th>
+                        <th>Faltam</th>
+                    </tr>
+                </thead>
+                <tbody id="corpo-tabela"></tbody>
+            </table>
+        </div>
+
+        <div>
+            <h2>Onde isso coloca cada um</h2>
+            <div class="piramide" id="piramide"></div>
+        </div>
+    </div>
+
+    <div class="controles">
+        <div class="ctrl">
+            <label>Teto de pulos: <span class="valor" id="v-pulos">4</span></label>
+            <input type="range" id="c-pulos" min="1" max="7" step="1" value="4">
+        </div>
+        <div class="ctrl">
+            <label>Curva: <span class="valor" id="v-curva">1,5</span></label>
+            <input type="range" id="c-curva" min="1" max="3" step="0.1" value="1.5">
+        </div>
+        <div class="ctrl">
+            <label>Peso dos pontos: <span class="valor" id="v-peso">50%</span></label>
+            <input type="range" id="c-peso" min="0" max="1" step="0.05" value="0.5">
+        </div>
+        <div class="ctrl">
+            <label>Cenário</label>
+            <select id="c-cenario" style="padding:6px;border-radius:8px;border:1px solid #cbd5e1;font-weight:700;">
+                <option value="apertada">Partida apertada</option>
+                <option value="disparado">Líder disparado</option>
+                <option value="lanterna">Lanterna muito atrás</option>
+                <option value="empate">Empate geral</option>
+            </select>
+        </div>
+        <p class="nota" id="nota"></p>
+    </div>
+
+    <script>
+    (() => {
+        'use strict';
+
+        const TOTAL_NIVEIS = 8;   // nível 0 = base, 7 = topo
+
+        const BICHOS = ['🦊', '🐼', '🐸', '🦁', '🦄', '🐧', '🐙', '🐯'];
+        const NOMES = ['Vítoria', 'Rodrigo', 'Cecília', 'Adamor', 'Catarina', 'Guilherme', 'Mônica', 'Luciana'];
+
+        const CENARIOS = {
+            apertada:  [2600, 2550, 2500, 2480, 2450, 2400, 2380, 2300],
+            disparado: [3400, 2300, 2200, 2100, 2000, 1950, 1800, 1700],
+            lanterna:  [2800, 2700, 2600, 2550, 2500, 2450, 2400,  900],
+            empate:    [2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500]
+        };
+
+        // ============================================================
+        // A CONVERSÃO. É só isto que importa levar para a tela final.
+        // ============================================================
+        function converter(pontos, maxPulos, curva, peso) {
+            const maior = Math.max(...pontos);
+            const menor = Math.min(...pontos);
+            const faixa = maior - menor;
+            const n = pontos.length;
+            const ordenado = [...pontos].sort((a, b) => b - a);
+
+            return pontos.map((p) => {
+                const tPontos = faixa === 0 ? 0 : (p - menor) / faixa;
+                // empate compartilha a colocação: indexOf acha sempre a primeira
+                const colocacao = ordenado.indexOf(p);
+                const tLugar = n === 1 ? 0 : (n - 1 - colocacao) / (n - 1);
+                const t = peso * tPontos + (1 - peso) * tLugar;
+                const pulos = Math.round(maxPulos * Math.pow(t, curva));
+                const nivel = pulos;
+                return { tPontos, tLugar, t, pulos, nivel, faltam: (TOTAL_NIVEIS - 1) - nivel };
+            });
+        }
+        // ============================================================
+
+        const el = (tag, txt, cls) => {
+            const e = document.createElement(tag);
+            if (txt !== undefined) e.textContent = txt;
+            if (cls) e.className = cls;
+            return e;
+        };
+
+        function desenhar() {
+            const maxPulos = Number(document.getElementById('c-pulos').value);
+            const curva = Number(document.getElementById('c-curva').value);
+            const peso = Number(document.getElementById('c-peso').value);
+            const pontos = CENARIOS[document.getElementById('c-cenario').value];
+
+            document.getElementById('v-pulos').textContent = maxPulos;
+            document.getElementById('v-curva').textContent = curva.toFixed(1).replace('.', ',');
+            document.getElementById('v-peso').textContent = Math.round(peso * 100) + '%';
+
+            const r = converter(pontos, maxPulos, curva, peso);
+
+            // ---- tabela ----
+            const corpo = document.getElementById('corpo-tabela');
+            corpo.innerHTML = '';
+            pontos.map((p, i) => ({ i, p })).sort((a, b) => b.p - a.p).forEach(({ i, p }) => {
+                const tr = document.createElement('tr');
+                const nome = el('td');
+                nome.append(el('span', BICHOS[i], 'bicho'), document.createTextNode(NOMES[i]));
+                tr.append(
+                    nome,
+                    el('td', String(p)),
+                    el('td', r[i].tPontos.toFixed(2), 'conta'),
+                    el('td', r[i].tLugar.toFixed(2), 'conta'),
+                    el('td', r[i].t.toFixed(2), 'conta'),
+                    el('td', String(r[i].pulos), 'destaque'),
+                    el('td', String(r[i].nivel)),
+                    el('td', r[i].faltam + ' acertos')
+                );
+                corpo.appendChild(tr);
+            });
+
+            // ---- pirâmide esquemática ----
+            const pir = document.getElementById('piramide');
+            pir.innerHTML = '';
+            for (let nivel = 0; nivel < TOTAL_NIVEIS; nivel++) {
+                const linha = el('div', undefined, 'nivel' + (nivel === TOTAL_NIVEIS - 1 ? ' topo' : ''));
+                linha.append(el('span', nivel === TOTAL_NIVEIS - 1 ? 'Topo · vitória' : 'Nível ' + nivel, 'nivel-rotulo'));
+                const barra = el('div', undefined, 'nivel-barra');
+                const aqui = r.map((x, i) => ({ x, i })).filter(({ x }) => x.nivel === nivel);
+                if (aqui.length === 0) barra.append(el('span', nivel === 0 ? '—' : '', 'vazio'));
+                else aqui.forEach(({ i }) => barra.append(el('span', BICHOS[i], 'ocupante')));
+                linha.append(barra);
+                pir.appendChild(linha);
+            }
+
+            // ---- nota ----
+            const distintos = new Set(r.map(x => x.nivel)).size;
+            const noTeto = r.filter(x => x.pulos === maxPulos).length;
+            document.getElementById('nota').textContent =
+                `${distintos} níveis diferentes para ${pontos.length} jogadores · ` +
+                `${noTeto} no teto de ${maxPulos} pulos · ` +
+                `o 1º precisa de ${Math.min(...r.map(x => x.faltam))} acertos, o último de ${Math.max(...r.map(x => x.faltam))}`;
+        }
+
+        ['c-pulos', 'c-curva', 'c-peso', 'c-cenario'].forEach(id =>
+            document.getElementById(id).addEventListener('input', desenhar));
+        desenhar();
+    })();
+    </script>
+</body>
+
+</html>

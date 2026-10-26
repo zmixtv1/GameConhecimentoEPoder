@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz TV - Pódio final</title>
+
+    <!--
+      BASE SIMPLES, de propósito. Serve para a lógica e os dados ficarem à
+      mostra e depois virar uma tela de comemoração bonita.
+
+      É a última tela da partida, depois que alguém chega ao topo da Pirâmide.
+
+      A REGRA DE CLASSIFICAÇÃO (é aqui que mora a decisão de design):
+
+        1º lugar  = quem chegou ao topo da Pirâmide. Só isso. Mesmo que tenha
+                    feito menos pontos que todo mundo nas 5 rodadas.
+        2º em diante = pelo nível que a pessoa alcançou na Pirâmide quando a
+                    corrida acabou. Empate no mesmo nível é desempatado pelos
+                    pontos das rodadas.
+
+      POR QUE ISSO IMPORTA: na regra nova a pontuação das rodadas NÃO ganha a
+      partida - ela só decide a largada. Então o pódio é da corrida, não do
+      placar. O placar de pontos aparece ao lado como história da partida, não
+      como resultado.
+
+      Os dados abaixo foram montados de propósito com uma VIRADA: a Luciana
+      largou na base (era a última em pontos) e venceu a corrida. É o caso que
+      a tela precisa dar conta sem parecer erro.
+
+      O QUE A TELA PROFISSIONAL PRECISA MOSTRAR, no mínimo:
+        - quem venceu, grande, com o bicho dele
+        - o pódio de 2º e 3º
+        - onde cada um parou na pirâmide
+        - em algum canto, o placar de pontos das rodadas
+      E idealmente: confete, o bicho vencedor comemorando, e a revelação em
+      ordem (3º, depois 2º, depois o campeão).
+    -->
+
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Outfit", system-ui, sans-serif; }
+
+        body {
+            background: #f8fafc;
+            background-image: radial-gradient(#cbd5e1 2px, transparent 2px);
+            background-size: 40px 40px;
+            color: #0f172a;
+            min-height: 100vh;
+            padding: 28px 24px 90px;
+        }
+
+        h1 { font-size: 30px; font-weight: 900; text-align: center; }
+        .sub { text-align: center; color: #475569; font-size: 14px; margin: 4px 0 26px; }
+
+        .colunas { display: grid; grid-template-columns: 1.3fr 1fr; gap: 28px; max-width: 1150px; margin: 0 auto; }
+        @media (max-width: 900px) { .colunas { grid-template-columns: 1fr; } }
+
+        h2 { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #475569; margin-bottom: 12px; }
+
+        /* ---- pódio ---- */
+        .podio { display: flex; align-items: flex-end; justify-content: center; gap: 14px; }
+        .degrau { display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1; max-width: 190px; }
+        .degrau .bicho { font-size: 60px; line-height: 1; }
+        .degrau.primeiro .bicho { font-size: 86px; }
+        .degrau .nome { font-weight: 900; font-size: 17px; text-align: center; }
+        .degrau .bloco {
+            width: 100%; border-radius: 14px 14px 0 0;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+            color: #fff; font-weight: 900;
+        }
+        .degrau.primeiro .bloco { height: 150px; background: #f1c40f; color: #4a3800; }
+        .degrau.segundo  .bloco { height: 108px; background: #94a3b8; }
+        .degrau.terceiro .bloco { height: 82px;  background: #c88f5a; }
+        .bloco .posicao { font-size: 34px; line-height: 1; }
+        .bloco .detalhe { font-size: 12px; font-weight: 700; opacity: .85; }
+        .coroa { font-size: 30px; }
+
+        /* ---- restantes ---- */
+        .restantes { list-style: none; display: flex; flex-direction: column; gap: 6px; margin-top: 22px; }
+        .restantes li {
+            display: flex; align-items: center; gap: 10px;
+            background: #fff; border-radius: 10px; padding: 8px 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,.05); font-weight: 700; font-size: 14px;
+        }
+        .restantes .pos { font-weight: 900; color: #94a3b8; min-width: 2em; }
+        .restantes .nome { flex: 1; }
+        .restantes .onde { color: #64748b; font-size: 13px; }
+
+        /* ---- placar lateral ---- */
+        .placar { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+        .placar li {
+            display: flex; align-items: center; gap: 10px;
+            background: #fff; border-radius: 10px; padding: 9px 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,.05); font-weight: 700; font-size: 14px;
+        }
+        .placar .pos { font-weight: 900; color: #1e90ff; min-width: 2em; }
+        .placar .nome { flex: 1; }
+        .placar .pts { font-variant-numeric: tabular-nums; font-weight: 900; }
+        .aviso {
+            margin-top: 14px; padding: 12px 14px; border-radius: 10px;
+            background: rgba(241,196,15,.18); border-left: 3px solid #f1c40f;
+            font-size: 13px; line-height: 1.45; color: #4a3800;
+        }
+
+        .barra {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: rgba(255,255,255,.96); border-top: 1px solid #e2e8f0;
+            padding: 10px 20px; display: flex; gap: 16px; justify-content: center; align-items: center;
+            font-size: 12px; font-weight: 700; color: #64748b;
+        }
+        .barra button { padding: 7px 14px; border: 0; border-radius: 8px; background: #0f172a; color: #fff; font-weight: 800; font-family: inherit; cursor: pointer; }
+    </style>
+</head>
+
+<body>
+    <h1 id="titulo"></h1>
+    <p class="sub" id="subtitulo"></p>
+
+    <div class="colunas">
+        <div>
+            <h2>Pódio da Pirâmide</h2>
+            <div class="podio" id="podio"></div>
+            <ul class="restantes" id="restantes"></ul>
+        </div>
+
+        <div>
+            <h2>Placar das 5 rodadas</h2>
+            <ul class="placar" id="placar"></ul>
+            <p class="aviso" id="aviso"></p>
+        </div>
+    </div>
+
+    <div class="barra">
+        <span id="resumo"></span>
+        <button id="repetir" type="button">Repetir</button>
+    </div>
+
+    <script>
+    (() => {
+        'use strict';
+
+        const TOTAL_NIVEIS = 8;          // nível 0 = base, 7 = topo
+        const TOPO = TOTAL_NIVEIS - 1;
+
+        // Estado no fim da corrida.
+        //   pontos      = somados nas 5 rodadas (só definiram a largada)
+        //   largada     = nível onde começou a Pirâmide
+        //   nivelFinal  = onde parou quando a corrida acabou (7 = chegou ao topo)
+        //
+        // Montado com uma VIRADA de propósito: a Luciana era a última em pontos,
+        // largou na base e mesmo assim venceu a corrida.
+        const JOGADORES = [
+            { nome: 'Luciana',   bicho: '🐯', pontos: 2300, largada: 0, nivelFinal: 7 },
+            { nome: 'Vítoria',   bicho: '🦊', pontos: 2600, largada: 4, nivelFinal: 6 },
+            { nome: 'Rodrigo',   bicho: '🐼', pontos: 2550, largada: 3, nivelFinal: 6 },
+            { nome: 'Adamor',    bicho: '🦁', pontos: 2480, largada: 2, nivelFinal: 5 },
+            { nome: 'Cecília',   bicho: '🐸', pontos: 2500, largada: 2, nivelFinal: 4 },
+            { nome: 'Catarina',  bicho: '🦄', pontos: 2450, largada: 1, nivelFinal: 4 },
+            { nome: 'Guilherme', bicho: '🐧', pontos: 2400, largada: 1, nivelFinal: 3 },
+            { nome: 'Mônica',    bicho: '🐙', pontos: 2380, largada: 0, nivelFinal: 2 }
+        ];
+
+        // ============================================================
+        // A CLASSIFICAÇÃO. É só isto que importa levar para a tela final.
+        // Quem chegou ao topo vence. Depois, por nível alcançado, e pontos
+        // só desempatam quem parou no mesmo nível.
+        // ============================================================
+        function classificar(lista) {
+            return [...lista].sort((a, b) => {
+                if (a.nivelFinal !== b.nivelFinal) return b.nivelFinal - a.nivelFinal;
+                return b.pontos - a.pontos;
+            });
+        }
+        // ============================================================
+
+        const el = (tag, txt, cls) => {
+            const e = document.createElement(tag);
+            if (txt !== undefined) e.textContent = txt;
+            if (cls) e.className = cls;
+            return e;
+        };
+
+        function ondeParou(j) {
+            return j.nivelFinal === TOPO ? 'chegou ao topo' : 'parou no nível ' + j.nivelFinal;
+        }
+
+        function desenhar() {
+            const corrida = classificar(JOGADORES);
+            const campeao = corrida[0];
+            const porPontos = [...JOGADORES].sort((a, b) => b.pontos - a.pontos);
+
+            document.getElementById('titulo').textContent = `${campeao.bicho} ${campeao.nome} venceu!`;
+            document.getElementById('subtitulo').textContent =
+                `Largou no nível ${campeao.largada} e subiu ${TOPO - campeao.largada} ${TOPO - campeao.largada === 1 ? 'nível' : 'níveis'} até o topo`;
+
+            // ---- pódio: 2º, 1º, 3º (ordem visual) ----
+            const podio = document.getElementById('podio');
+            podio.innerHTML = '';
+            const ordemVisual = [
+                { j: corrida[1], cls: 'segundo',  pos: '2º' },
+                { j: corrida[0], cls: 'primeiro', pos: '1º' },
+                { j: corrida[2], cls: 'terceiro', pos: '3º' }
+            ];
+            ordemVisual.forEach(({ j, cls, pos }) => {
+                if (!j) return;
+                const d = el('div', undefined, 'degrau ' + cls);
+                if (cls === 'primeiro') d.append(el('div', '👑', 'coroa'));
+                d.append(el('div', j.bicho, 'bicho'), el('div', j.nome, 'nome'));
+                const bloco = el('div', undefined, 'bloco');
+                bloco.append(el('span', pos, 'posicao'), el('span', ondeParou(j), 'detalhe'));
+                d.append(bloco);
+                podio.appendChild(d);
+            });
+
+            // ---- do 4º em diante ----
+            const restantes = document.getElementById('restantes');
+            restantes.innerHTML = '';
+            corrida.slice(3).forEach((j, i) => {
+                const li = document.createElement('li');
+                li.append(
+                    el('span', (i + 4) + 'º', 'pos'),
+                    el('span', j.bicho),
+                    el('span', j.nome, 'nome'),
+                    el('span', ondeParou(j), 'onde')
+                );
+                restantes.appendChild(li);
+            });
+
+            // ---- placar de pontos (história, não resultado) ----
+            const placar = document.getElementById('placar');
+            placar.innerHTML = '';
+            porPontos.forEach((j, i) => {
+                const li = document.createElement('li');
+                li.append(
+                    el('span', (i + 1) + 'º', 'pos'),
+                    el('span', j.bicho),
+                    el('span', j.nome, 'nome'),
+                    el('span', j.pontos + ' pts', 'pts')
+                );
+                placar.appendChild(li);
+            });
+
+            // ---- aviso da virada, quando houver ----
+            const lugarNoPlacar = porPontos.findIndex(j => j.nome === campeao.nome) + 1;
+            const aviso = document.getElementById('aviso');
+            aviso.textContent = lugarNoPlacar > 1
+                ? `Virada: ${campeao.nome} era ${lugarNoPlacar}º em pontos e venceu a partida. Na Pirâmide a pontuação só decide a largada — quem chega ao topo primeiro ganha.`
+                : `${campeao.nome} liderava em pontos e confirmou no topo da Pirâmide.`;
+
+            document.getElementById('resumo').textContent =
+                `campeão: ${lugarNoPlacar}º em pontos · largou no nível ${campeao.largada} · ${TOPO - campeao.largada} acertos até o topo`;
+        }
+
+        document.getElementById('repetir').addEventListener('click', desenhar);
+        desenhar();
+    })();
+    </script>
+</body>
+
+</html>

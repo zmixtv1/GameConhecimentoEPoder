@@ -4,820 +4,400 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-    <title>Controle Mobile - Escolha de Alvo (como está hoje)</title>
+    <title>Controle Mobile - Escolha de Alvo</title>
 
     <!--
-      RETRATO DO QUE EXISTE HOJE, não uma proposta.
+      PROPOSTA NOVA da tela `tela-escolha-alvo` do celular.
 
-      Esta é a tela `tela-escolha-alvo` do celular: 20 segundos para escolher
-      em quem usar o poder que você acabou de pegar.
+      - Cada alvo é um cartão com o animal (na cor do jogador), o nome e a
+        posição/pontos no placar, ordenado do líder para baixo. Isso ajuda a
+        decidir em quem usar o poder.
+      - Cabe sem rolar de 1 a 8 alvos (sala de até 9), com o celular em pé ou
+        deitado. O JS escolhe colunas/linhas pela orientação e pela quantidade;
+        a última linha incompleta fica centralizada.
+      - Ao tocar: o ícone do poder "voa" até o alvo, o cartão acende na cor do
+        poder, os outros apagam e o título vira a confirmação.
+      - Sem poder nesta pergunta: tela de espera com o aviso.
 
-      Mostra a lista com os outros jogadores da sala, só com o NOME - sem o
-      animal, sem a pontuação. Quem não escolheu poder na tela anterior cai
-      aqui numa versão vazia, só com o aviso "Você não tem poder nesta
-      pergunta", e espera os 20 segundos passarem.
-
-      A marcação sai de public/controlador/index.html (seção #tela-escolha-alvo), o estilo é
-      o public/controlador/controlador.css copiado inteiro, e a montagem
-      reproduz o trecho correspondente de public/controlador/controlador.js.
-
-      O controle é pensado para o celular DEITADO: o layout é dimensionado em vh
-      para caber em ~336px de altura sem rolar. Em pé, o CSS vira uma coluna.
+      Para testar: a barra no rodapé troca poder, quantidade de alvos e o estado
+      "sem poder". Abra com ?limpo para esconder a barra.
     -->
 
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
 
     <style>
-/* ===================================================================
-   cópia integral de public/controlador/controlador.css
-   =================================================================== */
-/* Controle do celular - mesmo visual do teste2.html (tema claro, vidro, Outfit),
-   mas ocupando a tela inteira e pensado pro celular DEITADO: o layout é
-   dimensionado em vh pra caber em ~336px de altura sem rolar. Em pé, o mesmo
-   layout vira uma coluna (ver @media portrait no fim). */
+        :root {
+            color-scheme: light;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --bg: #f8fafc;
+            --vermelho: #ff4757;
+            --glass-bg: rgba(255, 255, 255, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.9);
+            --glass-shadow: 0 6px 14px rgba(0, 0, 0, 0.07);
 
-:root {
-  color-scheme: light;
-  --text-main: #0f172a;
-  --text-muted: #475569;
-  --bg: #f8fafc;
-  --surface: #ffffff;
-  --verde: #2ed573;
-  --vermelho: #ff4757;
-  --violet: #9b59b6;
-  --glass-bg: rgba(255, 255, 255, 0.65);
-  --glass-border: rgba(255, 255, 255, 0.9);
-  --glass-shadow: 0 6px 14px rgba(0, 0, 0, 0.07);
+            --cor-jogador: #1e90ff;
+            --cor-poder: #38bdf8;   /* trocada pelo JS conforme o poder */
 
-  /* cor do animal do jogador - o controlador.js troca o valor assim que o
-     jogador escolhe o animal; azul é só o padrão antes disso */
-  --cor-jogador: #1e90ff;
-  --player-glass: color-mix(in srgb, var(--cor-jogador) 15%, transparent);
-  --player-glow: color-mix(in srgb, var(--cor-jogador) 30%, transparent);
+            --pad-t: max(8px, env(safe-area-inset-top));
+            --pad-r: max(12px, env(safe-area-inset-right));
+            --pad-b: max(8px, env(safe-area-inset-bottom));
+            --pad-l: max(12px, env(safe-area-inset-left));
 
-  /* respiro até a borda física da tela (soma a área segura de notch/cantos) */
-  --pad-t: max(8px, env(safe-area-inset-top));
-  --pad-r: max(12px, env(safe-area-inset-right));
-  --pad-b: max(8px, env(safe-area-inset-bottom));
-  --pad-l: max(12px, env(safe-area-inset-left));
-}
+            --gap: clamp(6px, 2vmin, 12px);
+        }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  font-family: "Outfit", system-ui, sans-serif;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-}
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Outfit", system-ui, sans-serif;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-html { height: 100%; }
+        html { height: 100%; }
 
-body {
-  height: 100vh;
-  height: 100dvh; /* acompanha a barra do navegador aparecendo/sumindo */
-  display: flex;
-  flex-direction: column;
-  padding: var(--pad-t) var(--pad-r) var(--pad-b) var(--pad-l);
-  background-color: var(--bg);
-  background-image: radial-gradient(#cbd5e1 2px, transparent 2px);
-  background-size: 40px 40px;
-  background-position: center;
-  color: var(--text-main);
-  overflow: hidden;
-  position: relative;
-}
+        body {
+            height: 100vh;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            padding: var(--pad-t) var(--pad-r) var(--pad-b) var(--pad-l);
+            background-color: var(--bg);
+            background-image: radial-gradient(#cbd5e1 2px, transparent 2px);
+            background-size: 40px 40px;
+            background-position: center;
+            color: var(--text-main);
+            overflow: hidden;
+            position: relative;
+        }
 
-.oculto { display: none !important; }
+        .oculto { display: none !important; }
 
-/* ---------- Fundo e vidro ---------- */
-.ambient-light {
-  position: fixed;
-  border-radius: 50%;
-  filter: blur(80px);
-  z-index: 0;
-  pointer-events: none;
-  animation: fluidMotion 20s infinite alternate ease-in-out;
-}
-.light-1 { top: -10%; left: -10%; width: 60vmax; height: 60vmax; background: rgba(226, 232, 240, 0.8); }
-.light-2 { bottom: -20%; right: -10%; width: 50vmax; height: 50vmax; background: rgba(186, 230, 253, 0.5); animation-delay: -5s; }
-.light-3 { top: 30%; left: 30%; width: 35vmax; height: 35vmax; background: rgba(255, 255, 255, 0.9); animation-delay: -10s; }
-@keyframes fluidMotion {
-  0% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(15px, 20px) scale(1.05); }
-  66% { transform: translate(-15px, 10px) scale(0.95); }
-  100% { transform: translate(25px, -15px) scale(1.02); }
-}
+        .ambient-light {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 0;
+            pointer-events: none;
+            animation: fluidMotion 20s infinite alternate ease-in-out;
+        }
+        .light-1 { top: -10%; left: -10%; width: 60vmax; height: 60vmax; background: rgba(226, 232, 240, 0.8); }
+        .light-2 { bottom: -20%; right: -10%; width: 50vmax; height: 50vmax; background: rgba(186, 230, 253, 0.5); animation-delay: -5s; }
+        .light-3 { top: 30%; left: 30%; width: 35vmax; height: 35vmax; background: rgba(255, 255, 255, 0.9); animation-delay: -10s; }
+        @keyframes fluidMotion {
+            0% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(15px, 20px) scale(1.05); }
+            66% { transform: translate(-15px, 10px) scale(0.95); }
+            100% { transform: translate(25px, -15px) scale(1.02); }
+        }
 
-.glass-panel {
-  background: var(--glass-bg);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 2px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
-}
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 2px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+        }
 
-/* ---------- Estrutura de cada tela: cabeçalho / corpo / rodapé ---------- */
-.tela {
-  position: relative;
-  z-index: 1;
-  flex: 1;
-  min-height: 0;
-  width: 100%;
-  max-width: 1000px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: clamp(6px, 2vh, 12px);
-}
+        /* ===================== ESTRUTURA ===================== */
+        .tela {
+            position: relative;
+            z-index: 1;
+            flex: 1;
+            min-height: 0;
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: var(--gap);
+        }
 
-.cabecalho {
-  flex: none;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-height: 56px;
-}
-.cabecalho-texto {
-  flex: 1;
-  min-width: 0;
-  text-align: center;
-}
-.cabecalho-vazio { flex: none; width: 56px; } /* equilibra o cabeçalho quando não há timer */
+        .cabecalho {
+            flex: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-.corpo {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  /* folga pras sombras dos botões não serem cortadas pelo scroll; a margem
-     negativa devolve o espaço, então o layout fica igual */
-  padding: 2px 6px 8px;
-  margin: -2px -6px -8px;
-}
-.corpo-centro { align-items: center; justify-content: center; text-align: center; }
-.corpo-duas-colunas { display: grid; grid-template-columns: 1.5fr 1fr; gap: 12px; align-content: start; }
+        .cabecalho-texto { flex: 1; min-width: 0; text-align: center; }
 
-.rodape {
-  flex: none;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.rodape .ajuda { flex: none; max-width: 40%; text-align: left; }
-.rodape-duplo > button { flex: 1; }
+        .player-identity {
+            flex: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 14px 5px 8px;
+            border-radius: 100px;
+            max-width: 34%;
+        }
+        .player-avatar { font-size: clamp(20px, 6vmin, 26px); line-height: 1; }
+        .player-name {
+            font-size: clamp(12px, 3.6vmin, 15px);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
-/* ---------- Texto ---------- */
-h1 { font-size: clamp(26px, 9vh, 42px); font-weight: 900; color: var(--cor-jogador); line-height: 1.05; }
-h2 { font-size: clamp(15px, 4.6vh, 22px); font-weight: 800; line-height: 1.2; }
-h3 { font-size: clamp(12px, 3.4vh, 15px); font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
-.pergunta-texto { font-size: clamp(14px, 4.2vh, 20px); font-weight: 800; text-shadow: 0 4px 15px rgba(255, 255, 255, 0.8); }
-.ajuda { color: var(--text-muted); font-size: clamp(11px, 3vh, 14px); }
-.ajuda-mini { font-size: clamp(10px, 2.6vh, 12px); margin-bottom: 2px; }
-.categoria { text-transform: uppercase; letter-spacing: 0.1em; color: var(--violet); font-weight: 800; }
-.cabecalho .categoria { font-size: clamp(10px, 2.8vh, 13px); letter-spacing: 0.05em; }
-.ajuda-mini .categoria { margin-left: 0.3em; }
-.pontos { font-size: clamp(14px, 4vh, 20px); font-weight: 800; color: var(--cor-jogador); }
-.erro { color: var(--vermelho); min-height: 1.2em; font-size: 14px; }
+        .titulo {
+            font-size: clamp(16px, 5.4vmin, 24px);
+            font-weight: 900;
+            line-height: 1.15;
+            transition: color .3s ease;
+        }
+        .titulo.confirmado { color: color-mix(in srgb, var(--cor-poder) 70%, #0f172a); }
 
-/* ---------- Botões e campos ---------- */
-button { font: inherit; border: none; cursor: pointer; }
-button:disabled { cursor: default; }
+        /* "🧊 Congelamento" destacado dentro do título */
+        .poder-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 1px 10px 2px 6px;
+            margin: 0 2px;
+            border-radius: 100px;
+            background: color-mix(in srgb, var(--cor-poder) 20%, white);
+            border: 2px solid color-mix(in srgb, var(--cor-poder) 55%, white);
+            color: color-mix(in srgb, var(--cor-poder) 60%, #0f172a);
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+        .poder-icone { display: inline-block; font-size: 1.1em; }
 
-.btn-primario,
-.btn-vidro {
-  width: 100%;
-  padding: clamp(10px, 3.4vh, 16px) 18px;
-  border-radius: 18px;
-  font-size: clamp(15px, 4vh, 20px);
-  font-weight: 900;
-  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s;
-}
-.btn-primario { background: var(--cor-jogador); color: #fff; box-shadow: 0 10px 25px var(--player-glow); }
-.btn-vidro {
-  background: var(--glass-bg);
-  border: 2px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
-  color: var(--text-main);
-}
-.btn-primario:active:not(:disabled),
-.btn-vidro:active:not(:disabled) { transform: scale(0.96); }
-.btn-primario:disabled { opacity: 0.5; box-shadow: none; }
+        .subtitulo {
+            margin-top: 2px;
+            font-size: clamp(11px, 3.2vmin, 14px);
+            font-weight: 700;
+            color: var(--text-muted);
+        }
 
-label { display: block; text-align: left; color: var(--text-muted); font-size: 13px; font-weight: 600; margin-bottom: 8px; }
-input[type="text"] {
-  display: block;
-  width: 100%;
-  margin-top: 4px;
-  padding: 10px 14px;
-  font-size: 18px;
-  font-weight: 700;
-  border-radius: 14px;
-  border: 2px solid var(--glass-border);
-  background: rgba(255, 255, 255, 0.85);
-  color: var(--text-main);
-  text-transform: uppercase;
-  user-select: text;
-}
-input#campo-nome { text-transform: none; }
-input:focus { outline: 2px solid var(--cor-jogador); }
+        /* Timer */
+        .timer {
+            position: relative;
+            flex: none;
+            width: clamp(44px, 13vmin, 56px);
+            height: clamp(44px, 13vmin, 56px);
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            transition: transform .2s ease;
+        }
+        .timer svg { position: absolute; inset: -4px; width: calc(100% + 8px); height: calc(100% + 8px); transform: rotate(-90deg); }
+        .anel-fundo { fill: none; stroke: rgba(255, 255, 255, 0.8); stroke-width: 9; }
+        .anel { fill: none; stroke: var(--text-main); stroke-width: 9; stroke-linecap: round; stroke-dasharray: 326.7; transition: stroke .3s ease; }
+        .timer-numero { font-size: clamp(17px, 5.4vmin, 22px); font-weight: 900; font-variant-numeric: tabular-nums; }
+        .timer.urgente { animation: pulso 1s ease-in-out infinite; border-color: var(--vermelho); }
+        .timer.urgente .anel { stroke: var(--vermelho); }
+        .timer.urgente .timer-numero { color: var(--vermelho); }
+        @keyframes pulso { 50% { transform: scale(1.1); } }
 
-/* ---------- Identidade do jogador (animal + nome) ---------- */
-.player-identity {
-  flex: none;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 16px 6px 10px;
-  border-radius: 100px;
-  max-width: 40%;
-  transition: all 0.3s ease;
-}
-.player-identity:empty { visibility: hidden; }
-.player-avatar { font-size: 26px; line-height: 1; filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.15)); }
-.player-name {
-  font-size: 15px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 110px;
-}
-/* a pílula acende quando o jogador trava a resposta */
-.player-identity.voted {
-  background: var(--player-glass);
-  border-color: var(--cor-jogador);
-  box-shadow: 0 10px 25px var(--player-glow);
-}
-.player-identity.voted .player-name { color: var(--cor-jogador); }
+        .corpo {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
 
-/* ---------- Timer circular (igual ao da TV, menor) ---------- */
-.timer-redondo-mini {
-  position: relative;
-  flex: none;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.2s ease;
-}
-.timer-anel-mini {
-  position: absolute;
-  inset: -5px;
-  width: calc(100% + 10px);
-  height: calc(100% + 10px);
-  transform: rotate(-90deg);
-}
-.anel-fundo-mini { fill: none; stroke: rgba(255, 255, 255, 0.8); stroke-width: 9; }
-.anel-progresso-mini {
-  fill: none;
-  stroke: var(--text-main);
-  stroke-width: 9;
-  stroke-linecap: round;
-  stroke-dasharray: 326.7;
-  transition: stroke 0.3s ease;
-}
-.timer-numero-mini { font-size: 22px; font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums; }
-.timer-redondo-mini.urgente { animation: pulsoUrgente 1s ease-in-out infinite; border-color: var(--vermelho); }
-.timer-redondo-mini.urgente .anel-progresso-mini { stroke: var(--vermelho); }
-.timer-redondo-mini.urgente .timer-numero-mini { color: var(--vermelho); }
-@keyframes pulsoUrgente { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        /* ===================== ALVOS ===================== */
+        /* Grade com colunas "duplas": cada cartão ocupa 2, o que permite
+           centralizar a última linha incompleta deslocando meia coluna. */
+        .poder-alvos {
+            --colunas: 4;
+            --linhas: 2;
+            --card-max: 150px;
+            flex: 1;
+            min-height: 0;
+            width: 100%;
+            max-height: calc(var(--linhas) * var(--card-max) + (var(--linhas) - 1) * var(--gap));
+            margin: auto 0;
+            display: grid;
+            grid-template-columns: repeat(calc(var(--colunas) * 2), minmax(0, 1fr));
+            grid-template-rows: repeat(var(--linhas), minmax(0, 1fr));
+            gap: var(--gap);
+        }
 
-/* ---------- Aviso pra girar o celular (só em pé) ---------- */
-.aviso-girar {
-  display: none;
-  flex: none;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 8px;
-  padding: 6px 6px 6px 12px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid var(--glass-border);
-  color: var(--text-muted);
-  font-size: 12px;
-  font-weight: 600;
-  position: relative;
-  z-index: 2;
-}
-.aviso-girar button { width: 28px; height: 28px; border-radius: 50%; background: rgba(15, 23, 42, 0.08); color: var(--text-muted); font-size: 13px; }
-@media (orientation: portrait) {
-  .aviso-girar:not(.dispensado) { display: flex; }
-}
+        .poder-alvo-btn {
+            --cor-alvo: #94a3b8;
+            position: relative;
+            grid-column: span 2;
+            min-height: 0;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: clamp(2px, 1vmin, 6px);
+            padding: 6px 8px;
+            border-radius: clamp(16px, 4.5vmin, 22px);
+            border: 2px solid var(--glass-border);
+            background:
+                linear-gradient(180deg, color-mix(in srgb, var(--cor-alvo) 14%, transparent), transparent 70%),
+                var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: var(--glass-shadow);
+            color: var(--text-main);
+            cursor: pointer;
+            opacity: 0;
+            animation: entrar .45s cubic-bezier(.34, 1.56, .64, 1) forwards;
+            transition: transform .2s cubic-bezier(.34, 1.56, .64, 1), opacity .3s ease, filter .3s ease,
+                        border-color .3s ease, box-shadow .3s ease;
+        }
+        @keyframes entrar {
+            from { opacity: 0; transform: translateY(12px) scale(.92); }
+            to   { opacity: 1; transform: none; }
+        }
+        .poder-alvo-btn:active:not(:disabled) { transform: scale(.95); }
 
-/* ---------- Banner "fulano usou um poder em você" ---------- */
-#aviso-atingido {
-  position: fixed;
-  top: 8px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 50;
-  max-width: 90vw;
-  padding: 8px 18px;
-  border-radius: 100px;
-  background: rgba(255, 71, 87, 0.95);
-  color: #fff;
-  font-size: 14px;
-  font-weight: 800;
-  text-align: center;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-}
+        .alvo-avatar {
+            position: relative;
+            flex: none;
+            width: var(--avatar);
+            height: var(--avatar);
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            font-size: calc(var(--avatar) * 0.58);
+            line-height: 1;
+            background: color-mix(in srgb, var(--cor-alvo) 24%, white);
+            border: 2px solid color-mix(in srgb, var(--cor-alvo) 55%, white);
+            box-shadow: 0 4px 10px color-mix(in srgb, var(--cor-alvo) 25%, transparent);
+        }
 
-/* ---------- Pop-up de reiniciar o jogo ---------- */
-.modal-fundo {
-  position: fixed;
-  inset: 0;
-  z-index: 80;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--pad-t) var(--pad-r) var(--pad-b) var(--pad-l);
-  background: rgba(15, 23, 42, 0.55);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-}
-.modal-card {
-  width: 100%;
-  max-width: 460px;
-  padding: clamp(14px, 5vh, 24px) clamp(16px, 5vw, 28px);
-  border-radius: 24px;
-  background: var(--surface);
-  border: 2px solid var(--glass-border);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
-  text-align: center;
-  animation: popModal 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-@keyframes popModal {
-  from { opacity: 0; transform: scale(0.85); }
-  to { opacity: 1; transform: scale(1); }
-}
-.modal-card .ajuda { margin-top: 6px; }
-.modal-botoes {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: clamp(10px, 3vh, 18px);
-}
+        .alvo-coroa {
+            position: absolute;
+            top: -0.55em;
+            right: -0.25em;
+            font-size: .42em;
+            transform: rotate(18deg);
+        }
 
-/* ---------- Aviso de conexão perdida / reconectando ---------- */
-.aviso-conexao {
-  position: fixed;
-  left: 50%;
-  bottom: max(10px, env(safe-area-inset-bottom));
-  transform: translateX(-50%);
-  z-index: 60;
-  max-width: 92vw;
-  padding: 8px 18px;
-  border-radius: 100px;
-  background: rgba(15, 23, 42, 0.92);
-  color: #fff;
-  font-size: 14px;
-  font-weight: 800;
-  text-align: center;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-  animation: pulsoConexao 1.4s ease-in-out infinite;
-}
-@keyframes pulsoConexao { 0%, 100% { opacity: 1; } 50% { opacity: 0.65; } }
+        /* Ícone do poder que pousa no alvo escolhido */
+        .alvo-efeito {
+            position: absolute;
+            right: -0.3em;
+            bottom: -0.3em;
+            font-size: .55em;
+            transform: scale(0);
+            filter: drop-shadow(0 3px 5px rgba(15, 23, 42, .3));
+        }
 
-/* ---------- Entrada ---------- */
-.tela-entrada {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  align-items: center;
-  align-content: center;
-  gap: 8px 28px;
-  overflow-y: auto;
-  padding: 2px 6px 8px;
-  margin: -2px -6px -8px;
-}
-.entrada-titulo { text-align: left; }
-.entrada-titulo .ajuda { margin-top: 8px; }
-.entrada-form .btn-primario { margin-top: 4px; }
+        .alvo-info { display: flex; flex-direction: column; align-items: center; min-width: 0; max-width: 100%; }
+        .alvo-nome {
+            max-width: 100%;
+            font-size: var(--nome);
+            font-weight: 900;
+            line-height: 1.1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .alvo-pontos {
+            font-size: calc(var(--nome) * 0.68);
+            font-weight: 700;
+            color: var(--text-muted);
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+        }
 
-/* ---------- Escolha de animal ---------- */
-.animais-grid {
-  flex: 1;
-  min-height: 0;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-auto-rows: 1fr;
-  gap: 10px;
-}
-.animal-btn {
-  --cor-animal: var(--cor-jogador);
-  min-height: 0;
-  padding: 4px;
-  border-radius: 22px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  background: var(--glass-bg);
-  border: 2px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
-  color: var(--text-main);
-  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-.animal-btn:active:not(:disabled) { transform: scale(0.95); }
-.animal-emoji { font-size: clamp(28px, 11vh, 54px); line-height: 1; filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.15)); }
-.animal-nome { font-size: clamp(11px, 3.4vh, 15px); font-weight: 800; }
-.animal-dono { font-size: clamp(9px, 2.6vh, 12px); font-weight: 600; color: var(--text-muted); max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.animal-btn.meu {
-  background: color-mix(in srgb, var(--cor-animal) 15%, transparent);
-  border: 3px solid var(--cor-animal);
-  box-shadow: 0 15px 35px color-mix(in srgb, var(--cor-animal) 30%, transparent);
-}
-.animal-btn:disabled:not(.meu) { opacity: 0.45; filter: grayscale(80%); }
+        /* Escolhido / não escolhidos */
+        .poder-alvo-btn.selecionada {
+            border: 3px solid var(--cor-poder);
+            background:
+                linear-gradient(180deg, color-mix(in srgb, var(--cor-poder) 28%, transparent), color-mix(in srgb, var(--cor-poder) 10%, transparent)),
+                var(--glass-bg);
+            box-shadow: 0 14px 30px color-mix(in srgb, var(--cor-poder) 40%, transparent);
+            transform: scale(1.04);
+            z-index: 2;
+        }
+        .poder-alvo-btn.selecionada .alvo-efeito { animation: pousar .5s cubic-bezier(.34, 1.8, .64, 1) forwards; }
+        .poder-alvo-btn.selecionada .alvo-avatar { animation: tremer .4s ease .1s; }
+        .poder-alvo-btn.apagado { opacity: .38 !important; filter: grayscale(.85); }
+        .poder-alvo-btn:disabled { cursor: default; }
 
-/* ---------- Espera no lobby ---------- */
-.lista-jogadores {
-  list-style: none;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 8px;
-}
-.lista-jogadores li {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 14px 6px 8px;
-  border-radius: 100px;
-  background: var(--glass-bg);
-  border: 2px solid var(--glass-border);
-  font-weight: 800;
-  font-size: 15px;
-  min-width: 0;
-}
-.lista-jogadores li .nome { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.lista-jogadores li.sem-animal { opacity: 0.55; }
+        @keyframes pousar { to { transform: scale(1); } }
+        @keyframes tremer {
+            25% { transform: translateX(-3px) rotate(-6deg); }
+            50% { transform: translateX(3px) rotate(6deg); }
+            75% { transform: translateX(-2px) rotate(-3deg); }
+        }
 
-/* ---------- Portas, poderes e respostas: grade 2x2 de botões de vidro ---------- */
-.alternativas {
-  flex: 1;
-  min-height: 0;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-auto-rows: 1fr;
-  gap: clamp(8px, 2.6vh, 16px);
-}
-.alternativa {
-  min-height: 0;
-  padding: 8px 14px;
-  border-radius: 22px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  overflow-wrap: anywhere;
-  font-size: clamp(15px, 4.8vh, 24px);
-  font-weight: 900;
-  color: var(--text-main);
-  background: var(--glass-bg);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 2px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
-  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-.alternativa:active:not(:disabled) {
-  transform: scale(0.96);
-  background: rgba(255, 255, 255, 0.8);
-  box-shadow: inset 2px 2px 8px rgba(0, 0, 0, 0.05);
-}
-/* a escolhida vira vidro neon na cor do animal do jogador */
-.alternativa.selecionada {
-  background: var(--player-glass);
-  border: 3px solid var(--cor-jogador);
-  box-shadow: 0 15px 35px var(--player-glow);
-  color: var(--cor-jogador);
-}
-/* as outras apagam */
-.alternativa:disabled:not(.selecionada):not(.correta-revelada):not(.errada-piramide) {
-  opacity: 0.5;
-  filter: grayscale(80%);
-}
+        /* Ícone voando do título até o alvo */
+        .voo {
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 100;
+            pointer-events: none;
+            line-height: 1;
+            filter: drop-shadow(0 6px 10px rgba(15, 23, 42, .3));
+        }
 
-/* respostas da pergunta entram girando */
-#alternativas .alternativa {
-  opacity: 0;
-  animation: flipIn 0.55s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-}
-#alternativas .alternativa:nth-child(1) { animation-delay: 0s; }
-#alternativas .alternativa:nth-child(2) { animation-delay: 0.08s; }
-#alternativas .alternativa:nth-child(3) { animation-delay: 0.16s; }
-#alternativas .alternativa:nth-child(4) { animation-delay: 0.24s; }
-@keyframes flipIn {
-  from { opacity: 0; transform: perspective(800px) rotateY(-90deg); }
-  to { opacity: 1; transform: perspective(800px) rotateY(0deg); }
-}
-/* quando a TV revela a resposta certa, pisca em verde por cima de tudo */
-#alternativas .alternativa.correta-revelada {
-  opacity: 1;
-  border-color: var(--verde);
-  background: color-mix(in srgb, var(--verde) 15%, var(--glass-bg));
-  color: #0a7a3c;
-  animation: piscaVerde 0.5s ease-in-out 3;
-}
-@keyframes piscaVerde {
-  0%, 100% { box-shadow: 0 0 0 1px var(--verde); }
-  50% { box-shadow: 0 0 14px 3px rgba(46, 213, 115, 0.4); }
-}
+        /* ===================== DEITADO (padrão) ===================== */
+        .poder-alvos { --avatar: clamp(30px, 12vh, 58px); --nome: clamp(13px, 4.4vh, 20px); }
 
-.opcao-garantir-porta {
-  flex: none;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 0;
-  padding: 6px 12px;
-  border-radius: 14px;
-  background: var(--glass-bg);
-  border: 2px solid var(--glass-border);
-  font-size: clamp(11px, 3vh, 14px);
-  text-align: left;
-}
-.opcao-garantir-porta input { flex: none; width: 20px; height: 20px; accent-color: var(--cor-jogador); }
+        /* ===================== EM PÉ ===================== */
+        @media (orientation: portrait) {
+            .cabecalho { flex-wrap: wrap; row-gap: 8px; }
+            .cabecalho-texto { order: 3; flex-basis: 100%; }
+            .player-identity { max-width: 70%; }
+            .timer { margin-left: auto; }
 
-/* ---------- Pergunta ---------- */
-.fase-leitura {
-  margin: auto;
-  text-align: center;
-  font-size: clamp(16px, 5vh, 24px);
-  font-weight: 800;
-  color: var(--cor-jogador);
-}
-.fase-leitura #contagem-leitura { display: block; font-size: clamp(40px, 22vh, 80px); line-height: 1; }
-.area-alternativas { position: relative; flex: 1; min-height: 0; display: flex; }
+            .poder-alvos { --card-max: 150px; --avatar: clamp(38px, 7vh, 64px); --nome: clamp(15px, 2.7vh, 21px); }
 
-/* ---------- Efeitos dos Jogos de Poder (cobrem as respostas) ---------- */
-.obstrucao {
-  position: absolute;
-  inset: 0;
-  z-index: 5;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 12px;
-  border-radius: 22px;
-  background: rgba(15, 23, 42, 0.9);
-  text-align: center;
-}
-.obstrucao-mensagem { color: #fff; font-weight: 800; font-size: clamp(13px, 3.8vh, 18px); }
-.obstrucao-toque {
-  width: 100%;
-  padding: clamp(12px, 5vh, 24px);
-  border-radius: 16px;
-  background: repeating-linear-gradient(135deg, #2a6fb0, #2a6fb0 10px, #1c4a78 10px, #1c4a78 20px);
-  color: #fff;
-  font-weight: 900;
-  font-size: clamp(15px, 4vh, 20px);
-}
-.bolhas-area { position: relative; flex: 1; width: 100%; min-height: 60px; }
-.bolha {
-  position: absolute;
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  background: var(--verde);
-  font-size: 22px;
-}
+            /* Com uma coluna só (até 3 alvos) o cartão fica deitado: avatar à esquerda */
+            .poder-alvos.uma-coluna { --card-max: 120px; }
+            .poder-alvos.uma-coluna .poder-alvo-btn {
+                flex-direction: row;
+                justify-content: flex-start;
+                gap: 14px;
+                padding: 6px 18px;
+            }
+            .poder-alvos.uma-coluna .alvo-info { align-items: flex-start; flex: 1; }
+        }
 
-/* ---------- Poder: escolha do alvo ---------- */
-.poder-alvos {
-  flex: 1;
-  min-height: 0;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-auto-rows: minmax(52px, 96px);
-  align-content: start;
-  gap: 10px;
-}
-.poder-alvo-btn {
-  min-height: 0;
-  padding: 6px 8px;
-  border-radius: 20px;
-  background: var(--glass-bg);
-  border: 2px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
-  color: var(--text-main);
-  font-size: clamp(13px, 4vh, 20px);
-  font-weight: 900;
-  overflow-wrap: anywhere;
-}
-.poder-alvo-btn.selecionada {
-  background: var(--player-glass);
-  border: 3px solid var(--cor-jogador);
-  color: var(--cor-jogador);
-  box-shadow: 0 15px 35px var(--player-glow);
-}
-.poder-alvo-btn:disabled:not(.selecionada) { opacity: 0.5; filter: grayscale(80%); }
-#alvo-usado-msg { text-align: center; font-weight: 800; color: var(--cor-jogador); }
+        /* Celulares deitados bem baixos (≤ 340px de altura) */
+        @media (orientation: landscape) and (max-height: 340px) {
+            :root { --gap: 6px; }
+            .subtitulo { display: none; }
+        }
 
-/* ---------- Linking ---------- */
-.linking-lista {
-  flex: 1;
-  min-height: 0;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-auto-rows: minmax(48px, 1fr);
-  gap: 8px;
-}
-.linking-item-full {
-  min-height: 0;
-  padding: 6px 12px;
-  border-radius: 18px;
-  background: var(--glass-bg);
-  border: 2px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
-  color: var(--text-main);
-  font-size: clamp(13px, 4vh, 18px);
-  font-weight: 800;
-  overflow-wrap: anywhere;
-}
-.linking-item-full:active:not(:disabled) { transform: scale(0.97); }
-.linking-item-full.correto { background: color-mix(in srgb, var(--verde) 18%, transparent); border-color: var(--verde); color: #0a7a3c; }
-.linking-item-full.incorreto { background: color-mix(in srgb, var(--vermelho) 22%, transparent); border-color: var(--vermelho); }
-.linking-item-full.usado { opacity: 0.35; }
-.linking-item-full:disabled:not(.correto):not(.usado) { opacity: 0.6; }
-.linking-voltar {
-  grid-column: 1 / -1;
-  grid-row: auto;
-  align-self: center;
-  height: 78%;
-  min-height: 0;
-  padding: 6px;
-  border-radius: 14px;
-  background: transparent;
-  border: 2px solid var(--text-muted);
-  color: var(--text-muted);
-  font-weight: 800;
-}
+        /* ===================== SEM PODER ===================== */
+        .sem-poder {
+            margin: auto;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 0 12px;
+        }
+        .sem-poder-icone { font-size: clamp(40px, 16vmin, 72px); line-height: 1; animation: balancar 2.6s ease-in-out infinite; }
+        .sem-poder-titulo { font-size: clamp(18px, 6vmin, 28px); font-weight: 900; }
+        .sem-poder-texto { font-size: clamp(13px, 4vmin, 17px); font-weight: 700; color: var(--text-muted); }
+        @keyframes balancar { 50% { transform: rotate(-8deg) translateY(-4px); } }
 
-/* ---------- Sorting: 3 itens por vez, cada um numa linha (nome | A | B) ---------- */
-.sorting-itens { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 8px; }
-.sorting-item {
-  flex: 1;
-  min-height: 0;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
-  align-items: center;
-  gap: 10px;
-  padding: 6px 12px;
-  border-radius: 20px;
-  background: var(--glass-bg);
-  border: 2px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
-}
-.sorting-item-nome { text-align: left; font-size: clamp(14px, 4.2vh, 20px); font-weight: 900; overflow-wrap: anywhere; }
-.sorting-item-botoes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; height: 100%; padding: 2px 0; }
-.sorting-botao-categoria {
-  min-height: 0;
-  padding: 4px 6px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.85);
-  border: 2px solid var(--glass-border);
-  color: var(--text-main);
-  font-size: clamp(11px, 3.4vh, 16px);
-  font-weight: 800;
-  overflow-wrap: anywhere;
-}
-.sorting-botao-categoria:active:not(:disabled) { transform: scale(0.95); }
-.sorting-botao-categoria:disabled:not(.escolhida) { opacity: 0.4; }
-.sorting-botao-categoria.escolhida { background: var(--player-glass); border-color: var(--cor-jogador); color: var(--cor-jogador); }
-.sorting-item.correto .sorting-botao-categoria.escolhida { background: color-mix(in srgb, var(--verde) 20%, transparent); border-color: var(--verde); color: #0a7a3c; }
-.sorting-item.incorreto .sorting-botao-categoria.escolhida { background: color-mix(in srgb, var(--vermelho) 20%, transparent); border-color: var(--vermelho); color: #b3202f; }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+        }
 
-/* ---------- Pirâmide ---------- */
-.alternativa.errada-piramide {
-  background: color-mix(in srgb, var(--vermelho) 20%, transparent);
-  border-color: var(--vermelho);
-  color: #b3202f;
-  opacity: 0.6;
-}
-
-/* tema da rodada, depois que a porta é decidida */
-.tema-escolhido {
-  font-size: clamp(22px, 8vh, 44px);
-  font-weight: 900;
-  line-height: 1.1;
-  color: var(--cor-jogador);
-  text-shadow: 0 6px 20px var(--player-glow);
-}
-
-/* ---------- "Sua posição" (no lugar do placar, no celular) ---------- */
-.minha-posicao {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  text-align: center;
-  margin: auto;
-}
-.coluna-posicao { display: flex; align-items: center; justify-content: center; }
-.posicao-rotulo {
-  font-size: clamp(10px, 2.8vh, 13px);
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--text-muted);
-}
-.posicao-numero {
-  font-size: clamp(42px, 17vh, 86px);
-  font-weight: 900;
-  line-height: 1;
-  color: var(--cor-jogador);
-  text-shadow: 0 6px 20px var(--player-glow);
-}
-.posicao-pontos {
-  font-size: clamp(16px, 5vh, 26px);
-  font-weight: 800;
-  color: var(--text-main);
-}
-.posicao-diferenca {
-  margin-top: 4px;
-  font-size: clamp(11px, 3.2vh, 15px);
-  font-weight: 700;
-  color: var(--text-muted);
-  max-width: 90%;
-}
-
-/* ---------- Listas: placar, gabarito, posições ---------- */
-.lista-cartoes {
-  list-style: none;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px 8px;
-}
-.lista-cartoes.lista-1col { grid-template-columns: 1fr; }
-.lista-cartoes.lista-gabarito { gap: 6px; }
-.lista-cartoes li {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 6px 12px;
-  border-radius: 12px;
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  font-size: clamp(12px, 3.4vh, 16px);
-  font-weight: 700;
-  text-align: left;
-}
-.lista-cartoes li span:first-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70%; }
-.lista-cartoes li.vencedor { border: 2px solid var(--cor-jogador); color: var(--cor-jogador); font-weight: 900; }
-#linking-gabarito li, #sorting-gabarito li { display: block; white-space: normal; font-weight: 600; font-size: clamp(11px, 3vh, 14px); }
-
-/* ---------- Em pé: o mesmo layout, em uma coluna ---------- */
-@media (orientation: portrait) {
-  .cabecalho { flex-wrap: wrap; }
-  .cabecalho-texto { order: 3; flex-basis: 100%; }
-  .player-identity { max-width: 70%; }
-  .cabecalho > .timer-redondo-mini, .cabecalho > .cabecalho-vazio { margin-left: auto; }
-
-  .tela-entrada { grid-template-columns: 1fr; }
-  .entrada-titulo { text-align: center; margin-bottom: 8px; }
-
-  .animais-grid { grid-template-columns: repeat(2, 1fr); grid-auto-rows: minmax(84px, 1fr); }
-  .alternativas { grid-template-columns: 1fr; grid-auto-rows: minmax(60px, 1fr); }
-  .poder-alvos { grid-template-columns: 1fr 1fr; }
-  .linking-lista { grid-template-columns: 1fr; }
-  .sorting-item { grid-template-columns: 1fr; }
-  .corpo-duas-colunas { grid-template-columns: 1fr; }
-  .lista-cartoes { grid-template-columns: 1fr; }
-  .corpo-duas-colunas { grid-template-columns: 1fr; }
-
-  h2 { font-size: 20px; }
-  .pergunta-texto { font-size: 18px; }
-  .ajuda { font-size: 14px; }
-}
-
-
-    /* ===== só deste arquivo, não existe no jogo ===== */
-    .barra-prototipo {
-      position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%);
-      z-index: 500; display: flex; align-items: center; gap: 10px;
-      padding: 8px 14px; border-radius: 12px;
-      background: rgba(255, 255, 255, 0.94);
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-      font-size: 0.8rem; font-weight: 700; color: var(--text-muted);
-      font-family: "Outfit", system-ui, sans-serif;
-    }
-    .barra-prototipo button {
-      padding: 6px 12px; border: 0; border-radius: 8px;
-      background: #0f172a; color: white; font-weight: 800;
-      font-family: inherit; cursor: pointer;
-    }
+        /* ===== só deste protótipo, não existe no jogo ===== */
+        .barra-prototipo {
+            position: fixed; bottom: 6px; left: 50%; transform: translateX(-50%);
+            z-index: 500; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: center;
+            max-width: 96vw; padding: 5px 8px; border-radius: 10px;
+            background: rgba(15, 23, 42, 0.88); color: #fff;
+            font-size: 11px; font-weight: 700;
+        }
+        .barra-prototipo select, .barra-prototipo button {
+            font: inherit; font-size: 11px; padding: 3px 6px; border-radius: 6px; border: 0;
+        }
+        .barra-prototipo button { background: #fff; color: #0f172a; font-weight: 800; cursor: pointer; }
     </style>
 </head>
 
@@ -827,27 +407,45 @@ input:focus { outline: 2px solid var(--cor-jogador); }
     <div class="ambient-light light-3"></div>
 
     <section id="tela-escolha-alvo" class="tela">
-    <header class="cabecalho">
-      <div class="player-identity glass-panel" data-identidade></div>
-      <div class="cabecalho-texto">
-        <h2 id="alvo-titulo"></h2>
-      </div>
-      <div class="timer-redondo-mini glass-panel">
-        <svg class="timer-anel-mini" viewBox="0 0 120 120">
-          <circle class="anel-fundo-mini" cx="60" cy="60" r="52"></circle>
-          <circle class="anel-progresso-mini" id="anel-alvo" cx="60" cy="60" r="52"></circle>
-        </svg>
-        <span class="timer-numero-mini" id="numero-alvo"></span>
-      </div>
-    </header>
-    <div class="corpo">
-      <div class="poder-alvos" id="alvo-lista"></div>
-      <p class="ajuda oculto" id="alvo-usado-msg"></p>
-    </div>
-  </section>
+        <header class="cabecalho">
+            <div class="player-identity glass-panel" data-identidade></div>
+            <div class="cabecalho-texto">
+                <h2 class="titulo" id="alvo-titulo"></h2>
+                <p class="subtitulo" id="alvo-subtitulo"></p>
+            </div>
+            <div class="timer glass-panel" id="timer-alvo">
+                <svg viewBox="0 0 120 120">
+                    <circle class="anel-fundo" cx="60" cy="60" r="52"></circle>
+                    <circle class="anel" id="anel-alvo" cx="60" cy="60" r="52"></circle>
+                </svg>
+                <span class="timer-numero" id="numero-alvo"></span>
+            </div>
+        </header>
 
-    <div class="barra-prototipo">
-        <span>tela atual · 20s · lista só com nomes</span>
+        <div class="corpo">
+            <div class="poder-alvos" id="alvo-lista"></div>
+
+            <div class="sem-poder oculto" id="sem-poder">
+                <span class="sem-poder-icone">🤷</span>
+                <p class="sem-poder-titulo">Você não tem poder nesta pergunta</p>
+                <p class="sem-poder-texto">Aguarde os outros escolherem o alvo…</p>
+            </div>
+        </div>
+    </section>
+
+    <div class="barra-prototipo" id="barra-prototipo">
+        <span>Protótipo:</span>
+        <select id="proto-poder">
+            <option value="congelamento">🧊 Congelamento</option>
+            <option value="mordicadores">😬 Mordicadores</option>
+            <option value="nevoa">🌫️ Névoa</option>
+            <option value="aposta">🎲 Aposta</option>
+            <option value="">Sem poder</option>
+        </select>
+        <select id="proto-qtd">
+            <option value="8">8 alvos</option><option value="7">7</option><option value="6">6</option><option value="5">5</option>
+            <option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option>
+        </select>
         <button id="botao-repetir" type="button">Repetir</button>
     </div>
 
@@ -855,90 +453,232 @@ input:focus { outline: 2px solid var(--cor-jogador); }
     (() => {
         'use strict';
 
-        // ---- igual ao public/controlador/controlador.js ----
+        // ===================== DADOS =====================
+        // cor = cor de destaque do poder no cartão escolhido
         const POR_TIPO = {
-            congelamento: { icone: "🧊", nome: "Congelamento" },
-            gosma:        { icone: "🟢", nome: "Gosma" },
-            bombolha:     { icone: "🫧", nome: "Bombolha" },
-            mordicadores: { icone: "😬", nome: "Mordicadores" }
+            // Só os poderes que precisam de alvo (Escudo e Festa de Pontos não passam por aqui)
+            congelamento: { icone: '🧊', nome: 'Congelamento', cor: '#38bdf8' },
+            mordicadores: { icone: '😬', nome: 'Mordicadores', cor: '#f59e0b' },
+            nevoa:        { icone: '🌫️', nome: 'Névoa',        cor: '#64748b' },
+            aposta:       { icone: '🎲', nome: 'Aposta',       cor: '#10b981', aFavor: true }
         };
-        const CIRCUNFERENCIA_TIMER_MINI = 326.7;
+        const CIRCUNFERENCIA = 326.7;
+        const TEMPO_ESCOLHA_ALVO_MS = 20000; // tempoEscolhaAlvoMs em server/sala.js
 
-        const EU = { nome: 'Rodrigo', avatar: { emoji: '🐼', cor: '#1e90ff' } };
+        const EU = { id: '2', nome: 'Rodrigo', pontos: 1355, avatar: { emoji: '🐼', cor: '#1e90ff' } };
 
-        function criarEl(tag, classe, texto) {
-            const el = document.createElement(tag);
-            el.className = classe;
-            el.textContent = texto;
-            return el;
+        // Outros jogadores da sala (máx. 8). Pontos servem para mostrar a posição.
+        const OUTROS = [
+            { id: '1', nome: 'Vítoria',   pontos: 1480, avatar: { emoji: '🦊', cor: '#ff4757' } },
+            { id: '3', nome: 'Cecília',   pontos: 1290, avatar: { emoji: '🐸', cor: '#2ed573' } },
+            { id: '4', nome: 'Adamor',    pontos: 1290, avatar: { emoji: '🦁', cor: '#ffa502' } },
+            { id: '5', nome: 'Catarina',  pontos: 1105, avatar: { emoji: '🦄', cor: '#9b59b6' } },
+            { id: '6', nome: 'Guilherme', pontos:  980, avatar: { emoji: '🐧', cor: '#00d2d3' } },
+            { id: '7', nome: 'Mônica',    pontos:  845, avatar: { emoji: '🐙', cor: '#ff6b81' } },
+            { id: '8', nome: 'Luciana',   pontos:  720, avatar: { emoji: '🐯', cor: '#ff7f50' } },
+            { id: '2', nome: 'Rodrigo',   pontos: 1355, avatar: { emoji: '🐼', cor: '#1e90ff' } }
+        ];
+
+        // ===================== AUXILIARES =====================
+        const $ = id => document.getElementById(id);
+        function el(tag, classe, texto) {
+            const e = document.createElement(tag);
+            if (classe) e.className = classe;
+            if (texto !== undefined) e.textContent = texto;
+            return e;
         }
+
+        const listaEl = $('alvo-lista');
+        const tituloEl = $('alvo-titulo');
+        const subtituloEl = $('alvo-subtitulo');
+        let escolhido = null;
+        let intervaloTimer = null;
 
         function preencherIdentidade() {
             document.documentElement.style.setProperty('--cor-jogador', EU.avatar.cor);
-            for (const el of document.querySelectorAll('[data-identidade]')) {
-                el.innerHTML = '';
-                el.append(
-                    criarEl('span', 'player-avatar', EU.avatar.emoji),
-                    criarEl('span', 'player-name', EU.nome)
-                );
-            }
+            document.querySelectorAll('[data-identidade]').forEach(e => {
+                e.replaceChildren(el('span', 'player-avatar', EU.avatar.emoji), el('span', 'player-name', EU.nome));
+            });
         }
 
-        let intervaloTimer = null;
-        function iniciarContadorRedondo(anelEl, numeroEl, tempoLimiteMs) {
+        function iniciarTimer(ms, aoAcabar) {
             clearInterval(intervaloTimer);
+            const anel = $('anel-alvo'), numero = $('numero-alvo'), modulo = $('timer-alvo');
             const inicio = Date.now();
             const atualizar = () => {
                 const decorrido = Date.now() - inicio;
-                const restanteMs = Math.max(0, tempoLimiteMs - decorrido);
-                anelEl.style.strokeDashoffset = String(CIRCUNFERENCIA_TIMER_MINI * Math.min(1, decorrido / tempoLimiteMs));
-                const restanteS = Math.ceil(restanteMs / 1000);
-                numeroEl.textContent = String(restanteS);
-                const modulo = anelEl.closest('.timer-redondo-mini');
-                if (modulo) modulo.classList.toggle('urgente', restanteS <= 3 && restanteS > 0);
-                if (restanteMs <= 0) clearInterval(intervaloTimer);
+                const resta = Math.max(0, ms - decorrido);
+                anel.style.strokeDashoffset = String(CIRCUNFERENCIA * Math.min(1, decorrido / ms));
+                const s = Math.ceil(resta / 1000);
+                numero.textContent = String(s);
+                modulo.classList.toggle('urgente', s <= 3 && s > 0 && !escolhido);
+                if (resta <= 0) { clearInterval(intervaloTimer); aoAcabar(); }
             };
             atualizar();
             intervaloTimer = setInterval(atualizar, 100);
         }
 
-        const TEMPO_ESCOLHA_ALVO_MS = 20000;   // tempoEscolhaAlvoMs em server/sala.js
-        const MEU_PODER = 'congelamento';
-        const ALVOS = [
-            { id: '1', nome: 'Vítoria' },
-            { id: '3', nome: 'Cecília' },
-            { id: '4', nome: 'Adamor' },
-            { id: '5', nome: 'Catarina' },
-            { id: '6', nome: 'Guilherme' },
-            { id: '7', nome: 'Mônica' },
-            { id: '8', nome: 'Luciana' }
-        ];
+        // Colunas/linhas pela orientação e quantidade (sempre cabe sem rolar)
+        function ajustarGrade() {
+            const cards = [...listaEl.children];
+            const n = cards.length;
+            if (!n) return;
+            const emPe = matchMedia('(orientation: portrait)').matches;
+            const colunas = emPe ? (n <= 3 ? 1 : 2) : (n <= 4 ? n : Math.ceil(n / 2));
+            const linhas = Math.ceil(n / colunas);
+            listaEl.style.setProperty('--colunas', colunas);
+            listaEl.style.setProperty('--linhas', linhas);
 
-        const alvoListaEl = document.getElementById('alvo-lista');
-        const alvoTituloEl = document.getElementById('alvo-titulo');
-        const anelAlvoEl = document.getElementById('anel-alvo');
-        const numeroAlvoEl = document.getElementById('numero-alvo');
+            // Centraliza a última linha incompleta
+            const resto = n % colunas;
+            cards.forEach(c => (c.style.gridColumn = ''));
+            if (resto) cards[n - resto].style.gridColumn = `${colunas - resto + 1} / span 2`;
 
-        function montar() {
-            preencherIdentidade();
-            alvoListaEl.innerHTML = '';
-            const info = POR_TIPO[MEU_PODER] || { icone: '❔', nome: MEU_PODER };
-            alvoTituloEl.textContent = `Usar ${info.icone} ${info.nome} em quem?`;
-            ALVOS.forEach((alvo) => {
-                const btn = document.createElement('button');
-                btn.className = 'poder-alvo-btn';
-                btn.textContent = alvo.nome;
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.poder-alvo-btn').forEach(b => b.disabled = true);
-                    btn.classList.add('selecionada');
-                });
-                alvoListaEl.appendChild(btn);
-            });
-            iniciarContadorRedondo(anelAlvoEl, numeroAlvoEl, TEMPO_ESCOLHA_ALVO_MS);
+            // Cartão deitado (avatar ao lado do nome) só quando há uma coluna só
+            listaEl.classList.toggle('uma-coluna', colunas === 1);
         }
 
-        document.getElementById('botao-repetir').addEventListener('click', montar);
-        montar();
+        // ===================== TELA =====================
+        function montarTitulo(info) {
+            tituloEl.classList.remove('confirmado');
+            const chip = el('span', 'poder-chip');
+            chip.id = 'poder-chip';
+            chip.append(el('span', 'poder-icone', info.icone), document.createTextNode(info.nome));
+            if (info.aFavor) {
+                tituloEl.replaceChildren('Fazer ', chip, ' em quem?');
+                subtituloEl.textContent = 'Se acertar, você ganha +75';
+            } else {
+                tituloEl.replaceChildren('Usar ', chip, ' em quem?');
+                subtituloEl.textContent = 'Toque em um jogador';
+            }
+        }
+
+        function criarCartao(alvo, posicao, info) {
+            const btn = el('button', 'poder-alvo-btn');
+            btn.type = 'button';
+            btn.style.setProperty('--cor-alvo', alvo.avatar.cor);
+
+            const av = el('span', 'alvo-avatar', alvo.avatar.emoji);
+            if (posicao === 1) av.append(el('span', 'alvo-coroa', '👑'));
+            av.append(el('span', 'alvo-efeito', info.icone));
+
+            const infoEl = el('span', 'alvo-info');
+            infoEl.append(
+                el('span', 'alvo-nome', alvo.nome),
+                el('span', 'alvo-pontos', `${posicao}º · ${alvo.pontos} pts`)
+            );
+
+            btn.append(av, infoEl);
+            btn.setAttribute('aria-label', `${alvo.nome}, ${posicao}º lugar, ${alvo.pontos} pontos`);
+            btn.addEventListener('click', () => escolher(btn, alvo, info));
+            return btn;
+        }
+
+        function escolher(btn, alvo, info) {
+            if (escolhido) return;
+            escolhido = alvo;
+
+            listaEl.querySelectorAll('.poder-alvo-btn').forEach(b => {
+                b.disabled = true;
+                if (b !== btn) b.classList.add('apagado');
+            });
+            btn.classList.add('selecionada');
+            if (navigator.vibrate) navigator.vibrate(30);
+
+            voarIcone(info.icone, $('poder-chip'), btn.querySelector('.alvo-avatar'));
+
+            tituloEl.classList.add('confirmado');
+            if (info.aFavor) {
+                tituloEl.replaceChildren(`${info.icone} Você apostou em ${alvo.nome}!`);
+                subtituloEl.textContent = 'Se acertar, você ganha +75';
+            } else {
+                tituloEl.replaceChildren(`${info.icone} ${info.nome} vai para ${alvo.nome}!`);
+                subtituloEl.textContent = 'Olhe para a TV';
+            }
+
+            // Aqui o controlador.js emite a escolha para o servidor (socket)
+            console.log('Alvo escolhido:', alvo.id, alvo.nome, 'poder:', info.nome);
+        }
+
+        // Ícone sai do chip do título e cai em arco no avatar do alvo
+        function voarIcone(icone, origemEl, destinoEl) {
+            if (!origemEl || !destinoEl) return;
+            const o = origemEl.getBoundingClientRect();
+            const d = destinoEl.getBoundingClientRect();
+            const voo = el('span', 'voo', icone);
+            const tam = Math.max(22, d.height * 0.5);
+            voo.style.fontSize = `${tam}px`;
+            document.body.append(voo);
+
+            const x0 = o.left + o.width / 2 - tam / 2, y0 = o.top + o.height / 2 - tam / 2;
+            const x1 = d.left + d.width / 2 - tam / 2, y1 = d.top + d.height / 2 - tam / 2;
+            const arco = Math.min(120, Math.abs(x1 - x0) * 0.3 + 40);
+            const frames = [];
+            for (let i = 0; i <= 10; i++) {
+                const t = i / 10;
+                const x = x0 + (x1 - x0) * t;
+                const y = y0 + (y1 - y0) * t - Math.sin(Math.PI * t) * arco;
+                frames.push({ transform: `translate(${x}px, ${y}px) rotate(${t * 360}deg) scale(${1 + Math.sin(Math.PI * t) * 0.4})`, opacity: t > .9 ? 0 : 1 });
+            }
+            voo.animate(frames, { duration: 480, easing: 'cubic-bezier(.4,0,.6,1)', fill: 'forwards' }).onfinish = () => voo.remove();
+        }
+
+        function tempoEsgotado() {
+            if (escolhido) return;
+            listaEl.querySelectorAll('.poder-alvo-btn').forEach(b => { b.disabled = true; b.classList.add('apagado'); });
+            tituloEl.replaceChildren('Tempo esgotado!');
+            subtituloEl.textContent = 'O poder não foi usado nesta pergunta';
+        }
+
+        function montar(poder, qtd) {
+            escolhido = null;
+            preencherIdentidade();
+            listaEl.replaceChildren();
+
+            const info = POR_TIPO[poder];
+            const semPoder = !info;
+            $('sem-poder').classList.toggle('oculto', !semPoder);
+            listaEl.classList.toggle('oculto', semPoder);
+
+            if (semPoder) {
+                tituloEl.replaceChildren('Escolha de alvo');
+                subtituloEl.textContent = '';
+                iniciarTimer(TEMPO_ESCOLHA_ALVO_MS, () => {});
+                return;
+            }
+
+            document.documentElement.style.setProperty('--cor-poder', info.cor);
+            montarTitulo(info);
+
+            // Posição considera a sala toda (inclusive eu), com empate
+            const sala = OUTROS.some(j => j.id === EU.id) ? OUTROS : [EU, ...OUTROS];
+            const alvos = OUTROS.slice(0, qtd).sort((a, b) => b.pontos - a.pontos || a.nome.localeCompare(b.nome));
+            alvos.forEach((alvo, i) => {
+                const posicao = sala.filter(j => j.pontos > alvo.pontos).length + 1;
+                const card = criarCartao(alvo, posicao, info);
+                card.style.animationDelay = `${i * 45}ms`;
+                listaEl.append(card);
+            });
+
+            ajustarGrade();
+            iniciarTimer(TEMPO_ESCOLHA_ALVO_MS, tempoEsgotado);
+        }
+
+        // Reorganiza ao girar o celular
+        matchMedia('(orientation: portrait)').addEventListener('change', ajustarGrade);
+        window.addEventListener('resize', ajustarGrade);
+
+        // ===== protótipo =====
+        const params = new URLSearchParams(location.search);
+        if (params.has('limpo')) $('barra-prototipo').classList.add('oculto');
+        const protoPoder = $('proto-poder'), protoQtd = $('proto-qtd');
+        if (params.has('poder')) protoPoder.value = params.get('poder');
+        if (params.has('qtd')) protoQtd.value = params.get('qtd');
+        const remontar = () => montar(protoPoder.value, Number(protoQtd.value));
+        protoPoder.addEventListener('change', remontar);
+        protoQtd.addEventListener('change', remontar);
+        $('botao-repetir').addEventListener('click', remontar);
+        remontar();
     })();
     </script>
 </body>
