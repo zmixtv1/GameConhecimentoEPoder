@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+    <title>Controle Mobile - Pirâmide (como está hoje)</title>
+
+    <!--
+      RETRATO DO QUE EXISTE HOJE, não uma proposta.
+
+      Esta é a tela `tela-piramide` do celular, o lado do jogador no finale.
+
+      Mostra em que degrau você está, a categoria, a pergunta e as 4
+      alternativas. Diferente do resto da partida, aqui ERRAR NÃO TRAVA: a
+      alternativa errada fica marcada e desabilitada, e você escolhe outra até
+      acertar. Clique numa errada para ver.
+
+      Não existe cronômetro nesta tela - a Pirâmide é corrida livre, cada um no
+      próprio ritmo, e o cabeçalho tem um espaço vazio onde nas outras telas
+      fica o timer.
+
+      A marcação sai de public/controlador/index.html (seção #tela-piramide), o estilo é
+      o public/controlador/controlador.css copiado inteiro, e a montagem
+      reproduz o trecho correspondente de public/controlador/controlador.js.
+
+      O controle é pensado para o celular DEITADO: o layout é dimensionado em vh
+      para caber em ~336px de altura sem rolar. Em pé, o CSS vira uma coluna.
+    -->
+
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+
+    <style>
+/* ===================================================================
+   cópia integral de public/controlador/controlador.css
+   =================================================================== */
+/* Controle do celular - mesmo visual do teste2.html (tema claro, vidro, Outfit),
+   mas ocupando a tela inteira e pensado pro celular DEITADO: o layout é
+   dimensionado em vh pra caber em ~336px de altura sem rolar. Em pé, o mesmo
+   layout vira uma coluna (ver @media portrait no fim). */
+
+:root {
+  color-scheme: light;
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --verde: #2ed573;
+  --vermelho: #ff4757;
+  --violet: #9b59b6;
+  --glass-bg: rgba(255, 255, 255, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.9);
+  --glass-shadow: 0 6px 14px rgba(0, 0, 0, 0.07);
+
+  /* cor do animal do jogador - o controlador.js troca o valor assim que o
+     jogador escolhe o animal; azul é só o padrão antes disso */
+  --cor-jogador: #1e90ff;
+  --player-glass: color-mix(in srgb, var(--cor-jogador) 15%, transparent);
+  --player-glow: color-mix(in srgb, var(--cor-jogador) 30%, transparent);
+
+  /* respiro até a borda física da tela (soma a área segura de notch/cantos) */
+  --pad-t: max(8px, env(safe-area-inset-top));
+  --pad-r: max(12px, env(safe-area-inset-right));
+  --pad-b: max(8px, env(safe-area-inset-bottom));
+  --pad-l: max(12px, env(safe-area-inset-left));
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: "Outfit", system-ui, sans-serif;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html { height: 100%; }
+
+body {
+  height: 100vh;
+  height: 100dvh; /* acompanha a barra do navegador aparecendo/sumindo */
+  display: flex;
+  flex-direction: column;
+  padding: var(--pad-t) var(--pad-r) var(--pad-b) var(--pad-l);
+  background-color: var(--bg);
+  background-image: radial-gradient(#cbd5e1 2px, transparent 2px);
+  background-size: 40px 40px;
+  background-position: center;
+  color: var(--text-main);
+  overflow: hidden;
+  position: relative;
+}
+
+.oculto { display: none !important; }
+
+/* ---------- Fundo e vidro ---------- */
+.ambient-light {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  z-index: 0;
+  pointer-events: none;
+  animation: fluidMotion 20s infinite alternate ease-in-out;
+}
+.light-1 { top: -10%; left: -10%; width: 60vmax; height: 60vmax; background: rgba(226, 232, 240, 0.8); }
+.light-2 { bottom: -20%; right: -10%; width: 50vmax; height: 50vmax; background: rgba(186, 230, 253, 0.5); animation-delay: -5s; }
+.light-3 { top: 30%; left: 30%; width: 35vmax; height: 35vmax; background: rgba(255, 255, 255, 0.9); animation-delay: -10s; }
+@keyframes fluidMotion {
+  0% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(15px, 20px) scale(1.05); }
+  66% { transform: translate(-15px, 10px) scale(0.95); }
+  100% { transform: translate(25px, -15px) scale(1.02); }
+}
+
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 2px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+/* ---------- Estrutura de cada tela: cabeçalho / corpo / rodapé ---------- */
+.tela {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(6px, 2vh, 12px);
+}
+
+.cabecalho {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+}
+.cabecalho-texto {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+}
+.cabecalho-vazio { flex: none; width: 56px; } /* equilibra o cabeçalho quando não há timer */
+
+.corpo {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* folga pras sombras dos botões não serem cortadas pelo scroll; a margem
+     negativa devolve o espaço, então o layout fica igual */
+  padding: 2px 6px 8px;
+  margin: -2px -6px -8px;
+}
+.corpo-centro { align-items: center; justify-content: center; text-align: center; }
+.corpo-duas-colunas { display: grid; grid-template-columns: 1.5fr 1fr; gap: 12px; align-content: start; }
+
+.rodape {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.rodape .ajuda { flex: none; max-width: 40%; text-align: left; }
+.rodape-duplo > button { flex: 1; }
+
+/* ---------- Texto ---------- */
+h1 { font-size: clamp(26px, 9vh, 42px); font-weight: 900; color: var(--cor-jogador); line-height: 1.05; }
+h2 { font-size: clamp(15px, 4.6vh, 22px); font-weight: 800; line-height: 1.2; }
+h3 { font-size: clamp(12px, 3.4vh, 15px); font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+.pergunta-texto { font-size: clamp(14px, 4.2vh, 20px); font-weight: 800; text-shadow: 0 4px 15px rgba(255, 255, 255, 0.8); }
+.ajuda { color: var(--text-muted); font-size: clamp(11px, 3vh, 14px); }
+.ajuda-mini { font-size: clamp(10px, 2.6vh, 12px); margin-bottom: 2px; }
+.categoria { text-transform: uppercase; letter-spacing: 0.1em; color: var(--violet); font-weight: 800; }
+.cabecalho .categoria { font-size: clamp(10px, 2.8vh, 13px); letter-spacing: 0.05em; }
+.ajuda-mini .categoria { margin-left: 0.3em; }
+.pontos { font-size: clamp(14px, 4vh, 20px); font-weight: 800; color: var(--cor-jogador); }
+.erro { color: var(--vermelho); min-height: 1.2em; font-size: 14px; }
+
+/* ---------- Botões e campos ---------- */
+button { font: inherit; border: none; cursor: pointer; }
+button:disabled { cursor: default; }
+
+.btn-primario,
+.btn-vidro {
+  width: 100%;
+  padding: clamp(10px, 3.4vh, 16px) 18px;
+  border-radius: 18px;
+  font-size: clamp(15px, 4vh, 20px);
+  font-weight: 900;
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s;
+}
+.btn-primario { background: var(--cor-jogador); color: #fff; box-shadow: 0 10px 25px var(--player-glow); }
+.btn-vidro {
+  background: var(--glass-bg);
+  border: 2px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  color: var(--text-main);
+}
+.btn-primario:active:not(:disabled),
+.btn-vidro:active:not(:disabled) { transform: scale(0.96); }
+.btn-primario:disabled { opacity: 0.5; box-shadow: none; }
+
+label { display: block; text-align: left; color: var(--text-muted); font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+input[type="text"] {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  padding: 10px 14px;
+  font-size: 18px;
+  font-weight: 700;
+  border-radius: 14px;
+  border: 2px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--text-main);
+  text-transform: uppercase;
+  user-select: text;
+}
+input#campo-nome { text-transform: none; }
+input:focus { outline: 2px solid var(--cor-jogador); }
+
+/* ---------- Identidade do jogador (animal + nome) ---------- */
+.player-identity {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px 6px 10px;
+  border-radius: 100px;
+  max-width: 40%;
+  transition: all 0.3s ease;
+}
+.player-identity:empty { visibility: hidden; }
+.player-avatar { font-size: 26px; line-height: 1; filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.15)); }
+.player-name {
+  font-size: 15px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 110px;
+}
+/* a pílula acende quando o jogador trava a resposta */
+.player-identity.voted {
+  background: var(--player-glass);
+  border-color: var(--cor-jogador);
+  box-shadow: 0 10px 25px var(--player-glow);
+}
+.player-identity.voted .player-name { color: var(--cor-jogador); }
+
+/* ---------- Timer circular (igual ao da TV, menor) ---------- */
+.timer-redondo-mini {
+  position: relative;
+  flex: none;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+.timer-anel-mini {
+  position: absolute;
+  inset: -5px;
+  width: calc(100% + 10px);
+  height: calc(100% + 10px);
+  transform: rotate(-90deg);
+}
+.anel-fundo-mini { fill: none; stroke: rgba(255, 255, 255, 0.8); stroke-width: 9; }
+.anel-progresso-mini {
+  fill: none;
+  stroke: var(--text-main);
+  stroke-width: 9;
+  stroke-linecap: round;
+  stroke-dasharray: 326.7;
+  transition: stroke 0.3s ease;
+}
+.timer-numero-mini { font-size: 22px; font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums; }
+.timer-redondo-mini.urgente { animation: pulsoUrgente 1s ease-in-out infinite; border-color: var(--vermelho); }
+.timer-redondo-mini.urgente .anel-progresso-mini { stroke: var(--vermelho); }
+.timer-redondo-mini.urgente .timer-numero-mini { color: var(--vermelho); }
+@keyframes pulsoUrgente { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+
+/* ---------- Aviso pra girar o celular (só em pé) ---------- */
+.aviso-girar {
+  display: none;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 6px 6px 6px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--glass-border);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  position: relative;
+  z-index: 2;
+}
+.aviso-girar button { width: 28px; height: 28px; border-radius: 50%; background: rgba(15, 23, 42, 0.08); color: var(--text-muted); font-size: 13px; }
+@media (orientation: portrait) {
+  .aviso-girar:not(.dispensado) { display: flex; }
+}
+
+/* ---------- Banner "fulano usou um poder em você" ---------- */
+#aviso-atingido {
+  position: fixed;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  max-width: 90vw;
+  padding: 8px 18px;
+  border-radius: 100px;
+  background: rgba(255, 71, 87, 0.95);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+/* ---------- Pop-up de reiniciar o jogo ---------- */
+.modal-fundo {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--pad-t) var(--pad-r) var(--pad-b) var(--pad-l);
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.modal-card {
+  width: 100%;
+  max-width: 460px;
+  padding: clamp(14px, 5vh, 24px) clamp(16px, 5vw, 28px);
+  border-radius: 24px;
+  background: var(--surface);
+  border: 2px solid var(--glass-border);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  animation: popModal 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes popModal {
+  from { opacity: 0; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1); }
+}
+.modal-card .ajuda { margin-top: 6px; }
+.modal-botoes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: clamp(10px, 3vh, 18px);
+}
+
+/* ---------- Aviso de conexão perdida / reconectando ---------- */
+.aviso-conexao {
+  position: fixed;
+  left: 50%;
+  bottom: max(10px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 60;
+  max-width: 92vw;
+  padding: 8px 18px;
+  border-radius: 100px;
+  background: rgba(15, 23, 42, 0.92);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  animation: pulsoConexao 1.4s ease-in-out infinite;
+}
+@keyframes pulsoConexao { 0%, 100% { opacity: 1; } 50% { opacity: 0.65; } }
+
+/* ---------- Entrada ---------- */
+.tela-entrada {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  align-content: center;
+  gap: 8px 28px;
+  overflow-y: auto;
+  padding: 2px 6px 8px;
+  margin: -2px -6px -8px;
+}
+.entrada-titulo { text-align: left; }
+.entrada-titulo .ajuda { margin-top: 8px; }
+.entrada-form .btn-primario { margin-top: 4px; }
+
+/* ---------- Escolha de animal ---------- */
+.animais-grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 1fr;
+  gap: 10px;
+}
+.animal-btn {
+  --cor-animal: var(--cor-jogador);
+  min-height: 0;
+  padding: 4px;
+  border-radius: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  background: var(--glass-bg);
+  border: 2px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  color: var(--text-main);
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.animal-btn:active:not(:disabled) { transform: scale(0.95); }
+.animal-emoji { font-size: clamp(28px, 11vh, 54px); line-height: 1; filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.15)); }
+.animal-nome { font-size: clamp(11px, 3.4vh, 15px); font-weight: 800; }
+.animal-dono { font-size: clamp(9px, 2.6vh, 12px); font-weight: 600; color: var(--text-muted); max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.animal-btn.meu {
+  background: color-mix(in srgb, var(--cor-animal) 15%, transparent);
+  border: 3px solid var(--cor-animal);
+  box-shadow: 0 15px 35px color-mix(in srgb, var(--cor-animal) 30%, transparent);
+}
+.animal-btn:disabled:not(.meu) { opacity: 0.45; filter: grayscale(80%); }
+
+/* ---------- Espera no lobby ---------- */
+.lista-jogadores {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+.lista-jogadores li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px 6px 8px;
+  border-radius: 100px;
+  background: var(--glass-bg);
+  border: 2px solid var(--glass-border);
+  font-weight: 800;
+  font-size: 15px;
+  min-width: 0;
+}
+.lista-jogadores li .nome { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lista-jogadores li.sem-animal { opacity: 0.55; }
+
+/* ---------- Portas, poderes e respostas: grade 2x2 de botões de vidro ---------- */
+.alternativas {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-auto-rows: 1fr;
+  gap: clamp(8px, 2.6vh, 16px);
+}
+.alternativa {
+  min-height: 0;
+  padding: 8px 14px;
+  border-radius: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  overflow-wrap: anywhere;
+  font-size: clamp(15px, 4.8vh, 24px);
+  font-weight: 900;
+  color: var(--text-main);
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 2px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.alternativa:active:not(:disabled) {
+  transform: scale(0.96);
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: inset 2px 2px 8px rgba(0, 0, 0, 0.05);
+}
+/* a escolhida vira vidro neon na cor do animal do jogador */
+.alternativa.selecionada {
+  background: var(--player-glass);
+  border: 3px solid var(--cor-jogador);
+  box-shadow: 0 15px 35px var(--player-glow);
+  color: var(--cor-jogador);
+}
+/* as outras apagam */
+.alternativa:disabled:not(.selecionada):not(.correta-revelada):not(.errada-piramide) {
+  opacity: 0.5;
+  filter: grayscale(80%);
+}
+
+/* respostas da pergunta entram girando */
+#alternativas .alternativa {
+  opacity: 0;
+  animation: flipIn 0.55s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+#alternativas .alternativa:nth-child(1) { animation-delay: 0s; }
+#alternativas .alternativa:nth-child(2) { animation-delay: 0.08s; }
+#alternativas .alternativa:nth-child(3) { animation-delay: 0.16s; }
+#alternativas .alternativa:nth-child(4) { animation-delay: 0.24s; }
+@keyframes flipIn {
+  from { opacity: 0; transform: perspective(800px) rotateY(-90deg); }
+  to { opacity: 1; transform: perspective(800px) rotateY(0deg); }
+}
+/* quando a TV revela a resposta certa, pisca em verde por cima de tudo */
+#alternativas .alternativa.correta-revelada {
+  opacity: 1;
+  border-color: var(--verde);
+  background: color-mix(in srgb, var(--verde) 15%, var(--glass-bg));
+  color: #0a7a3c;
+  animation: piscaVerde 0.5s ease-in-out 3;
+}
+@keyframes piscaVerde {
+  0%, 100% { box-shadow: 0 0 0 1px var(--verde); }
+  50% { box-shadow: 0 0 14px 3px rgba(46, 213, 115, 0.4); }
+}
+
+.opcao-garantir-porta {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 6px 12px;
+  border-radius: 14px;
+  background: var(--glass-bg);
+  border: 2px solid var(--glass-border);
+  font-size: clamp(11px, 3vh, 14px);
+  text-align: left;
+}
+.opcao-garantir-porta input { flex: none; width: 20px; height: 20px; accent-color: var(--cor-jogador); }
+
+/* ---------- Pergunta ---------- */
+.fase-leitura {
+  margin: auto;
+  text-align: center;
+  font-size: clamp(16px, 5vh, 24px);
+  font-weight: 800;
+  color: var(--cor-jogador);
+}
+.fase-leitura #contagem-leitura { display: block; font-size: clamp(40px, 22vh, 80px); line-height: 1; }
+.area-alternativas { position: relative; flex: 1; min-height: 0; display: flex; }
+
+/* ---------- Efeitos dos Jogos de Poder (cobrem as respostas) ---------- */
+.obstrucao {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 22px;
+  background: rgba(15, 23, 42, 0.9);
+  text-align: center;
+}
+.obstrucao-mensagem { color: #fff; font-weight: 800; font-size: clamp(13px, 3.8vh, 18px); }
+.obstrucao-toque {
+  width: 100%;
+  padding: clamp(12px, 5vh, 24px);
+  border-radius: 16px;
+  background: repeating-linear-gradient(135deg, #2a6fb0, #2a6fb0 10px, #1c4a78 10px, #1c4a78 20px);
+  color: #fff;
+  font-weight: 900;
+  font-size: clamp(15px, 4vh, 20px);
+}
+.bolhas-area { position: relative; flex: 1; width: 100%; min-height: 60px; }
+.bolha {
+  position: absolute;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--verde);
+  font-size: 22px;
+}
+
+/* ---------- Poder: escolha do alvo ---------- */
+.poder-alvos {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: minmax(52px, 96px);
+  align-content: start;
+  gap: 10px;
+}
+.poder-alvo-btn {
+  min-height: 0;
+  padding: 6px 8px;
+  border-radius: 20px;
+  background: var(--glass-bg);
+  border: 2px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  color: var(--text-main);
+  font-size: clamp(13px, 4vh, 20px);
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+.poder-alvo-btn.selecionada {
+  background: var(--player-glass);
+  border: 3px solid var(--cor-jogador);
+  color: var(--cor-jogador);
+  box-shadow: 0 15px 35px var(--player-glow);
+}
+.poder-alvo-btn:disabled:not(.selecionada) { opacity: 0.5; filter: grayscale(80%); }
+#alvo-usado-msg { text-align: center; font-weight: 800; color: var(--cor-jogador); }
+
+/* ---------- Linking ---------- */
+.linking-lista {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-auto-rows: minmax(48px, 1fr);
+  gap: 8px;
+}
+.linking-item-full {
+  min-height: 0;
+  padding: 6px 12px;
+  border-radius: 18px;
+  background: var(--glass-bg);
+  border: 2px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  color: var(--text-main);
+  font-size: clamp(13px, 4vh, 18px);
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+.linking-item-full:active:not(:disabled) { transform: scale(0.97); }
+.linking-item-full.correto { background: color-mix(in srgb, var(--verde) 18%, transparent); border-color: var(--verde); color: #0a7a3c; }
+.linking-item-full.incorreto { background: color-mix(in srgb, var(--vermelho) 22%, transparent); border-color: var(--vermelho); }
+.linking-item-full.usado { opacity: 0.35; }
+.linking-item-full:disabled:not(.correto):not(.usado) { opacity: 0.6; }
+.linking-voltar {
+  grid-column: 1 / -1;
+  grid-row: auto;
+  align-self: center;
+  height: 78%;
+  min-height: 0;
+  padding: 6px;
+  border-radius: 14px;
+  background: transparent;
+  border: 2px solid var(--text-muted);
+  color: var(--text-muted);
+  font-weight: 800;
+}
+
+/* ---------- Sorting: 3 itens por vez, cada um numa linha (nome | A | B) ---------- */
+.sorting-itens { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 8px; }
+.sorting-item {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: var(--glass-bg);
+  border: 2px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+.sorting-item-nome { text-align: left; font-size: clamp(14px, 4.2vh, 20px); font-weight: 900; overflow-wrap: anywhere; }
+.sorting-item-botoes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; height: 100%; padding: 2px 0; }
+.sorting-botao-categoria {
+  min-height: 0;
+  padding: 4px 6px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 2px solid var(--glass-border);
+  color: var(--text-main);
+  font-size: clamp(11px, 3.4vh, 16px);
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+.sorting-botao-categoria:active:not(:disabled) { transform: scale(0.95); }
+.sorting-botao-categoria:disabled:not(.escolhida) { opacity: 0.4; }
+.sorting-botao-categoria.escolhida { background: var(--player-glass); border-color: var(--cor-jogador); color: var(--cor-jogador); }
+.sorting-item.correto .sorting-botao-categoria.escolhida { background: color-mix(in srgb, var(--verde) 20%, transparent); border-color: var(--verde); color: #0a7a3c; }
+.sorting-item.incorreto .sorting-botao-categoria.escolhida { background: color-mix(in srgb, var(--vermelho) 20%, transparent); border-color: var(--vermelho); color: #b3202f; }
+
+/* ---------- Pirâmide ---------- */
+.alternativa.errada-piramide {
+  background: color-mix(in srgb, var(--vermelho) 20%, transparent);
+  border-color: var(--vermelho);
+  color: #b3202f;
+  opacity: 0.6;
+}
+
+/* tema da rodada, depois que a porta é decidida */
+.tema-escolhido {
+  font-size: clamp(22px, 8vh, 44px);
+  font-weight: 900;
+  line-height: 1.1;
+  color: var(--cor-jogador);
+  text-shadow: 0 6px 20px var(--player-glow);
+}
+
+/* ---------- "Sua posição" (no lugar do placar, no celular) ---------- */
+.minha-posicao {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  text-align: center;
+  margin: auto;
+}
+.coluna-posicao { display: flex; align-items: center; justify-content: center; }
+.posicao-rotulo {
+  font-size: clamp(10px, 2.8vh, 13px);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+}
+.posicao-numero {
+  font-size: clamp(42px, 17vh, 86px);
+  font-weight: 900;
+  line-height: 1;
+  color: var(--cor-jogador);
+  text-shadow: 0 6px 20px var(--player-glow);
+}
+.posicao-pontos {
+  font-size: clamp(16px, 5vh, 26px);
+  font-weight: 800;
+  color: var(--text-main);
+}
+.posicao-diferenca {
+  margin-top: 4px;
+  font-size: clamp(11px, 3.2vh, 15px);
+  font-weight: 700;
+  color: var(--text-muted);
+  max-width: 90%;
+}
+
+/* ---------- Listas: placar, gabarito, posições ---------- */
+.lista-cartoes {
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 8px;
+}
+.lista-cartoes.lista-1col { grid-template-columns: 1fr; }
+.lista-cartoes.lista-gabarito { gap: 6px; }
+.lista-cartoes li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 12px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  font-size: clamp(12px, 3.4vh, 16px);
+  font-weight: 700;
+  text-align: left;
+}
+.lista-cartoes li span:first-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70%; }
+.lista-cartoes li.vencedor { border: 2px solid var(--cor-jogador); color: var(--cor-jogador); font-weight: 900; }
+#linking-gabarito li, #sorting-gabarito li { display: block; white-space: normal; font-weight: 600; font-size: clamp(11px, 3vh, 14px); }
+
+/* ---------- Em pé: o mesmo layout, em uma coluna ---------- */
+@media (orientation: portrait) {
+  .cabecalho { flex-wrap: wrap; }
+  .cabecalho-texto { order: 3; flex-basis: 100%; }
+  .player-identity { max-width: 70%; }
+  .cabecalho > .timer-redondo-mini, .cabecalho > .cabecalho-vazio { margin-left: auto; }
+
+  .tela-entrada { grid-template-columns: 1fr; }
+  .entrada-titulo { text-align: center; margin-bottom: 8px; }
+
+  .animais-grid { grid-template-columns: repeat(2, 1fr); grid-auto-rows: minmax(84px, 1fr); }
+  .alternativas { grid-template-columns: 1fr; grid-auto-rows: minmax(60px, 1fr); }
+  .poder-alvos { grid-template-columns: 1fr 1fr; }
+  .linking-lista { grid-template-columns: 1fr; }
+  .sorting-item { grid-template-columns: 1fr; }
+  .corpo-duas-colunas { grid-template-columns: 1fr; }
+  .lista-cartoes { grid-template-columns: 1fr; }
+  .corpo-duas-colunas { grid-template-columns: 1fr; }
+
+  h2 { font-size: 20px; }
+  .pergunta-texto { font-size: 18px; }
+  .ajuda { font-size: 14px; }
+}
+
+
+    /* ===== só deste arquivo, não existe no jogo ===== */
+    .barra-prototipo {
+      position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%);
+      z-index: 500; display: flex; align-items: center; gap: 10px;
+      padding: 8px 14px; border-radius: 12px;
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+      font-size: 0.8rem; font-weight: 700; color: var(--text-muted);
+      font-family: "Outfit", system-ui, sans-serif;
+    }
+    .barra-prototipo button {
+      padding: 6px 12px; border: 0; border-radius: 8px;
+      background: #0f172a; color: white; font-weight: 800;
+      font-family: inherit; cursor: pointer;
+    }
+    </style>
+</head>
+
+<body>
+    <div class="ambient-light light-1"></div>
+    <div class="ambient-light light-2"></div>
+    <div class="ambient-light light-3"></div>
+
+    <section id="tela-piramide" class="tela">
+    <header class="cabecalho">
+      <div class="player-identity glass-panel" data-identidade></div>
+      <div class="cabecalho-texto">
+        <p class="ajuda ajuda-mini"><span id="piramide-degrau">Degrau 0 de 0</span> · <span class="categoria" id="piramide-categoria"></span></p>
+        <h2 class="pergunta-texto" id="piramide-pergunta"></h2>
+      </div>
+      <div class="cabecalho-vazio"></div>
+    </header>
+    <div class="corpo corpo-grade">
+      <div class="alternativas" id="piramide-alternativas"></div>
+    </div>
+  </section>
+
+    <div class="barra-prototipo">
+        <span>tela atual · sem timer · erro não trava, tente de novo</span>
+        <button id="botao-repetir" type="button">Repetir</button>
+    </div>
+
+    <script>
+    (() => {
+        'use strict';
+
+        // ---- igual ao public/controlador/controlador.js ----
+        const POR_TIPO = {
+            congelamento: { icone: "🧊", nome: "Congelamento" },
+            gosma:        { icone: "🟢", nome: "Gosma" },
+            bombolha:     { icone: "🫧", nome: "Bombolha" },
+            mordicadores: { icone: "😬", nome: "Mordicadores" }
+        };
+        const CIRCUNFERENCIA_TIMER_MINI = 326.7;
+
+        const EU = { nome: 'Rodrigo', avatar: { emoji: '🐼', cor: '#1e90ff' } };
+
+        function criarEl(tag, classe, texto) {
+            const el = document.createElement(tag);
+            el.className = classe;
+            el.textContent = texto;
+            return el;
+        }
+
+        function preencherIdentidade() {
+            document.documentElement.style.setProperty('--cor-jogador', EU.avatar.cor);
+            for (const el of document.querySelectorAll('[data-identidade]')) {
+                el.innerHTML = '';
+                el.append(
+                    criarEl('span', 'player-avatar', EU.avatar.emoji),
+                    criarEl('span', 'player-name', EU.nome)
+                );
+            }
+        }
+
+        let intervaloTimer = null;
+        function iniciarContadorRedondo(anelEl, numeroEl, tempoLimiteMs) {
+            clearInterval(intervaloTimer);
+            const inicio = Date.now();
+            const atualizar = () => {
+                const decorrido = Date.now() - inicio;
+                const restanteMs = Math.max(0, tempoLimiteMs - decorrido);
+                anelEl.style.strokeDashoffset = String(CIRCUNFERENCIA_TIMER_MINI * Math.min(1, decorrido / tempoLimiteMs));
+                const restanteS = Math.ceil(restanteMs / 1000);
+                numeroEl.textContent = String(restanteS);
+                const modulo = anelEl.closest('.timer-redondo-mini');
+                if (modulo) modulo.classList.toggle('urgente', restanteS <= 3 && restanteS > 0);
+                if (restanteMs <= 0) clearInterval(intervaloTimer);
+            };
+            atualizar();
+            intervaloTimer = setInterval(atualizar, 100);
+        }
+
+        const TOTAL_DEGRAUS = 10;     // piramideDegraus em server/sala.js
+        const MEU_DEGRAU = 3;
+        const CATEGORIA = 'Ciência e Natureza';
+        const PERGUNTA = 'Qual é o metal líquido à temperatura ambiente?';
+        const ALTERNATIVAS = ['Chumbo', 'Mercúrio', 'Alumínio', 'Estanho'];
+        const CORRETA = 1;
+
+        const piramideDegrauEl = document.getElementById('piramide-degrau');
+        const piramideCategoriaEl = document.getElementById('piramide-categoria');
+        const piramidePerguntaEl = document.getElementById('piramide-pergunta');
+        const piramideAlternativasEl = document.getElementById('piramide-alternativas');
+
+        function montar() {
+            preencherIdentidade();
+            piramideDegrauEl.textContent = `Degrau ${MEU_DEGRAU} de ${TOTAL_DEGRAUS}`;
+            piramideCategoriaEl.textContent = CATEGORIA;
+            piramidePerguntaEl.textContent = PERGUNTA;
+            piramideAlternativasEl.innerHTML = '';
+            ALTERNATIVAS.forEach((alt, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'alternativa';
+                btn.textContent = alt;
+                btn.addEventListener('click', () => {
+                    if (btn.disabled) return;
+                    // responderPiramide(): marca como selecionada e manda pro servidor
+                    btn.classList.add('selecionada');
+
+                    // o servidor responde, e o celular reage a uma de duas mensagens:
+                    setTimeout(() => {
+                        if (i === CORRETA) {
+                            // progressoPiramide: sobe o degrau; depois vem novaPerguntaPiramide
+                            document.querySelectorAll('#piramide-alternativas .alternativa')
+                                .forEach(b => b.disabled = true);
+                            piramideDegrauEl.textContent = `Degrau ${MEU_DEGRAU + 1} de ${TOTAL_DEGRAUS}`;
+                        } else {
+                            // respostaErradaPiramide: tira a seleção, pinta de errada e trava
+                            // SÓ esta alternativa. As outras continuam clicáveis.
+                            btn.classList.remove('selecionada');
+                            btn.classList.add('errada-piramide');
+                            btn.disabled = true;
+                        }
+                    }, 180);
+                });
+                piramideAlternativasEl.appendChild(btn);
+            });
+        }
+
+        document.getElementById('botao-repetir').addEventListener('click', montar);
+        montar();
+    })();
+    </script>
+</body>
+
+</html>
