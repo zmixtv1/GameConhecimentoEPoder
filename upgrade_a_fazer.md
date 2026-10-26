@@ -24,10 +24,32 @@ em `public/` saber com o que se parecer.
       Depois de cada tema vem um desafio — **alternando fixo**: Ligação no tema 1,
       Classificação no tema 2, Ligação no 3, Classificação no 4, Ligação no 5. São 5
       desafios por partida. Só então a Pirâmide.
-      **Efeito no tempo de jogo:** cada pergunta custa hoje 53s fixos (10s de escolha de
-      poder + 20s de alvo + 8s de leitura + 15s de resposta), mais revelação e mais a
-      animação nova do passo 5 (até 16s). Com 15 perguntas e 5 desafios de 30s, a partida
-      sai de uns 15 minutos para uns 30. Vale medir antes de testar com gente na sala.
+      **A fase de poder passa a ser intercalada.** Hoje toda pergunta tem escolha de poder
+      e de alvo, o que dá 15 rituais de 30s por partida — 7min30 só escolhendo, e a coisa
+      enjoa. Passa a acontecer só na **2ª e na 3ª pergunta de cada tema**:
+
+      ```
+      TEMA 1   q1 limpa   q2 PODER   q3 PODER
+      TEMA 2   q4 limpa   q5 PODER   q6 PODER
+      TEMA 3   q7 limpa   q8 PODER   q9 PODER
+      TEMA 4  q10 limpa  q11 PODER  q12 PODER
+      TEMA 5  q13 limpa  q14 PODER  q15 PODER
+      ```
+
+      São 10 fases de poder em vez de 15. A primeira pergunta de cada tema abre limpa, o
+      que resolve de saída o problema da primeira pergunta da partida: no começo ninguém
+      tem pontos e não há em quem mirar com critério.
+      O ritmo fica igual em todo tema, e as cotas continuam fazendo sentido: cada jogador
+      tem 8 usos limitados na partida (Escudo 3 + Aposta 3 + Pedágio 2) para 10 fases,
+      então ainda sobra espaço para o Congelamento, os Mordicadores e a Névoa, que são
+      ilimitados. Com menos fases que isso, os ilimitados virariam conteúdo morto.
+      A Festa de Pontos continua cabendo: os temas 2 e 4 têm fase de poder nas perguntas
+      5 e 6, e 11 e 12.
+
+      **Efeito no tempo de jogo:** uma pergunta sem poder custa 23s fixos (8s de leitura +
+      15s de resposta); uma com poder custa 53s, mais a animação do passo 5 (até 16s).
+      Com 15 perguntas, 10 fases de poder e 5 desafios de 30s, a partida sai de uns 15
+      minutos para uns 27. Vale medir antes de testar com gente na sala.
 
 - [ ] **Sortear pergunta por dificuldade.** O campo `dificuldade` já existe em todas as
       344 perguntas, mas o servidor **não usa**: `sortearPergunta()` (server/perguntas.js)
@@ -194,7 +216,8 @@ public/controlador/controlador.js:12 e `montarObstrucao()` em
 public/controlador/controlador.js:1038.
 
 - [ ] **Tela de "quem atacou quem" (passo 5).** Fase nova entre `escolha_alvo` e a
-      abertura da tela da pergunta, só para descontrair. A TV mostra, na ordem em que os
+      abertura da tela da pergunta, só para descontrair. Só acontece nas perguntas que têm
+      fase de poder — a 2ª e a 3ª de cada tema. A TV mostra, na ordem em que os
       jogadores entraram na sala (`this.jogadores` é um Map, então já itera nessa ordem),
       cada um usando seu poder: um projétil sai do pod de quem atacou e acerta o pod do
       alvo. Ataque que bate em quem usou Escudo é rebatido, com animação de proteção.
@@ -231,6 +254,16 @@ public/controlador/controlador.js:1038.
       **Números:** 2 toques por bloco. Cada ataque acumulado soma +1 toque em todos os
       blocos. Hoje são 3 toques para liberar tudo, então quem já decidiu passa a pagar
       menos que hoje e quem está em dúvida paga mais.
+      Referência visual: `teste-gelo.html`, que confirma a regra e resolve o detalhe de
+      como o gelo some. O primeiro toque abre um buraco de ~38px no ponto onde o dedo
+      encostou e deixa o resto do gelo translúcido; o segundo faz o buraco crescer até
+      cobrir o bloco e o gelo é removido; **o terceiro toque é o que responde**
+      (`if (hits >= 2) { lockAnswer(btn); return; }`). Solta flocos de neve ao longo da
+      borda que derrete.
+      **Custo de tempo:** as duas animações levam 450ms e 750ms, e durante elas os toques
+      são ignorados (`btn.dataset.busy`). Então derreter uma alternativa custa no mínimo
+      **1,2 segundo** dos 15 de resposta, mesmo para quem toca rápido — e esse é o custo
+      real do poder, mais que os toques em si.
 
 - [ ] **Névoa (novo).** As alternativas do alvo aparecem borradas e vão clareando.
       **Números:** limpa sozinha em 5s. Cada ataque acumulado soma +1s. O borrão **não**

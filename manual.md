@@ -26,7 +26,8 @@ Pirâmide. Passa a ser:
 | Temas | 3 | **5** |
 | Perguntas | 9 | **15** |
 | Desafios (Ligação/Classificação) | 2, juntos no fim | **5, um depois de cada tema** |
-| Duração estimada | ~15 min | ~30 min |
+| Duração estimada | ~15 min | ~27 min |
+| Fases de escolha de poder | 1 por pergunta (15) | **10, só na 2ª e 3ª de cada tema** |
 
 Os temas passam a ter **nível fixo e crescente**: 2 fáceis, 2 médios e 1 difícil. As 3
 perguntas de um tema saem todas do nível daquele tema.
@@ -190,6 +191,10 @@ maioria. Serve para quando você é o único que sabe muito de um assunto.
 
 Em **10 segundos**, você escolhe qual poder quer usar nesta pergunta. Ou nenhum, se
 preferir guardar.
+
+**Nem toda pergunta tem essa fase.** A primeira pergunta de cada tema abre limpa, sem
+sabotagem — inclusive a primeira da partida inteira, quando ninguém tem pontos e não há
+em quem mirar com critério. Os poderes entram na 2ª e na 3ª pergunta de cada tema.
 
 ### Passo 3 — Escolher o alvo
 
