@@ -148,10 +148,27 @@ em `public/` saber com o que se parecer.
       o pulo em vez de só redesenhar a posição.
       Com um acerto por bloco, toda resposta certa vira movimento na tela — não existe
       estado intermediário invisível para resolver.
-      A definir: para qual bloco o jogador vai quando sobe, já que o andar de cima tem um
-      bloco a menos. No protótipo os passos são coreografados na mão
-      (`{a:5,p:2}, {a:4,p:1}, ...`), então a regra de escolha do bloco precisa existir —
-      manter a posição relativa, ou ocupar o primeiro bloco livre.
+      **Para qual bloco o jogador vai ao subir:** mantém a posição relativa no andar.
+      No protótipo os passos são coreografados na mão (`{a:5,p:2}, {a:4,p:1}, ...`); a
+      regra automática é:
+
+      ```
+      // andar N tem N blocos, índices 0..N-1
+      relativa = bloco / (N - 1)                  // 0 = ponta esquerda, 1 = ponta direita
+      blocoNovo = arredondar(relativa × (N - 2))  // N-1 blocos no andar de cima
+      ```
+
+      Quem está na ponta continua na ponta e quem está no meio sobe reto, em vez de
+      deslizar de lado. Andar 2 para andar 1 é sempre o bloco 0, que é o topo.
+      **Empate de bloco:** como o andar de cima tem um bloco a menos, dois jogadores
+      vizinhos podem cair no mesmo destino — do andar 8, os blocos 3 e 4 vão os dois para
+      o bloco 3 do andar 7. Quem chegar primeiro fica; o segundo pega o bloco livre mais
+      próximo.
+      **Capacidade:** o andar 2 tem 2 blocos e o 3 tem 3, então teoricamente 8 jogadores
+      não cabem lá em cima. Na prática a corrida acaba antes — simulei e o primeiro
+      colocado chega ao topo com os outros ainda espalhados entre os andares 2 e 6. Mesmo
+      assim, se faltar bloco o desenho deve empilhar os bonecos no mesmo bloco, nunca
+      segurar a subida de alguém: geometria não pode travar progresso.
 
 ---
 
