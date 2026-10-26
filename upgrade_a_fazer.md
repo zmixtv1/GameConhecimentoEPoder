@@ -128,37 +128,30 @@ em `public/` saber com o que se parecer.
       em vez do 8. Dá no mesmo, porque é uniforme, mas se preferir que um empate geral
       comece na base é só zerar os pulos quando MAIOR == MENOR.
 
-- [ ] **Subir um andar a cada 2 acertos.** A largada acima vale só para o começo; dali em
-      diante quem sobe é quem acerta. Hoje cada acerto sobe um degrau
-      (`progresso.posicao++`, server/sala.js:775). Passa a contar acertos e subir um andar
-      **a cada 2**:
-
-      ```
-      acertos        += 1 a cada resposta certa
-      andaresSubidos  = parte inteira de (acertos / 2)
-      andarAtual      = andarDeLargada - andaresSubidos
-      venceu          quando andarAtual chega em 1 (o topo)
-      ```
-
+- [ ] **Cada acerto pula um bloco.** A largada acima vale só para o começo; dali em diante
+      quem sobe é quem acerta, **um bloco por resposta certa**. No protótipo, bloco e
+      andar são o mesmo movimento: o panda vai do andar 6 ao 1 em cinco passos, um andar
+      por passo. Então a regra de subida que o jogo já tem está certa
+      (`progresso.posicao++`, server/sala.js:775) — o que muda é só o total, de 10 degraus
+      para 8 andares, e de onde cada um parte.
       Errar continua como já é hoje e **não** custa andar: a alternativa errada entra em
       `tentativasErradas`, a pergunta continua na tela e o jogador tenta de novo até
       acertar (server/sala.js:769-772). O custo de errar é tempo, não posição — é a única
       fase da partida em que isso vale.
-      Quantas respostas certas cada um precisa, com a largada proposta: **6 para quem
-      larga no andar 4** (3 andares × 2) e **14 para quem larga na base** (7 × 2). A
-      proporção é a mesma de antes; o que dobra é a duração do finale, e com ela o tempo
-      de tela da corrida.
+      Quantas respostas certas cada um precisa, com a largada proposta: **3 para quem
+      larga no andar 4** e **7 para quem larga na base**.
 
 - [ ] **Animação da corrida na TV.** Os bonecos sobem de andar em andar enquanto a
       corrida acontece, como o panda faz em `teste-piramide.html` — é o que deixa a mesa
       ver quem vai ganhar. O servidor já transmite `progressoPiramide` a cada acerto, para
       todos e para a TV (server/sala.js:776-778), então o gancho existe; falta a TV animar
-      em vez de só redesenhar.
-      **Buraco a resolver:** com 2 acertos por andar, **metade das respostas certas não
-      produz movimento nenhum** na tela. Quem acabou de acertar a primeira das duas fica
-      visualmente parado, e a TV parece travada bem no momento mais tenso da partida.
-      Vale mostrar esse meio-passo de algum jeito — o boneco agachando para pular, uma
-      marca no bloco, o andar seguinte acendendo.
+      o pulo em vez de só redesenhar a posição.
+      Com um acerto por bloco, toda resposta certa vira movimento na tela — não existe
+      estado intermediário invisível para resolver.
+      A definir: para qual bloco o jogador vai quando sobe, já que o andar de cima tem um
+      bloco a menos. No protótipo os passos são coreografados na mão
+      (`{a:5,p:2}, {a:4,p:1}, ...`), então a regra de escolha do bloco precisa existir —
+      manter a posição relativa, ou ocupar o primeiro bloco livre.
 
 ---
 
