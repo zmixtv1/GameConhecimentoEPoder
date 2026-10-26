@@ -91,20 +91,23 @@ em `public/` saber com o que se parecer.
       no topo e o 8 na base, e a largada calculada assim:
 
       ```
+      MAX_PULOS = 4     // teto: ninguém pula mais que 4 andares
       MENOR = menor pontuação da sala
       MAIOR = maior pontuação da sala
 
       para cada jogador:
-        tPontos = (pontos - MENOR) / (MAIOR - MENOR)   // 0 a 1; se todos empatados, 0
+        tPontos = (pontos - MENOR) / (MAIOR - MENOR)   // 0 a 1
         tLugar  = (n - 1 - colocação) / (n - 1)        // 1 = primeiro, 0 = último
         t       = 0,5 × tPontos + 0,5 × tLugar
-        andar   = 8 - arredondar(4 × t^1,5)
+        pulos   = arredondar(MAX_PULOS × t^1,5)        // 0 a 4
+        andar   = 8 - pulos                            // 8 = base, 4 = o mais alto
       ```
 
       Três decisões embutidas, cada uma resolvendo um problema:
-      1. **Altura máxima 4** de 8 andares puxa o campo todo para baixo: o primeiro larga
+      1. **Teto de 4 pulos** em 8 andares puxa o campo todo para baixo: o primeiro larga
          no meio da pirâmide, não perto do topo. Precisa de 3 acertos contra 7 do último
-         — vantagem real, mas bem menor que os 2 contra 10 de hoje.
+         — vantagem real, mas bem menor que os 2 contra 10 de hoje. Pelas simulações,
+         só o primeiro colocado chega no teto; o resto fica entre 0 e 3 pulos.
       2. **Expoente 1,5** faz a vantagem crescer devagar no meio da tabela e acelerar só
          perto do topo, em vez de distribuir linearmente.
       3. **Metade pontos, metade colocação.** Só com pontos (min-max puro), um jogador
@@ -117,6 +120,13 @@ em `public/` saber com o que se parecer.
       (`for (blocoIndice = 0; blocoIndice < andarAtual; ...)` no protótipo), então o topo
       cabe 1 jogador e a base cabe 8. Empate de pontos cai no mesmo andar e precisa de
       `posicaoNoAndar` diferente; se faltar bloco, o excedente desce um andar.
+      Nas simulações nenhum cenário estourou a capacidade de um andar.
+
+      **Detalhe dos empates:** jogadores com a mesma pontuação compartilham a colocação,
+      então largam no mesmo andar — que é o certo. Um efeito colateral: se a sala inteira
+      empatar, `tPontos` vale 0 mas `tLugar` vale 1 para todos, e todos largam no andar 7
+      em vez do 8. Dá no mesmo, porque é uniforme, mas se preferir que um empate geral
+      comece na base é só zerar os pulos quando MAIOR == MENOR.
 
 ---
 
