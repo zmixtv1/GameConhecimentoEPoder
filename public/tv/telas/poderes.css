@@ -1,0 +1,167 @@
+/* Tela "quem atacou quem": aparece depois da escolha de alvo e antes da
+   pergunta, um momento por jogador que usou poder. Referências visuais:
+   teste/teste-poderes.html e teste/teste-poderes-festaDePontos.html. */
+
+#tela-animacao-poderes {
+  max-width: none;
+  width: 100%;
+  min-height: calc(100vh - 80px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8vh;
+  position: relative;
+  overflow: hidden; /* o confete e o ataque que cai não criam barra de rolagem */
+}
+
+#tela-animacao-poderes .poderes-banner {
+  min-height: 1.6em;
+  padding: clamp(14px, 2vh, 26px) clamp(28px, 4vw, 56px);
+  border-radius: 60px;
+  font-size: clamp(22px, 2.6vw, 40px);
+  font-weight: 900;
+  color: var(--ink);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-align: center;
+  max-width: 92vw;
+  opacity: 0;
+  transform: translateY(-40px) scale(0.85);
+  transition: opacity 0.4s ease, transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+              box-shadow 0.4s ease, border-color 0.4s ease;
+}
+#tela-animacao-poderes .poderes-banner.mostrar {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  background: #fff;
+  border-color: var(--cor-poder, var(--glass-border));
+  box-shadow: 0 25px 60px color-mix(in srgb, var(--cor-poder, #000) 35%, transparent);
+}
+#tela-animacao-poderes .nome-poder {
+  display: inline-block;
+  font-size: 1.2em;
+  color: var(--cor-poder, var(--ink));
+  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--cor-poder, #000) 40%, transparent));
+}
+
+#tela-animacao-poderes .poderes-dock {
+  max-width: 100%;
+  gap: 22px;
+}
+/* maior que no pódio da pergunta: o emoji do efeito cobre o bicho e o nome
+   fica visível embaixo dele */
+#tela-animacao-poderes .player-pod {
+  width: 172px;
+  height: 204px;
+  justify-content: flex-start;
+  padding-top: 40px;
+}
+#tela-animacao-poderes .player-avatar { font-size: 76px; }
+
+/* quem está usando o poder agora dá um pulinho */
+#tela-animacao-poderes .player-pod.usando {
+  transform: translateY(-24px) scale(1.12);
+  border-color: var(--cor-poder, var(--cor-jogador));
+  box-shadow: 0 18px 40px color-mix(in srgb, var(--cor-poder, #000) 35%, transparent);
+}
+
+/* ---- o projétil que voa de um pod ao outro ---- */
+#tela-animacao-poderes .projetil-poder {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-size: 60px;
+  line-height: 1;
+  z-index: 60;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+/* ---- o emoji grande por cima de quem foi atingido ---- */
+#tela-animacao-poderes .status-overlay {
+  position: absolute;
+  top: 38%; /* centro do bicho, não do cartão */
+  left: 50%;
+  font-size: 80px;
+  line-height: 1;
+  z-index: 20;
+  pointer-events: none;
+  opacity: 0.88;
+  transform: translate(-50%, -50%) scale(0);
+  animation: statusEntra 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+#tela-animacao-poderes .status-overlay.segundo { top: 22%; left: 78%; font-size: 46px; }
+#tela-animacao-poderes .status-overlay.terceiro { top: 22%; left: 22%; font-size: 46px; }
+@keyframes statusEntra {
+  to { transform: translate(-50%, -50%) scale(1); }
+}
+
+/* ---- os efeitos, que acumulam no alvo ---- */
+#tela-animacao-poderes .status-congelamento {
+  border-color: #00d2d3 !important;
+  box-shadow: 0 0 50px rgba(0, 210, 211, 0.6) !important;
+  background: rgba(0, 210, 211, 0.12) !important;
+  animation: tremerFrio 0.15s infinite alternate !important;
+}
+#tela-animacao-poderes .status-mordicadores {
+  border-color: #ff6b81 !important;
+  box-shadow: 0 0 40px rgba(255, 107, 129, 0.5) !important;
+  animation: chacoalhar 0.1s infinite !important;
+}
+/* a Névoa borra o bicho e o nome - só existe durante esta animação */
+#tela-animacao-poderes .status-nevoa {
+  border-color: #94a3b8 !important;
+  box-shadow: 0 0 50px rgba(148, 163, 184, 0.6) !important;
+}
+#tela-animacao-poderes .status-nevoa .player-avatar,
+#tela-animacao-poderes .status-nevoa .player-name {
+  filter: blur(7px) grayscale(50%);
+  transition: filter 0.5s;
+}
+#tela-animacao-poderes .status-escudo {
+  border-color: #3498db !important;
+  box-shadow: 0 0 60px rgba(52, 152, 219, 0.8) !important;
+  animation: flutuarEscudo 1.6s infinite alternate ease-in-out !important;
+}
+#tela-animacao-poderes .status-aposta {
+  border-color: #9b59b6 !important;
+  box-shadow: 0 0 50px rgba(155, 89, 182, 0.6) !important;
+}
+#tela-animacao-poderes .status-festa {
+  border-color: #ff9f43 !important;
+  box-shadow: 0 0 50px rgba(255, 159, 67, 0.6) !important;
+  background: rgba(255, 159, 67, 0.1) !important;
+  animation: pularFesta 0.6s infinite alternate cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}
+
+@keyframes tremerFrio { from { transform: translateX(-4px); } to { transform: translateX(4px); } }
+@keyframes chacoalhar {
+  0% { transform: translate(2px, 2px); }
+  50% { transform: translate(-2px, -2px); }
+  100% { transform: translate(2px, -2px); }
+}
+@keyframes flutuarEscudo { from { transform: translateY(0); } to { transform: translateY(-10px); } }
+@keyframes pularFesta { from { transform: translateY(0) scale(1); } to { transform: translateY(-18px) scale(1.05); } }
+
+/* o impacto no escudo: o pod chacoalha uma vez */
+#tela-animacao-poderes .player-pod.impacto { animation: impactoEscudo 0.3s ease !important; }
+@keyframes impactoEscudo {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-12px); }
+  75% { transform: translateX(12px); }
+}
+
+/* o dado da Aposta gira em cima de quem apostou */
+#tela-animacao-poderes .status-overlay.dado { animation: rolarDado 0.9s cubic-bezier(0.3, 1.4, 0.5, 1) forwards; }
+@keyframes rolarDado {
+  from { transform: translate(-50%, -50%) rotate(-540deg) scale(0.3); }
+  to { transform: translate(-50%, -50%) rotate(0deg) scale(1); }
+}
+
+#tela-animacao-poderes .confete {
+  position: absolute;
+  top: -30px;
+  z-index: 90;
+  pointer-events: none;
+}

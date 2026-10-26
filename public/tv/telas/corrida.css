@@ -1,0 +1,48 @@
+/* A corrida da Pirâmide: os bichos sobem de andar em andar a cada acerto.
+   Referência: teste/teste-piramide-final.html (com a escala de
+   teste/teste-conversao-andar.html: chão = 0, andares 1 a 8). */
+
+#tela-piramide {
+  max-width: none;
+  width: 100%;
+  height: calc(100vh - 80px);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: clamp(8px, 1.6vh, 20px);
+}
+
+#tela-piramide .cr-titulo {
+  justify-self: center;
+  padding: 12px 28px;
+  border-radius: 50px;
+  font-size: clamp(18px, 3vh, 30px);
+  font-weight: 900;
+  color: var(--ink);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid rgba(241, 196, 15, 0.6);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+}
+
+#tela-piramide .cr-area { position: relative; min-height: 0; }
+
+#tela-piramide .cr-status {
+  justify-self: center;
+  min-height: 1.4em;
+  padding: 10px 22px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--ink);
+  font-size: clamp(16px, 2.4vh, 26px);
+  font-weight: 800;
+  text-align: center;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+#tela-piramide .cr-status.vitoria {
+  background: #fff6d6;
+  border: 2px solid #f5c518;
+  color: #8a6a00;
+  animation: crVitoria 0.6s cubic-bezier(0.34, 1.8, 0.64, 1);
+}
+@keyframes crVitoria { 40% { transform: scale(1.12); } }

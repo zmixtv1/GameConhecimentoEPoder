@@ -1,0 +1,138 @@
+/* A pirâmide isométrica, compartilhada pela tela da largada e pela corrida.
+   Chão = posição 0 (na frente da pirâmide), andares 1 a 8, topo dourado.
+   Referências: teste/teste-conversao-andar.html e teste/teste-piramide-final.html.
+   --b (lado do bloco), --bz (altura do andar) e --emoji são calculados pelo
+   JS conforme o espaço, e ficam na tela que contém a pirâmide. */
+
+.p3d-wrap {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  perspective: 2500px;
+}
+
+.p3d-stage {
+  position: absolute;
+  width: 0;
+  height: 0;
+  transform: rotateX(60deg) rotateZ(45deg);
+  transform-style: preserve-3d;
+}
+
+.p3d-bloco {
+  position: absolute;
+  width: var(--b);
+  height: var(--b);
+  background: var(--topo);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  transform-style: preserve-3d;
+}
+.p3d-bloco::before {
+  content: "";
+  position: absolute;
+  width: var(--bz);
+  height: 100%;
+  top: 0;
+  right: calc(var(--bz) * -1);
+  background: var(--lado-d);
+  transform-origin: left;
+  transform: rotateY(90deg);
+}
+.p3d-bloco::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: var(--bz);
+  bottom: calc(var(--bz) * -1);
+  left: 0;
+  background: var(--lado-b);
+  transform-origin: top;
+  transform: rotateX(-90deg);
+}
+/* andares alternando bege claro e escuro; topo dourado */
+.p3d-bloco.claro { --topo: #f6f0e4; --lado-b: #e4d7bf; --lado-d: #d6c6aa; }
+.p3d-bloco.escuro { --topo: #e8dabd; --lado-b: #d6c29f; --lado-d: #c4ad86; }
+.p3d-bloco.topo { --topo: #f5c518; --lado-b: #f4d03f; --lado-d: #d4ac0d; }
+
+.p3d-chao {
+  position: absolute;
+  border-radius: 18%;
+  background: radial-gradient(closest-side, rgba(226, 212, 186, 0.75), rgba(226, 212, 186, 0.35) 70%, rgba(226, 212, 186, 0) 100%);
+}
+
+.p3d-anchors { position: absolute; inset: 0; transform-style: preserve-3d; pointer-events: none; }
+.p3d-anchor { position: absolute; left: 0; top: 0; width: 0; height: 0; }
+
+/* camada 2D por cima de tudo: os bichos nunca somem atrás de um bloco */
+.p3d-overlay { position: fixed; inset: 0; pointer-events: none; z-index: 50; }
+.p3d-overlay > * { position: absolute; left: 0; top: 0; will-change: transform; }
+
+.p3d-rotulo span {
+  display: inline-block;
+  transform: translate(calc(-100% + var(--b) * 0.3), -50%);
+  min-width: 1.9em;
+  padding: 1px 8px;
+  border-radius: 100px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #e2d5bd;
+  color: #6b5a3e;
+  font-size: calc(var(--b) * 0.3);
+  font-weight: 900;
+  text-align: center;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s ease;
+}
+.p3d-rotulo.topo span { background: #fff6d6; border-color: #f5c518; color: #8a6a00; }
+.p3d-rotulo.chao span { background: rgba(241, 245, 249, 0.95); border-color: #cbd5e1; color: #64748b; }
+.p3d-rotulo.pulso span { animation: p3dPulsoRotulo 0.45s ease; }
+@keyframes p3dPulsoRotulo { 40% { transform: translate(calc(-100% + var(--b) * 0.3), -50%) scale(1.3); } }
+
+.p3d-sombra span {
+  display: block;
+  width: calc(var(--b) * 0.55);
+  height: calc(var(--b) * 0.22);
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(40, 30, 15, 0.45) 0%, rgba(40, 30, 15, 0.22) 45%, rgba(40, 30, 15, 0) 72%);
+  transform: translate(-50%, -50%) scale(var(--s, 1));
+  opacity: var(--o, 1);
+}
+
+.p3d-animal .p3d-icone {
+  position: relative;
+  font-size: var(--emoji);
+  line-height: 1;
+  transform: translate(-50%, -85%);
+  filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.3));
+  opacity: 0;
+}
+.p3d-animal.visivel .p3d-icone { animation: p3dAparecer 0.4s cubic-bezier(0.34, 1.8, 0.64, 1) forwards; }
+@keyframes p3dAparecer { from { opacity: 0; scale: 0.3; } to { opacity: 1; scale: 1; } }
+.p3d-animal.ativo .p3d-icone {
+  filter: drop-shadow(0 0 6px #fff) drop-shadow(0 0 12px var(--cor)) drop-shadow(0 4px 4px rgba(0, 0, 0, 0.3));
+}
+/* quem chegou ao topo */
+.p3d-animal.venceu .p3d-icone {
+  filter: drop-shadow(0 0 10px #f1c40f) drop-shadow(0 0 22px #f1c40f) drop-shadow(0 5px 5px rgba(0, 0, 0, 0.3));
+}
+.p3d-trofeu {
+  position: absolute;
+  left: 30%;
+  top: -150%;
+  font-size: calc(var(--emoji) * 0.9);
+  filter: drop-shadow(0 5px 10px rgba(241, 196, 15, 0.8));
+  display: none;
+}
+.p3d-animal.venceu .p3d-trofeu { display: block; animation: p3dAparecer 0.5s cubic-bezier(0.34, 1.8, 0.64, 1); }
+/* quem caiu no meio da partida fica apagado no lugar */
+.p3d-animal.desconectado .p3d-icone { opacity: 0.35 !important; filter: grayscale(1); }
+
+.p3d-particula {
+  width: 9px;
+  height: 9px;
+  margin: -4.5px 0 0 -4.5px;
+  border-radius: 50%;
+  background: var(--cor);
+  box-shadow: 0 0 8px var(--cor), 0 0 2px #fff inset;
+}

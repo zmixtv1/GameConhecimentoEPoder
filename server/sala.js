@@ -1121,6 +1121,7 @@ class Sala {
       precisaAlvo: true,
       tipo,
       alvosPossiveis: this._alvosPossiveis(jogadorId),
+      ...(tipo === "aposta" ? { premioAposta: this.cfg.premioAposta } : {}),
       tempoLimiteMs,
     };
   }
@@ -1265,6 +1266,8 @@ class Sala {
         tempoLimiteMs: this.cfg.tempoLimitePerguntaMs,
         efeitosAtivos: this.efeitosAtivos.get(id) || [],
         escudo: this._resumoEscudo(id),
+        // a Névoa mostra o bônus de velocidade caindo enquanto o borrão some
+        bonusVelocidadeMax: this.cfg.bonusVelocidadeMax,
       });
     }
     this._enviarParaTv("iniciarResposta", { tempoLimiteMs: this.cfg.tempoLimitePerguntaMs });
@@ -1687,6 +1690,7 @@ class Sala {
         avatar: j.avatar,
         posicao: p?.posicao ?? 0, // 0 = chão, piramideAndares = topo
         largada: p?.largada ?? 0,
+        conectado: j.conectado,
       };
     });
   }

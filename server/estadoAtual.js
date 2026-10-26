@@ -76,6 +76,8 @@ function enviarEstadoAoJogador(sala, jogador) {
         tempoLimiteMs: restante(sala, cfg.tempoLimitePerguntaMs, sala.perguntaAtual.iniciadaEm),
         efeitosAtivos: sala.efeitosAtivos.get(id) || [],
         escudo: sala._resumoEscudo(id),
+        bonusVelocidadeMax: cfg.bonusVelocidadeMax,
+        tempoTotalMs: cfg.tempoLimitePerguntaMs, // o bônus conta do tempo inteiro, não do que sobrou
         respostaDada: resposta ? resposta.alternativaIndex : null,
       });
       break;

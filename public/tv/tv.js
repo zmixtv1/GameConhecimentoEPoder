@@ -1,33 +1,37 @@
-const POR_TIPO = {
-  congelamento: { icone: "🧊", nome: "Congelamento" },
-  gosma: { icone: "🟢", nome: "Gosma" },
-  bombolha: { icone: "🫧", nome: "Bombolha" },
-  mordicadores: { icone: "😬", nome: "Mordicadores" },
-};
-
 const telaLobby = document.getElementById("tela-lobby");
 const telaEscolhaPorta = document.getElementById("tela-escolha-porta");
 const telaPortaEscolhida = document.getElementById("tela-porta-escolhida");
 const telaEscolhaPoder = document.getElementById("tela-escolha-poder");
 const telaEscolhaAlvo = document.getElementById("tela-escolha-alvo");
+const telaAnimacaoPoderes = document.getElementById("tela-animacao-poderes");
 const telaPergunta = document.getElementById("tela-pergunta");
 const telaResultado = document.getElementById("tela-resultado");
 const telaLinking = document.getElementById("tela-linking");
 const telaResultadoLinking = document.getElementById("tela-resultado-linking");
 const telaSorting = document.getElementById("tela-sorting");
 const telaResultadoSorting = document.getElementById("tela-resultado-sorting");
+const telaLargada = document.getElementById("tela-largada");
 const telaPiramide = document.getElementById("tela-piramide");
-const telaResultadoPiramide = document.getElementById("tela-resultado-piramide");
 const telaFim = document.getElementById("tela-fim");
 
 const TODAS_AS_TELAS = [
   telaLobby, telaEscolhaPorta, telaPortaEscolhida,
-  telaEscolhaPoder, telaEscolhaAlvo,
+  telaEscolhaPoder, telaEscolhaAlvo, telaAnimacaoPoderes,
   telaPergunta, telaResultado,
   telaLinking, telaResultadoLinking, telaSorting, telaResultadoSorting,
-  telaPiramide, telaResultadoPiramide,
+  telaLargada, telaPiramide,
   telaFim,
 ];
+
+// As telas animadas têm um módulo próprio em telas/*.js. Ao sair de uma
+// delas, o módulo para os timers e animações que ainda estavam rodando.
+const MODULO_DA_TELA = new Map([
+  [telaAnimacaoPoderes, TelaPoderes],
+  [telaResultado, TelaPontuacao],
+  [telaLargada, TelaLargada],
+  [telaPiramide, TelaCorrida],
+  [telaFim, TelaPodio],
+]);
 
 const codigoSalaEl = document.getElementById("codigo-sala");
 const blocoQrcodeEl = document.getElementById("bloco-qrcode");
@@ -55,12 +59,8 @@ const playersDockEl = document.getElementById("players-dock");
 const poderRodadaRotuloEl = document.getElementById("poder-rodada-rotulo");
 const poderTempoEl = document.getElementById("poder-tempo");
 const alvoTempoEl = document.getElementById("alvo-tempo");
-const logPoderesEl = document.getElementById("log-poderes");
-
-const alternativasResultadoEl = document.getElementById("alternativas-resultado");
-const placarEl = document.getElementById("placar");
-const placarFinalEl = document.getElementById("placar-final");
-const progressoProximoEl = document.getElementById("progresso-proximo");
+const poderesBannerEl = document.getElementById("poderes-banner");
+const poderesDockEl = document.getElementById("poderes-dock");
 
 const linkingTemaEl = document.getElementById("linking-tema");
 const linkingTempoEl = document.getElementById("linking-tempo");
@@ -76,14 +76,6 @@ const sortingGabaritoEl = document.getElementById("sorting-gabarito");
 const placarSortingEl = document.getElementById("placar-sorting");
 const progressoContinuarSortingEl = document.getElementById("progresso-continuar-sorting");
 
-const piramideTotalDegrausEl = document.getElementById("piramide-total-degraus");
-const piramideCorridaEl = document.getElementById("piramide-corrida");
-const piramideVencedorTituloEl = document.getElementById("piramide-vencedor-titulo");
-const piramidePosicoesFinaisEl = document.getElementById("piramide-posicoes-finais");
-const progressoContinuarPiramideEl = document.getElementById("progresso-continuar-piramide");
-
-const fimTituloEl = document.getElementById("fim-titulo");
-
 let intervaloTempo = null;
 let intervaloLeitura = null;
 let intervaloPoder = null;
@@ -93,16 +85,24 @@ let intervaloSorting = null;
 let portasAtuais = [];
 let alternativasAtuais = [];
 const CIRCUNFERENCIA_TIMER = 326.7;
-const ICONE_CHECK_SVG =
-  '<svg class="icone-check" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M8 12.5l2.5 2.5L16 9"></path></svg>';
 let sortingCategoriaANome = "";
 let sortingCategoriaBNome = "";
 let progressoContinuarAtivoEl = null;
-let piramideTotalDegraus = 0;
-let jogadoresAtuais = [];
+let jogadoresAtuais = []; // na ordem de entrada na sala
+let telaAtual = telaLobby;
 
 function mostrarTela(tela) {
+  if (telaAtual !== tela) {
+    const modulo = MODULO_DA_TELA.get(telaAtual);
+    if (modulo) modulo.parar();
+  }
+  telaAtual = tela;
   for (const t of TODAS_AS_TELAS) t.classList.toggle("oculto", t !== tela);
+}
+
+// "Tema 2 de 5 — Pergunta 3 de 3"
+function rotuloDaPergunta(msg) {
+  return `Tema ${msg.rodadaAtual} de ${msg.totalRodadas} — Pergunta ${msg.perguntaNaRodada} de ${msg.totalPerguntasPorRodada}`;
 }
 
 // cria um elemento com texto (textContent: o nome do jogador nunca é
@@ -153,13 +153,11 @@ function travarPodDoJogador(jogadorId) {
   }
 }
 
-// A TV mostra só os 5 primeiros (a lista já chega ordenada do maior pro menor),
-// com a posição na frente. Empate = mesma posição.
-const TOP_PLACAR_TV = 5;
-
+// Placar da Ligação e da Classificação: todos os jogadores (a lista já chega
+// ordenada do maior pro menor), com a posição na frente. Empate = mesma posição.
 function renderizarPlacar(lista, ol) {
   ol.innerHTML = "";
-  for (const jogador of lista.slice(0, TOP_PLACAR_TV)) {
+  for (const jogador of lista) {
     const posicao = lista.filter((j) => j.pontos > jogador.pontos).length + 1;
     const li = document.createElement("li");
     li.append(
@@ -234,11 +232,12 @@ function tratarMensagem(msg) {
         const pod = playersDockEl.querySelector(`[data-jogador-id="${jogador.id}"]`);
         if (pod) pod.classList.toggle("desconectado", jogador.conectado === false);
       }
+      if (telaAtual === telaPiramide) TelaCorrida.marcarConexao(msg.jogadores);
       break;
     }
     case "escolhaPorta": {
       mostrarTela(telaEscolhaPorta);
-      rodadaRotuloEl.textContent = `Rodada ${msg.rodadaAtual} de ${msg.totalRodadas}`;
+      rodadaRotuloEl.textContent = `Tema ${msg.rodadaAtual} de ${msg.totalRodadas}`;
       portasAtuais = msg.portas;
       portasEl.innerHTML = "";
       msg.portas.forEach((categoria) => {
@@ -270,9 +269,7 @@ function tratarMensagem(msg) {
     }
     case "escolhaPoder": {
       mostrarTela(telaEscolhaPoder);
-      poderRodadaRotuloEl.textContent =
-        `Rodada ${msg.rodadaAtual} de ${msg.totalRodadas} — Pergunta ${msg.perguntaNaRodada} de ${msg.totalPerguntasPorRodada}`;
-      logPoderesEl.innerHTML = "";
+      poderRodadaRotuloEl.textContent = rotuloDaPergunta(msg);
       iniciarContador(intervaloPoder, poderTempoEl, msg.tempoLimiteMs, (i) => (intervaloPoder = i));
       break;
     }
@@ -282,12 +279,25 @@ function tratarMensagem(msg) {
       iniciarContador(intervaloAlvo, alvoTempoEl, msg.tempoLimiteMs, (i) => (intervaloAlvo = i));
       break;
     }
+    case "animacaoPoderes": {
+      // quem atacou quem, um momento por jogador que usou poder
+      clearInterval(intervaloPoder);
+      clearInterval(intervaloAlvo);
+      mostrarTela(telaAnimacaoPoderes);
+      TelaPoderes.montar(msg, {
+        tela: telaAnimacaoPoderes,
+        banner: poderesBannerEl,
+        dock: poderesDockEl,
+        criarPod,
+      });
+      break;
+    }
     case "novaPergunta": {
+      clearInterval(intervaloPoder);
       clearInterval(intervaloAlvo);
       alternativasAtuais = msg.alternativas;
       mostrarTela(telaPergunta);
-      progressoRodadaEl.textContent =
-        `Rodada ${msg.rodadaAtual} de ${msg.totalRodadas} — Pergunta ${msg.perguntaNaRodada} de ${msg.totalPerguntasPorRodada}`;
+      progressoRodadaEl.textContent = rotuloDaPergunta(msg);
       perguntaCategoriaEl.textContent = msg.categoria;
       perguntaTextoEl.textContent = msg.pergunta;
 
@@ -343,57 +353,14 @@ function tratarMensagem(msg) {
       }
       break;
     }
-    case "usoDePoder": {
-      const info = POR_TIPO[msg.tipo] || { icone: "⚠️", nome: msg.tipo };
-      const li = document.createElement("li");
-      li.textContent = `${info.icone} ${msg.deNome} usou ${info.nome} em ${msg.alvoNome}!`;
-      logPoderesEl.prepend(li);
-      break;
-    }
     case "resultadoPergunta": {
       clearInterval(intervaloTempo);
       mostrarTela(telaResultado);
       // (a TV que reconectou no meio da partida não viu a pergunta: o texto das
       // alternativas vem junto com o resultado)
       if (msg.alternativas) alternativasAtuais = msg.alternativas;
-
-      const respostasPorAlternativa = alternativasAtuais.map(() => []);
-      for (const r of msg.respostasPorJogador || []) {
-        if (r.alternativaIndex !== null && respostasPorAlternativa[r.alternativaIndex]) {
-          const jogador = jogadoresAtuais.find((j) => j.id === r.id);
-          respostasPorAlternativa[r.alternativaIndex].push(jogador || r);
-        }
-      }
-
-      alternativasResultadoEl.innerHTML = "";
-      alternativasAtuais.forEach((texto, i) => {
-        const ehCorreta = i === msg.respostaCorretaIndex;
-        const div = document.createElement("div");
-        div.className = "alternativa-resultado glass-panel" + (ehCorreta ? " correta" : "");
-        div.appendChild(document.createTextNode(texto));
-
-        const avataresCard = document.createElement("div");
-        avataresCard.className = "avatares-resultado";
-        respostasPorAlternativa[i].forEach((jogador, idx) => {
-          const chip = document.createElement("span");
-          chip.className = "avatar-chip";
-          chip.textContent = jogador.avatar ? jogador.avatar.emoji : "❔";
-          chip.style.background = jogador.avatar
-            ? `color-mix(in srgb, ${jogador.avatar.cor} 20%, white)`
-            : "var(--surface)";
-          chip.style.animationDelay = `${1.5 + idx * 0.08}s`;
-          avataresCard.appendChild(chip);
-        });
-        div.appendChild(avataresCard);
-
-        if (ehCorreta) div.insertAdjacentHTML("beforeend", ICONE_CHECK_SVG);
-
-        alternativasResultadoEl.appendChild(div);
-      });
-
-      renderizarPlacar(msg.placar, placarEl);
-      progressoProximoEl.textContent = "Aguardando jogadores confirmarem...";
-      progressoContinuarAtivoEl = progressoProximoEl;
+      TelaPontuacao.montar(msg, { alternativas: alternativasAtuais, jogadores: jogadoresAtuais });
+      progressoContinuarAtivoEl = null; // o rodapé dessa tela é do módulo
       break;
     }
 
@@ -467,45 +434,38 @@ function tratarMensagem(msg) {
       break;
     }
 
+    // a pontuação de cada um virando o andar de largada
+    case "largadaPiramide": {
+      mostrarTela(telaLargada);
+      TelaLargada.montar(msg, jogadoresAtuais);
+      break;
+    }
     case "iniciarPiramide": {
       mostrarTela(telaPiramide);
-      piramideTotalDegraus = msg.totalDegraus;
-      piramideTotalDegrausEl.textContent = `Primeiro a chegar no degrau ${msg.totalDegraus} vence a partida`;
-      renderizarCorridaPiramide(msg.jogadores);
+      TelaCorrida.montar(msg, jogadoresAtuais);
       break;
     }
     case "progressoPiramide": {
-      renderizarCorridaPiramide(msg.jogadores);
+      TelaCorrida.atualizar(msg);
       break;
     }
-    case "resultadoPiramide": {
-      mostrarTela(telaResultadoPiramide);
-      piramideVencedorTituloEl.textContent = `🏆 ${msg.vencedorNome} venceu a partida!`;
-      piramidePosicoesFinaisEl.innerHTML = "";
-      msg.posicoesFinais
-        .slice()
-        .sort((a, b) => b.posicao - a.posicao)
-        .forEach((jogador) => {
-          const li = document.createElement("li");
-          li.append(criarEl("span", "", jogador.nome), criarEl("span", "", `degrau ${jogador.posicao}`));
-          if (jogador.nome === msg.vencedorNome) li.classList.add("vencedor");
-          piramidePosicoesFinaisEl.appendChild(li);
-        });
-      progressoContinuarPiramideEl.textContent = "Aguardando jogadores confirmarem...";
-      progressoContinuarAtivoEl = progressoContinuarPiramideEl;
+    case "vencedorPiramide": {
+      TelaCorrida.vencedor(msg);
       break;
     }
 
     case "progressoContinuar": {
-      if (progressoContinuarAtivoEl) {
+      if (telaAtual === telaResultado) {
+        TelaPontuacao.mostrarProgresso(msg.confirmados, msg.total);
+      } else if (progressoContinuarAtivoEl) {
         progressoContinuarAtivoEl.textContent = `${msg.confirmados} de ${msg.total} confirmaram estar prontos`;
       }
       break;
     }
     case "fimDePartida": {
+      // na TV, só o pódio; o placar das rodadas aparece nos celulares
       mostrarTela(telaFim);
-      fimTituloEl.textContent = msg.vencedorNome ? `🏆 ${msg.vencedorNome} venceu a partida!` : "Fim de partida!";
-      renderizarPlacar(msg.placarFinal, placarFinalEl);
+      TelaPodio.montar(msg);
       break;
     }
     default:
@@ -513,23 +473,10 @@ function tratarMensagem(msg) {
   }
 }
 
-function renderizarCorridaPiramide(jogadores) {
-  piramideCorridaEl.innerHTML = "";
-  for (const jogador of jogadores) {
-    const pct = piramideTotalDegraus > 0 ? (jogador.posicao / piramideTotalDegraus) * 100 : 0;
-    const li = document.createElement("li");
-    li.className = "piramide-jogador";
-    const barraFundo = criarEl("div", "piramide-barra-fundo");
-    const barra = criarEl("div", "piramide-barra");
-    barra.style.width = `${pct}%`;
-    barraFundo.appendChild(barra);
-    li.append(
-      criarEl("span", "piramide-nome", jogador.nome),
-      barraFundo,
-      criarEl("span", "piramide-degrau-texto", `${jogador.posicao}/${piramideTotalDegraus}`)
-    );
-    piramideCorridaEl.appendChild(li);
-  }
-}
+// a pirâmide é desenhada no tamanho da tela: mudou o tamanho, redesenha
+window.addEventListener("resize", () => {
+  if (telaAtual === telaLargada) TelaLargada.redimensionar();
+  if (telaAtual === telaPiramide) TelaCorrida.redimensionar();
+});
 
 iniciarWebSocket();
