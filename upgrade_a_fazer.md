@@ -81,17 +81,25 @@ em `public/` saber com o que se parecer.
 
 ## Pirâmide do Conhecimento
 
-- [ ] **Largada por pontuação, em 8 andares.** Hoje a Pirâmide tem 10 degraus
-      (`piramideDegraus: 10`) e a largada sai do **lugar no placar**, não dos pontos:
+Referência visual: `piramide-final.html`. É uma pirâmide isométrica 3D de **8 níveis**,
+onde o nível N é uma laje de N×N blocos — 204 blocos no total, base 8×8, topo 1×1.
+Os níveis são numerados **0 na base e 7 no topo** (`TOPO = TOTAL_ANDARES - 1`).
+
+Os jogadores **não ficam em blocos discretos**: cada um tem um `side` (borda esquerda ou
+direita da pirâmide) e uma `lane` de 0 a 1 (posição ao longo daquela borda), e
+`posicaoNoNivel(jogador, nivel)` calcula onde ele aparece em qualquer nível a partir
+desses dois valores.
+
+- [ ] **Largada por pontuação.** Hoje a Pirâmide tem 10 degraus (`piramideDegraus: 10`) e
+      a largada sai do **lugar no placar**, não dos pontos:
       `posicaoInicial = alturaMaximaLargada × (total - 1 - rank) / (total - 1)`
       (server/sala.js:1269-1275). Quem lidera por 10 pontos larga igual a quem lidera por
-      1000. E a vantagem é enorme: o primeiro larga no degrau 8 de 10, precisando de 2
-      acertos, contra 10 do último.
-      Passa a ter **8 andares** (referência visual: `teste-piramide.html`), com o andar 1
-      no topo e o 8 na base, e a largada calculada assim:
+      1000, e a vantagem é enorme: o primeiro larga no degrau 8 de 10, precisando de 2
+      acertos contra 10 do último.
+      Passa a ser calculada assim:
 
       ```
-      MAX_PULOS = 4     // teto: ninguém pula mais que 4 andares
+      MAX_PULOS = 4     // teto: ninguém larga mais que 4 níveis acima da base
       MENOR = menor pontuação da sala
       MAIOR = maior pontuação da sala
 
@@ -100,75 +108,56 @@ em `public/` saber com o que se parecer.
         tLugar  = (n - 1 - colocação) / (n - 1)        // 1 = primeiro, 0 = último
         t       = 0,5 × tPontos + 0,5 × tLugar
         pulos   = arredondar(MAX_PULOS × t^1,5)        // 0 a 4
-        andar   = 8 - pulos                            // 8 = base, 4 = o mais alto
+        nível   = pulos                                // 0 = base, 7 = topo
       ```
 
       Três decisões embutidas, cada uma resolvendo um problema:
-      1. **Teto de 4 pulos** em 8 andares puxa o campo todo para baixo: o primeiro larga
-         no meio da pirâmide, não perto do topo. Precisa de 3 acertos contra 7 do último
-         — vantagem real, mas bem menor que os 2 contra 10 de hoje. Pelas simulações,
-         só o primeiro colocado chega no teto; o resto fica entre 0 e 3 pulos.
+      1. **Teto de 4 pulos** em 8 níveis puxa o campo todo para baixo: o primeiro larga no
+         meio da pirâmide, não perto do topo. Precisa de 3 acertos contra 7 do último —
+         vantagem real, mas bem menor que os 2 contra 10 de hoje. Pelas simulações, só o
+         primeiro colocado chega no teto; o resto fica entre 0 e 3 pulos.
       2. **Expoente 1,5** faz a vantagem crescer devagar no meio da tabela e acelerar só
          perto do topo, em vez de distribuir linearmente.
       3. **Metade pontos, metade colocação.** Só com pontos (min-max puro), um jogador
          muito na frente ou muito atrás estica a faixa e achata todo o resto no mesmo
-         andar — simulei e, com um líder disparado, do 2º ao 8º largavam todos juntos na
-         base. A parte da colocação garante que o placar sempre se traduza em andares
-         diferentes, e a parte dos pontos mantém a proporção.
-
-      **Cuidado de implementação:** o andar N tem exatamente N blocos
-      (`for (blocoIndice = 0; blocoIndice < andarAtual; ...)` no protótipo), então o topo
-      cabe 1 jogador e a base cabe 8. Empate de pontos cai no mesmo andar e precisa de
-      `posicaoNoAndar` diferente; se faltar bloco, o excedente desce um andar.
-      Nas simulações nenhum cenário estourou a capacidade de um andar.
+         nível — simulei e, com um líder disparado, do 2º ao 8º largavam todos juntos na
+         base. A parte da colocação garante que o placar sempre vire níveis diferentes, e
+         a parte dos pontos mantém a proporção.
 
       **Detalhe dos empates:** jogadores com a mesma pontuação compartilham a colocação,
-      então largam no mesmo andar — que é o certo. Um efeito colateral: se a sala inteira
-      empatar, `tPontos` vale 0 mas `tLugar` vale 1 para todos, e todos largam no andar 7
-      em vez do 8. Dá no mesmo, porque é uniforme, mas se preferir que um empate geral
+      então largam no mesmo nível — que é o certo. Um efeito colateral: se a sala inteira
+      empatar, `tPontos` vale 0 mas `tLugar` vale 1 para todos, e todos largam no nível 1
+      em vez do 0. Dá no mesmo, porque é uniforme, mas se preferir que um empate geral
       comece na base é só zerar os pulos quando MAIOR == MENOR.
 
-- [ ] **Cada acerto pula um bloco.** A largada acima vale só para o começo; dali em diante
-      quem sobe é quem acerta, **um bloco por resposta certa**. No protótipo, bloco e
-      andar são o mesmo movimento: o panda vai do andar 6 ao 1 em cinco passos, um andar
-      por passo. Então a regra de subida que o jogo já tem está certa
-      (`progresso.posicao++`, server/sala.js:775) — o que muda é só o total, de 10 degraus
-      para 8 andares, e de onde cada um parte.
-      Errar continua como já é hoje e **não** custa andar: a alternativa errada entra em
+- [ ] **Cada acerto sobe um nível.** A largada vale só para o começo; dali em diante quem
+      sobe é quem acerta, **um nível por resposta certa**. A regra de subida que o jogo já
+      tem está certa (`progresso.posicao++`, server/sala.js:775) — o que muda é só o
+      total, de 10 degraus para 8 níveis, e de onde cada um parte.
+      Errar continua como já é hoje e **não** custa nível: a alternativa errada entra em
       `tentativasErradas`, a pergunta continua na tela e o jogador tenta de novo até
       acertar (server/sala.js:769-772). O custo de errar é tempo, não posição — é a única
       fase da partida em que isso vale.
-      Quantas respostas certas cada um precisa, com a largada proposta: **3 para quem
-      larga no andar 4** e **7 para quem larga na base**.
+      Quantas respostas certas cada um precisa: **3 para quem larga no nível 4** e **7
+      para quem larga na base**.
 
-- [ ] **Animação da corrida na TV.** Os bonecos sobem de andar em andar enquanto a
-      corrida acontece, como o panda faz em `teste-piramide.html` — é o que deixa a mesa
-      ver quem vai ganhar. O servidor já transmite `progressoPiramide` a cada acerto, para
-      todos e para a TV (server/sala.js:776-778), então o gancho existe; falta a TV animar
-      o pulo em vez de só redesenhar a posição.
-      Com um acerto por bloco, toda resposta certa vira movimento na tela — não existe
-      estado intermediário invisível para resolver.
-      **Para qual bloco o jogador vai ao subir:** mantém a posição relativa no andar.
-      No protótipo os passos são coreografados na mão (`{a:5,p:2}, {a:4,p:1}, ...`); a
-      regra automática é:
-
-      ```
-      // andar N tem N blocos, índices 0..N-1
-      relativa = bloco / (N - 1)                  // 0 = ponta esquerda, 1 = ponta direita
-      blocoNovo = arredondar(relativa × (N - 2))  // N-1 blocos no andar de cima
-      ```
-
-      Quem está na ponta continua na ponta e quem está no meio sobe reto, em vez de
-      deslizar de lado. Andar 2 para andar 1 é sempre o bloco 0, que é o topo.
-      **Empate de bloco:** como o andar de cima tem um bloco a menos, dois jogadores
-      vizinhos podem cair no mesmo destino — do andar 8, os blocos 3 e 4 vão os dois para
-      o bloco 3 do andar 7. Quem chegar primeiro fica; o segundo pega o bloco livre mais
-      próximo.
-      **Capacidade:** o andar 2 tem 2 blocos e o 3 tem 3, então teoricamente 8 jogadores
-      não cabem lá em cima. Na prática a corrida acaba antes — simulei e o primeiro
-      colocado chega ao topo com os outros ainda espalhados entre os andares 2 e 6. Mesmo
-      assim, se faltar bloco o desenho deve empilhar os bonecos no mesmo bloco, nunca
-      segurar a subida de alguém: geometria não pode travar progresso.
+- [ ] **Animação da corrida na TV.** Os bonecos sobem de nível em nível enquanto a corrida
+      acontece — é o que deixa a mesa ver quem vai ganhar. O servidor já transmite
+      `progressoPiramide` a cada acerto, para todos e para a TV (server/sala.js:776-778),
+      então o gancho existe; falta ligar a TV nele.
+      A `piramide-final.html` já resolve a animação inteira: salto com arco
+      (`ALTURA_PULO`), easing cúbico, sombra que encolhe e clareia no ar, e `z-index`
+      calculado pela posição na tela para o boneco nunca sumir atrás de um bloco. A
+      corrida de lá é simulada com sorteio ponderado por velocidade; no jogo de verdade
+      quem dispara o passo é o acerto do jogador.
+      **A posição relativa sai de graça.** Como cada jogador tem `side` e `lane` fixos e
+      `posicaoNoNivel()` recalcula a tela a partir deles, o boneco sobe reto e mantém sua
+      faixa sozinho. Isso resolve de vez os dois problemas que a pirâmide de blocos tinha:
+      não existe mais colisão de bloco entre vizinhos, nem limite de capacidade por nível.
+      **A definir:** as `lane` estão fixas para 8 jogadores (4 em cada borda, em 0.18,
+      0.40, 0.62 e 0.83). O jogo tem de 2 a 8, então as faixas precisam ser distribuídas
+      conforme a sala — por exemplo dividindo cada borda igualmente entre os jogadores que
+      couberem nela.
 
 ---
 
