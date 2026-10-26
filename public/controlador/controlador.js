@@ -8,13 +8,6 @@ function elementosDePosicao(sufixo) {
   };
 }
 
-const POR_TIPO = {
-  congelamento: { icone: "🧊", nome: "Congelamento" },
-  gosma: { icone: "🟢", nome: "Gosma" },
-  bombolha: { icone: "🫧", nome: "Bombolha" },
-  mordicadores: { icone: "😬", nome: "Mordicadores" },
-};
-
 const telaEntrada = document.getElementById("tela-entrada");
 const telaAnimal = document.getElementById("tela-animal");
 const telaAguardando = document.getElementById("tela-aguardando");
@@ -22,6 +15,7 @@ const telaEscolhaPorta = document.getElementById("tela-escolha-porta");
 const telaAguardandoPorta = document.getElementById("tela-aguardando-porta");
 const telaEscolhaPoder = document.getElementById("tela-escolha-poder");
 const telaEscolhaAlvo = document.getElementById("tela-escolha-alvo");
+const telaOlheTv = document.getElementById("tela-olhe-tv");
 const telaPergunta = document.getElementById("tela-pergunta");
 const telaResultado = document.getElementById("tela-resultado");
 const telaLinking = document.getElementById("tela-linking");
@@ -29,15 +23,14 @@ const telaResultadoLinking = document.getElementById("tela-resultado-linking");
 const telaSorting = document.getElementById("tela-sorting");
 const telaResultadoSorting = document.getElementById("tela-resultado-sorting");
 const telaPiramide = document.getElementById("tela-piramide");
-const telaResultadoPiramide = document.getElementById("tela-resultado-piramide");
 const telaFim = document.getElementById("tela-fim");
 
 const TODAS_AS_TELAS = [
   telaEntrada, telaAnimal, telaAguardando, telaEscolhaPorta, telaAguardandoPorta,
-  telaEscolhaPoder, telaEscolhaAlvo,
+  telaEscolhaPoder, telaEscolhaAlvo, telaOlheTv,
   telaPergunta, telaResultado,
   telaLinking, telaResultadoLinking, telaSorting, telaResultadoSorting,
-  telaPiramide, telaResultadoPiramide,
+  telaPiramide,
   telaFim,
 ];
 
@@ -56,7 +49,6 @@ const listaJogadoresEl = document.getElementById("lista-jogadores");
 const aguardandoStatusEl = document.getElementById("aguardando-status");
 const botaoIniciar = document.getElementById("botao-iniciar");
 const botaoTrocarAnimal = document.getElementById("botao-trocar-animal");
-const botaoVoltarInicio = document.getElementById("botao-voltar-inicio");
 const avisoFimPartidaEl = document.getElementById("aviso-fim-partida");
 const aguardandoTituloEl = document.getElementById("aguardando-titulo");
 const animalSubtituloEl = document.getElementById("animal-subtitulo");
@@ -84,29 +76,23 @@ const anelPerguntaEl = document.getElementById("anel-pergunta");
 const numeroPerguntaEl = document.getElementById("numero-pergunta");
 const faseLeituraEl = document.getElementById("fase-leitura");
 const contagemLeituraEl = document.getElementById("contagem-leitura");
+const bonusNevoaEl = document.getElementById("bonus-nevoa");
 
-const poderRodadaRotuloEl = document.getElementById("poder-rodada-rotulo");
 const anelPoderEl = document.getElementById("anel-poder");
 const numeroPoderEl = document.getElementById("numero-poder");
-const poderTiposEl = document.getElementById("poder-tipos");
-
-const alvoTituloEl = document.getElementById("alvo-titulo");
 const anelAlvoEl = document.getElementById("anel-alvo");
 const numeroAlvoEl = document.getElementById("numero-alvo");
-const alvoListaEl = document.getElementById("alvo-lista");
-const alvoUsadoMsgEl = document.getElementById("alvo-usado-msg");
+const olheTvDetalheEl = document.getElementById("olhe-tv-detalhe");
 
-const avisoAtingidoEl = document.getElementById("aviso-atingido");
 const avisoConexaoEl = document.getElementById("aviso-conexao");
 const modalReiniciarEl = document.getElementById("modal-reiniciar");
 const botaoConfirmarReiniciarEl = document.getElementById("botao-confirmar-reiniciar");
 const botaoCancelarReiniciarEl = document.getElementById("botao-cancelar-reiniciar");
-const obstrucaoEl = document.getElementById("obstrucao");
 
 const resultadoTituloEl = document.getElementById("resultado-titulo");
 const resultadoPontosEl = document.getElementById("resultado-pontos");
+const resultadoExtrasEl = document.getElementById("resultado-extras");
 const posicaoPerguntaEls = elementosDePosicao("");
-const posicaoFinalEls = elementosDePosicao("-final");
 const botaoProxima = document.getElementById("botao-proxima");
 const statusProximoEl = document.getElementById("status-proximo");
 
@@ -133,16 +119,10 @@ const posicaoSortingEls = elementosDePosicao("-sorting");
 const botaoContinuarSorting = document.getElementById("botao-continuar-sorting");
 const statusContinuarSortingEl = document.getElementById("status-continuar-sorting");
 
-const piramideDegrauEl = document.getElementById("piramide-degrau");
+const piramideAndarEl = document.getElementById("piramide-andar");
 const piramideCategoriaEl = document.getElementById("piramide-categoria");
 const piramidePerguntaEl = document.getElementById("piramide-pergunta");
 const piramideAlternativasEl = document.getElementById("piramide-alternativas");
-const piramideVencedorTituloEl = document.getElementById("piramide-vencedor-titulo");
-const piramidePosicoesFinaisEl = document.getElementById("piramide-posicoes-finais");
-const botaoContinuarPiramide = document.getElementById("botao-continuar-piramide");
-const statusContinuarPiramideEl = document.getElementById("status-continuar-piramide");
-
-const fimTituloEl = document.getElementById("fim-titulo");
 
 let ws = null;
 let meuJogadorId = null;
@@ -154,8 +134,6 @@ let telaAtual = null;
 let souAnfitriao = false;
 let jaRespondeuEstaRodada = false;
 let jaEscolheuPorta = false;
-let jaEscolheuTipoPoder = false;
-let jaEscolheuAlvo = false;
 let intervaloLeitura = null;
 let intervaloPergunta = null;
 let intervaloPorta = null;
@@ -163,7 +141,7 @@ let intervaloPoder = null;
 let intervaloAlvo = null;
 let alternativasBrutas = [];
 let efeitosAtivosAtuais = [];
-let timeoutAvisoAtingido = null;
+let escudoDaPergunta = null; // { bloqueados } quando o jogador usou Escudo nesta pergunta
 
 // confirmação genérica de "continuar" (usada depois de pergunta, Linking e Sorting)
 let jaConfirmouContinuar = false;
@@ -189,7 +167,7 @@ const ITENS_POR_LOTE_SORTING = 3;
 let sortingLoteAtual = 0;
 
 // estado da Pirâmide
-let piramideTotalDegraus = 0;
+let piramideTotalAndares = 0;
 let piramideJaRespondeu = false;
 
 // zera todos os contadores de tempo que possam estar rodando
@@ -198,13 +176,27 @@ function pararContadores() {
                    intervaloAlvo, intervaloLinking, intervaloSorting]) {
     clearInterval(i);
   }
-  clearTimeout(timeoutAvisoAtingido);
-  avisoAtingidoEl.classList.add("oculto");
 }
 
 function mostrarTela(tela) {
   telaAtual = tela;
   for (const t of TODAS_AS_TELAS) t.classList.toggle("oculto", t !== tela);
+}
+
+// "Tema 2 de 5 — Pergunta 3 de 3"
+function rotuloDaPergunta(msg) {
+  return `Tema ${msg.rodadaAtual} de ${msg.totalRodadas} — Pergunta ${msg.perguntaNaRodada} de ${msg.totalPerguntasPorRodada}`;
+}
+
+// enquanto a TV mostra algo que é para todo mundo ver junto
+function mostrarOlheTv(detalhe = "") {
+  olheTvDetalheEl.textContent = detalhe;
+  mostrarTela(telaOlheTv);
+}
+
+// 0 é o chão; o topo é o último andar
+function textoDoAndar(n) {
+  return n <= 0 ? `No chão · topo no andar ${piramideTotalAndares}` : `Andar ${n} de ${piramideTotalAndares}`;
 }
 
 // cria um elemento com texto (textContent: o nome do jogador nunca é
@@ -439,6 +431,8 @@ function tratarMensagem(msg) {
       // a partida acabou (ou foi encerrada por falta de gente): volta pro
       // início, já com o animal que a pessoa tinha escolhido
       pararContadores();
+      EfeitosPergunta.parar();
+      CelularFim.parar();
       atualizarLobby(msg.jogadores);
       avisoFimPartidaEl.classList.toggle("oculto", !msg.motivo);
       if (msg.motivo) avisoFimPartidaEl.textContent = msg.motivo;
@@ -461,7 +455,7 @@ function tratarMensagem(msg) {
       aguardandoPortaTemaEl.classList.add("oculto");
       aguardandoPortaAvisoEl.classList.add("oculto");
       mostrarTela(telaEscolhaPorta);
-      rodadaRotuloEl.textContent = `Rodada ${msg.rodadaAtual} de ${msg.totalRodadas}`;
+      rodadaRotuloEl.textContent = `Tema ${msg.rodadaAtual} de ${msg.totalRodadas}`;
       portasEl.innerHTML = "";
       msg.portas.forEach((categoria, i) => {
         const btn = document.createElement("button");
@@ -488,7 +482,7 @@ function tratarMensagem(msg) {
       // portas agora e todo mundo já vê o tema da rodada.
       clearInterval(intervaloPorta);
       jaEscolheuPorta = true;
-      aguardandoPortaTituloEl.textContent = "Tema da rodada";
+      aguardandoPortaTituloEl.textContent = "Tema escolhido";
       aguardandoPortaTextoEl.classList.add("oculto");
       aguardandoPortaTemaEl.textContent = msg.categoria;
       aguardandoPortaTemaEl.classList.remove("oculto");
@@ -509,58 +503,35 @@ function tratarMensagem(msg) {
       break;
     }
     case "escolhaPoder": {
-      jaEscolheuTipoPoder = false;
-      clearTimeout(timeoutAvisoAtingido);
-      avisoAtingidoEl.classList.add("oculto");
-
+      // 3 de ataque + 1 especial sorteado pelo servidor, e "Não usar poder"
       mostrarTela(telaEscolhaPoder);
-      poderRodadaRotuloEl.textContent =
-        `Rodada ${msg.rodadaAtual} de ${msg.totalRodadas} — Pergunta ${msg.perguntaNaRodada} de ${msg.totalPerguntasPorRodada}`;
-      poderTiposEl.innerHTML = "";
-      msg.tiposDisponiveis.forEach((tipo) => {
-        const info = POR_TIPO[tipo] || { icone: "❔", nome: tipo };
-        const btn = document.createElement("button");
-        btn.className = "alternativa";
-        btn.textContent = `${info.icone} ${info.nome}`;
-        btn.addEventListener("click", () => escolherTipoPoder(tipo, btn));
-        poderTiposEl.appendChild(btn);
-      });
+      CelularPoderes.montarEscolha(msg, rotuloDaPergunta(msg), (tipo) =>
+        enviarAoServidor({ type: "escolherPoder", tipo })
+      );
       iniciarContadorRedondo(intervaloPoder, anelPoderEl, numeroPoderEl, msg.tempoLimiteMs, (i) => (intervaloPoder = i));
-      if (msg.jaEscolheu) {
-        jaEscolheuTipoPoder = true;
-        document.querySelectorAll("#poder-tipos .alternativa").forEach((b) => (b.disabled = true));
-      }
       break;
     }
     case "escolhaAlvo": {
       clearInterval(intervaloPoder);
-      jaEscolheuAlvo = false;
-      alvoUsadoMsgEl.classList.add("oculto");
-      alvoUsadoMsgEl.textContent = "";
-      alvoListaEl.innerHTML = "";
-
       mostrarTela(telaEscolhaAlvo);
-      if (msg.temPoder) {
-        const info = POR_TIPO[msg.tipo] || { icone: "❔", nome: msg.tipo };
-        alvoTituloEl.textContent = `Usar ${info.icone} ${info.nome} em quem?`;
-        msg.alvosPossiveis.forEach((alvo) => {
-          const btn = document.createElement("button");
-          btn.className = "poder-alvo-btn";
-          btn.textContent = alvo.nome;
-          btn.addEventListener("click", () => escolherAlvo(alvo.id, btn));
-          alvoListaEl.appendChild(btn);
-        });
-      } else {
-        alvoTituloEl.textContent = msg.jaUsou ? "Poder já usado!" : "Você não tem poder nesta pergunta";
-        jaEscolheuAlvo = true; // nada a fazer aqui, só aguardar
-      }
-      iniciarContadorRedondo(intervaloAlvo, anelAlvoEl, numeroAlvoEl, msg.tempoLimiteMs, (i) => (intervaloAlvo = i));
+      CelularPoderes.montarAlvo(msg, (alvoId) => enviarAoServidor({ type: "escolherAlvoPoder", alvoId }));
+      iniciarContadorRedondo(intervaloAlvo, anelAlvoEl, numeroAlvoEl, msg.tempoLimiteMs, (i) => (intervaloAlvo = i),
+        CelularPoderes.tempoEsgotadoAlvo);
+      break;
+    }
+    case "olheParaTv": {
+      // a TV está mostrando quem atacou quem; a pergunta vem logo depois
+      clearInterval(intervaloPoder);
+      clearInterval(intervaloAlvo);
+      mostrarOlheTv();
       break;
     }
     case "novaPergunta": {
       jaRespondeuEstaRodada = false;
       identidadePerguntaEl.classList.remove("voted");
       efeitosAtivosAtuais = [];
+      escudoDaPergunta = null;
+      EfeitosPergunta.parar();
       alternativasBrutas = msg.alternativas;
 
       // o timer da resposta só começa a contar quando a leitura acabar
@@ -569,10 +540,10 @@ function tratarMensagem(msg) {
       numeroPerguntaEl.textContent = "";
       anelPerguntaEl.closest(".timer-redondo-mini").classList.remove("urgente");
 
+      clearInterval(intervaloPoder);
       clearInterval(intervaloAlvo);
       mostrarTela(telaPergunta);
-      progressoRodadaEl.textContent =
-        `Rodada ${msg.rodadaAtual} de ${msg.totalRodadas} — Pergunta ${msg.perguntaNaRodada} de ${msg.totalPerguntasPorRodada}`;
+      progressoRodadaEl.textContent = rotuloDaPergunta(msg);
       perguntaCategoriaEl.textContent = msg.categoria;
       perguntaTextoEl.textContent = msg.pergunta;
 
@@ -580,8 +551,6 @@ function tratarMensagem(msg) {
       // (em "iniciarResposta"); até lá, ficam escondidas de propósito.
       areaAlternativasEl.classList.add("oculto");
       alternativasEl.innerHTML = "";
-      obstrucaoEl.classList.add("oculto");
-      obstrucaoEl.innerHTML = "";
 
       // fase de leitura: mostra contagem regressiva, botões travados
       faseLeituraEl.classList.remove("oculto");
@@ -596,19 +565,11 @@ function tratarMensagem(msg) {
       intervaloLeitura = setInterval(atualizarLeitura, 200);
       break;
     }
-    case "atingidoPorPoder": {
-      efeitosAtivosAtuais = msg.efeitosAtivos;
-      const info = POR_TIPO[msg.tipo] || { icone: "⚠️", nome: msg.tipo };
-      avisoAtingidoEl.textContent = `${info.icone} ${msg.deNome} usou ${info.nome} em você!`;
-      avisoAtingidoEl.classList.remove("oculto");
-      clearTimeout(timeoutAvisoAtingido);
-      timeoutAvisoAtingido = setTimeout(() => avisoAtingidoEl.classList.add("oculto"), 5000);
-      break;
-    }
     case "iniciarResposta": {
       clearInterval(intervaloLeitura);
       faseLeituraEl.classList.add("oculto");
       efeitosAtivosAtuais = msg.efeitosAtivos || [];
+      escudoDaPergunta = msg.escudo || null;
 
       const mordidas = efeitosAtivosAtuais.filter((e) => e.tipo === "mordicadores").length;
       renderizarAlternativas(alternativasBrutas, mordidas);
@@ -617,13 +578,21 @@ function tratarMensagem(msg) {
       if (msg.respostaDada !== null && msg.respostaDada !== undefined) {
         // voltou de uma queda depois de já ter respondido: mostra a escolha dele travada
         jaRespondeuEstaRodada = true;
-        document.querySelectorAll("#alternativas .alternativa").forEach((b) => (b.disabled = true));
         const escolhido = alternativasEl.children[msg.respostaDada];
         if (escolhido) escolhido.classList.add("selecionada");
         identidadePerguntaEl.classList.add("voted");
-        obstrucaoEl.classList.add("oculto");
       } else {
-        montarObstrucao(efeitosAtivosAtuais);
+        // gelo e névoa entram por cima das alternativas; os botões já ficam
+        // liberados (o toque no gelo derrete em vez de responder)
+        EfeitosPergunta.montar({
+          botoes: [...alternativasEl.children],
+          efeitos: efeitosAtivosAtuais,
+          tempoLimiteMs: msg.tempoLimiteMs,
+          tempoTotalMs: msg.tempoTotalMs,
+          bonusMax: msg.bonusVelocidadeMax,
+          bonusEl: bonusNevoaEl,
+        });
+        liberarRespostaDeVerdade();
       }
       iniciarContadorRedondo(intervaloPergunta, anelPerguntaEl, numeroPerguntaEl, msg.tempoLimiteMs, (i) => (intervaloPergunta = i));
       break;
@@ -638,6 +607,7 @@ function tratarMensagem(msg) {
       // da revelação).
       clearInterval(intervaloPergunta);
       document.querySelectorAll("#alternativas .alternativa").forEach((b) => (b.disabled = true));
+      EfeitosPergunta.revelar(); // sem gelo nem névoa na frente da resposta certa
       const botaoCerto = alternativasEl.children[msg.respostaCorretaIndex];
       if (botaoCerto) botaoCerto.classList.add("correta-revelada");
 
@@ -650,6 +620,7 @@ function tratarMensagem(msg) {
         }
         resultadoPontosEl.textContent = `+${msg.seuResultado.pontosGanhos} pontos`;
         renderizarMinhaPosicao(msg.placar, posicaoPerguntaEls);
+        renderizarExtrasDoResultado(msg);
         prepararTelaResultado(botaoProxima, statusProximoEl, msg.jaConfirmou);
       }, 1500);
       break;
@@ -773,10 +744,18 @@ function tratarMensagem(msg) {
       break;
     }
 
-    case "iniciarPiramide": {
-      piramideTotalDegraus = msg.totalDegraus;
+    case "largadaPiramide": {
+      // a TV mostra a pontuação de cada um virando o andar de largada
+      pararContadores();
+      piramideTotalAndares = msg.totalAndares;
       const eu = msg.jogadores.find((j) => j.id === meuJogadorId);
-      piramideDegrauEl.textContent = `Degrau ${eu ? eu.posicao : 0} de ${piramideTotalDegraus}`;
+      mostrarOlheTv(eu ? `Você larga ${eu.largada === 0 ? "do chão" : `no andar ${eu.largada}`}` : "");
+      break;
+    }
+    case "iniciarPiramide": {
+      piramideTotalAndares = msg.totalAndares;
+      const eu = msg.jogadores.find((j) => j.id === meuJogadorId);
+      piramideAndarEl.textContent = textoDoAndar(eu ? eu.posicao : 0);
       mostrarTela(telaPiramide);
       break;
     }
@@ -807,23 +786,14 @@ function tratarMensagem(msg) {
     }
     case "progressoPiramide": {
       const eu = msg.jogadores.find((j) => j.id === meuJogadorId);
-      if (eu) piramideDegrauEl.textContent = `Degrau ${eu.posicao} de ${piramideTotalDegraus}`;
+      if (eu) piramideAndarEl.textContent = textoDoAndar(eu.posicao);
       break;
     }
-    case "resultadoPiramide": {
-      mostrarTela(telaResultadoPiramide);
-      piramideVencedorTituloEl.textContent = `🏆 ${msg.vencedorNome} venceu a partida!`;
-      piramidePosicoesFinaisEl.innerHTML = "";
-      msg.posicoesFinais
-        .slice()
-        .sort((a, b) => b.posicao - a.posicao)
-        .forEach((jogador) => {
-          const li = document.createElement("li");
-          li.append(criarEl("span", "", jogador.nome), criarEl("span", "", `degrau ${jogador.posicao}`));
-          if (jogador.nome === msg.vencedorNome) li.classList.add("vencedor");
-          piramidePosicoesFinaisEl.appendChild(li);
-        });
-      prepararTelaResultado(botaoContinuarPiramide, statusContinuarPiramideEl, msg.jaConfirmou);
+    case "vencedorPiramide": {
+      // alguém chegou ao topo: a TV comemora e o pódio vem sozinho em seguida
+      piramideAlternativasEl.querySelectorAll(".alternativa").forEach((b) => (b.disabled = true));
+      const venci = msg.vencedorId === meuJogadorId;
+      mostrarOlheTv(venci ? "🏆 Você chegou ao topo!" : `🏆 ${msg.vencedorNome} chegou ao topo!`);
       break;
     }
 
@@ -835,12 +805,14 @@ function tratarMensagem(msg) {
       break;
     }
     case "fimDePartida": {
+      // na TV só o pódio; aqui, quem venceu, a sua colocação e o placar das rodadas
+      pararContadores();
       mostrarTela(telaFim);
-      // só o anfitrião leva todo mundo de volta pro início pra jogar de novo
-      botaoVoltarInicio.classList.toggle("oculto", !souAnfitriao);
-      botaoVoltarInicio.disabled = false;
-      fimTituloEl.textContent = msg.vencedorNome ? `🏆 ${msg.vencedorNome} venceu a partida!` : "Fim de partida!";
-      renderizarMinhaPosicao(msg.placarFinal, posicaoFinalEls);
+      CelularFim.montar(msg, {
+        meuId: meuJogadorId,
+        souAnfitriao, // só o anfitrião leva todo mundo de volta pro início
+        aoJogarDeNovo: () => enviarAoServidor({ type: "voltarAoLobby" }),
+      });
       break;
     }
     default:
@@ -966,7 +938,8 @@ function preencherIdentidades() {
 
 const CIRCUNFERENCIA_TIMER_MINI = 326.7;
 
-function iniciarContadorRedondo(intervaloAntigo, anelEl, numeroEl, tempoLimiteMs, guardarIntervalo) {
+// aoAcabar: chamado uma vez quando o tempo zera (opcional)
+function iniciarContadorRedondo(intervaloAntigo, anelEl, numeroEl, tempoLimiteMs, guardarIntervalo, aoAcabar) {
   clearInterval(intervaloAntigo);
   const inicio = Date.now();
   let novoIntervalo = null;
@@ -979,132 +952,60 @@ function iniciarContadorRedondo(intervaloAntigo, anelEl, numeroEl, tempoLimiteMs
     // últimos 3 segundos: o timer fica vermelho e pulsa (igual à TV)
     const modulo = anelEl.closest(".timer-redondo-mini");
     if (modulo) modulo.classList.toggle("urgente", restanteS <= 3 && restanteS > 0);
-    if (restanteMs <= 0) clearInterval(novoIntervalo);
+    if (restanteMs <= 0) {
+      clearInterval(novoIntervalo);
+      if (aoAcabar) aoAcabar();
+    }
   };
   atualizar();
   novoIntervalo = setInterval(atualizar, 100);
   guardarIntervalo(novoIntervalo);
 }
 
-// Redige parte das letras do texto pra simular o efeito dos Mordicadores.
-// Calculado uma única vez quando a janela de resposta abre (não fica
-// piscando/trocando durante a resposta).
-function aplicarMordida(texto, nivel) {
-  if (nivel <= 0) return texto;
-  const fracao = Math.min(0.7, nivel * 0.2);
-  return texto
-    .split("")
-    .map((ch) => (/[a-zA-ZÀ-ÿ]/.test(ch) && Math.random() < fracao ? "▒" : ch))
-    .join("");
-}
-
-function renderizarAlternativas(alternativas, nivelMordida) {
+// O texto fica num <span> próprio: é nele que a Névoa borra, e o gelo entra
+// por cima do botão inteiro. Os Mordicadores comem as letras uma vez só,
+// aqui, quando a janela de resposta abre (não fica trocando durante a resposta).
+function renderizarAlternativas(alternativas, mordidas) {
   alternativasEl.innerHTML = "";
   alternativas.forEach((alt, i) => {
     const btn = document.createElement("button");
     btn.className = "alternativa";
-    btn.textContent = aplicarMordida(alt, nivelMordida);
-    btn.disabled = true; // só libera de vez quando a leitura acabar (e a obstrução, se houver, for limpa)
-    btn.addEventListener("click", () => responder(i, btn));
+    btn.append(criarEl("span", "texto-alternativa", EfeitosPergunta.morder(alt, mordidas)));
+    btn.disabled = true; // só libera quando a leitura acabar
+    btn.addEventListener("click", (evento) => tocarAlternativa(i, btn, evento));
     alternativasEl.appendChild(btn);
   });
 }
 
-function escolherTipoPoder(tipo, botaoClicado) {
-  if (jaEscolheuTipoPoder) return;
-  jaEscolheuTipoPoder = true;
-
-  document.querySelectorAll("#poder-tipos .alternativa").forEach((b) => (b.disabled = true));
-  botaoClicado.classList.add("selecionada");
-
-  enviarAoServidor({ type: "escolherPoder", tipo });
-}
-
-function escolherAlvo(alvoId, botaoClicado) {
-  if (jaEscolheuAlvo) return;
-  jaEscolheuAlvo = true;
-
-  document.querySelectorAll("#alvo-lista button").forEach((b) => (b.disabled = true));
-  botaoClicado.classList.add("selecionada");
-  alvoUsadoMsgEl.textContent = "Poder usado!";
-  alvoUsadoMsgEl.classList.remove("oculto");
-
-  enviarAoServidor({ type: "escolherAlvoPoder", alvoId });
-}
-
-// Monta a camada de obstrução (gelo/gosma pedindo toques + bolhas pra
-// estourar) por cima das alternativas, e só libera os botões de resposta
-// de verdade quando tudo tiver sido limpo.
-function montarObstrucao(efeitos) {
-  const hitsGeloGosma = efeitos.filter((e) => e.tipo === "congelamento" || e.tipo === "gosma").length;
-  const hitsBombolha = efeitos.filter((e) => e.tipo === "bombolha").length;
-
-  if (hitsGeloGosma === 0 && hitsBombolha === 0) {
-    obstrucaoEl.classList.add("oculto");
-    liberarRespostaDeVerdade();
-    return;
-  }
-
-  let toquesRestantes = hitsGeloGosma * 3;
-  let bolhasRestantes = hitsBombolha * 2;
-
-  obstrucaoEl.innerHTML = "";
-  obstrucaoEl.classList.remove("oculto");
-
-  const iconesAtivos = [...new Set(efeitos.map((e) => (POR_TIPO[e.tipo] || {}).icone).filter(Boolean))].join(" ");
-  const mensagemEl = document.createElement("p");
-  mensagemEl.className = "obstrucao-mensagem";
-  mensagemEl.textContent = `${iconesAtivos} Alguém tentou te atrapalhar!`;
-  obstrucaoEl.appendChild(mensagemEl);
-
-  let botaoToque = null;
-  if (toquesRestantes > 0) {
-    botaoToque = document.createElement("button");
-    botaoToque.className = "obstrucao-toque";
-    const atualizarTexto = () => (botaoToque.textContent = `Toque pra se livrar! (${toquesRestantes})`);
-    atualizarTexto();
-    botaoToque.addEventListener("click", () => {
-      toquesRestantes--;
-      if (toquesRestantes <= 0) {
-        botaoToque.remove();
-        verificarLimpeza();
-      } else {
-        atualizarTexto();
-      }
-    });
-    obstrucaoEl.appendChild(botaoToque);
-  }
-
-  let areaBolhas = null;
-  if (bolhasRestantes > 0) {
-    areaBolhas = document.createElement("div");
-    areaBolhas.className = "bolhas-area";
-    for (let i = 0; i < bolhasRestantes; i++) {
-      const bolha = document.createElement("button");
-      bolha.className = "bolha";
-      bolha.textContent = "💧";
-      bolha.style.left = `${Math.random() * 80}%`;
-      bolha.style.top = `${Math.random() * 70}%`;
-      bolha.addEventListener("click", () => {
-        bolha.remove();
-        bolhasRestantes--;
-        if (bolhasRestantes <= 0) verificarLimpeza();
-      });
-      areaBolhas.appendChild(bolha);
-    }
-    obstrucaoEl.appendChild(areaBolhas);
-  }
-
-  function verificarLimpeza() {
-    if (toquesRestantes <= 0 && bolhasRestantes <= 0) {
-      obstrucaoEl.classList.add("oculto");
-      liberarRespostaDeVerdade();
-    }
-  }
-}
-
 function liberarRespostaDeVerdade() {
   document.querySelectorAll("#alternativas .alternativa").forEach((b) => (b.disabled = false));
+}
+
+// com gelo, o toque derrete; sem gelo (ou já derretido), responde
+function tocarAlternativa(indice, btn, evento) {
+  if (jaRespondeuEstaRodada) return;
+  if (EfeitosPergunta.tocarGelo(btn, evento)) return;
+  responder(indice, btn);
+}
+
+// Festa de Pontos, Aposta e Escudo da pergunta, abaixo da posição
+function renderizarExtrasDoResultado(msg) {
+  resultadoExtrasEl.replaceChildren();
+  const r = msg.seuResultado;
+  if (msg.festaAtiva) {
+    resultadoExtrasEl.append(criarEl("p", "resultado-extra festa",
+      r.acertou ? "🎉 Festa de Pontos: seu acerto valeu o dobro!" : "🎉 Festa de Pontos: o acerto valia o dobro"));
+  }
+  if (r.aposta) {
+    const alvo = r.aposta.alvoNome || "Seu alvo";
+    resultadoExtrasEl.append(criarEl("p", "resultado-extra aposta" + (r.aposta.ganhou ? " ganhou" : ""),
+      r.aposta.ganhou ? `🎲 ${alvo} acertou: sua aposta rendeu +${r.aposta.premio}` : `🎲 ${alvo} errou: a aposta não rendeu nada`));
+  }
+  if (escudoDaPergunta) {
+    const n = escudoDaPergunta.bloqueados;
+    resultadoExtrasEl.append(criarEl("p", "resultado-extra escudo",
+      n > 0 ? `🛡️ Seu escudo segurou ${n === 1 ? "1 ataque" : `${n} ataques`}` : "🛡️ Seu escudo ficou de guarda: ninguém atacou"));
+  }
 }
 
 function escolherPorta(indice, botaoClicado) {
@@ -1127,6 +1028,7 @@ function responder(indice, botaoClicado) {
   document.querySelectorAll("#alternativas .alternativa").forEach((b) => (b.disabled = true));
   botaoClicado.classList.add("selecionada");
   identidadePerguntaEl.classList.add("voted"); // a pílula do jogador também acende
+  EfeitosPergunta.travarResposta(botaoClicado); // o bônus da Névoa para no valor do toque
 
   enviarAoServidor({ type: "responder", alternativaIndex: indice });
   // fica na própria tela-pergunta (grid desabilitado, sua escolha em
@@ -1273,11 +1175,6 @@ botaoConfirmarReiniciarEl.addEventListener("click", () => {
   enviarAoServidor({ type: "reiniciarPartida" });
 });
 
-botaoVoltarInicio.addEventListener("click", () => {
-  botaoVoltarInicio.disabled = true;
-  enviarAoServidor({ type: "voltarAoLobby" });
-});
-
 botaoTrocarAnimal.addEventListener("click", () => {
   enviarAoServidor({ type: "liberarAnimal" }); // o animal atual já fica livre pros outros
   mostrarTela(telaAnimal);
@@ -1291,7 +1188,6 @@ botaoIniciar.addEventListener("click", () => {
 botaoProxima.addEventListener("click", () => confirmarContinuar(botaoProxima));
 botaoContinuarLinking.addEventListener("click", () => confirmarContinuar(botaoContinuarLinking));
 botaoContinuarSorting.addEventListener("click", () => confirmarContinuar(botaoContinuarSorting));
-botaoContinuarPiramide.addEventListener("click", () => confirmarContinuar(botaoContinuarPiramide));
 
 // Se esta aba já tinha uma partida em andamento (recarregou a página, o
 // navegador descartou a aba em segundo plano...), tenta voltar pra ela.

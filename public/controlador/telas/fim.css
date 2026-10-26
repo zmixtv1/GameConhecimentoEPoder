@@ -1,0 +1,230 @@
+/* Fim de jogo no celular (a TV mostra só o pódio): quem venceu, a sua
+   colocação, um pódio pequeno e o placar das rodadas com o caminho de cada
+   um na Pirâmide. Deitado: pódio + botão à esquerda, placar à direita. Em
+   pé: pódio em cima, placar no meio, botão embaixo.
+   Referência: teste/teste-podio-celular.html. */
+
+#tela-fim {
+  --ouro: #f5b301;
+  --gap: clamp(6px, 2vmin, 12px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas:
+    "cab   cab"
+    "esq   placar";
+  gap: var(--gap) clamp(10px, 2.4vw, 20px);
+}
+
+#tela-fim .cabecalho { grid-area: cab; gap: 10px; min-height: 0; }
+#tela-fim .player-identity { max-width: 30%; }
+.fim-titulo {
+  font-size: clamp(17px, 5.6vmin, 26px);
+  font-weight: 900;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fim-titulo .campeao { color: #c58b00; }
+.fim-explica {
+  margin-top: 1px;
+  font-size: clamp(11px, 3.3vmin, 14px);
+  font-weight: 700;
+  color: var(--text-muted);
+  line-height: 1.2;
+}
+.fim-explica b { color: #a16207; }
+
+.fim-colocacao {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: clamp(52px, 15vmin, 68px);
+  padding: 4px 10px;
+  border-radius: 16px;
+  border: 2px solid var(--cor-jogador);
+  background: var(--player-glass);
+  box-shadow: 0 8px 20px var(--player-glow);
+  line-height: 1;
+}
+.fim-colocacao small { font-size: clamp(9px, 2.6vmin, 11px); font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
+.fim-colocacao b { font-size: clamp(18px, 6vmin, 26px); font-weight: 900; color: var(--cor-jogador); }
+
+/* ---------- coluna esquerda: pódio + botão ---------- */
+.fim-esquerda {
+  grid-area: esq;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+.fim-podio {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+  gap: clamp(4px, 1.4vmin, 8px);
+}
+.fim-degrau {
+  --cor: #94a3b8;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+}
+.fim-degrau.primeiro { --cor: #f5b301; }
+.fim-degrau.segundo { --cor: #94a3b8; }
+.fim-degrau.terceiro { --cor: #cd8a4f; }
+.fim-bicho {
+  position: relative;
+  font-size: clamp(22px, 9vmin, 44px);
+  line-height: 1;
+  filter: drop-shadow(0 5px 6px rgba(15, 23, 42, 0.22));
+  opacity: 0;
+  transform: translateY(-30px);
+}
+.fim-degrau.primeiro .fim-bicho { font-size: clamp(28px, 12vmin, 58px); }
+.fim-degrau.revelado .fim-bicho { animation: fimCair 0.55s cubic-bezier(0.3, 1.4, 0.5, 1) forwards; }
+.fim-degrau.primeiro.revelado .fim-bicho {
+  animation: fimCair 0.55s cubic-bezier(0.3, 1.4, 0.5, 1) forwards, fimPular 1.2s ease-in-out 0.7s infinite;
+}
+@keyframes fimCair { to { opacity: 1; transform: none; } }
+@keyframes fimPular { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-12%); } }
+.fim-coroa { position: absolute; left: 50%; top: -0.45em; font-size: 0.45em; transform: translateX(-50%); }
+.fim-nome {
+  max-width: 100%;
+  margin-top: 2px;
+  font-size: clamp(11px, 3.4vmin, 15px);
+  font-weight: 900;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fim-degrau.eu .fim-nome { color: var(--cor-jogador); }
+.fim-bloco {
+  width: 100%;
+  height: 0;
+  margin-top: 3px;
+  border-radius: 12px 12px 4px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 4px;
+  overflow: hidden;
+  color: #fff;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--cor) 78%, white), var(--cor) 45%, color-mix(in srgb, var(--cor) 82%, black));
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.55), 0 8px 18px color-mix(in srgb, var(--cor) 30%, transparent);
+  transition: height 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.05);
+}
+.fim-degrau.primeiro .fim-bloco { color: #4a3500; }
+.fim-degrau.eu .fim-bloco { outline: 3px solid var(--cor-jogador); outline-offset: 2px; }
+.fim-degrau.primeiro.revelado .fim-bloco { height: 46%; }
+.fim-degrau.segundo.revelado .fim-bloco { height: 32%; }
+.fim-degrau.terceiro.revelado .fim-bloco { height: 22%; }
+.fim-posicao { font-size: clamp(15px, 6vmin, 28px); font-weight: 900; line-height: 1; }
+.fim-detalhe { font-size: clamp(9px, 2.6vmin, 12px); font-weight: 800; white-space: nowrap; opacity: 0.95; }
+
+#tela-fim .btn-primario { flex: none; padding: clamp(9px, 3vmin, 14px) 18px; }
+
+/* ---------- placar da partida ---------- */
+.fim-placar {
+  grid-area: placar;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(6px, 1.6vmin, 10px) clamp(6px, 1.8vmin, 10px);
+  border-radius: 18px;
+}
+.fim-placar-cab, .fim-placar li {
+  display: grid;
+  grid-template-columns: 1.7em 1.5em minmax(0, 1fr) 3.4em 4.6em;
+  align-items: center;
+  column-gap: 5px;
+  font-size: clamp(11px, 3.3vmin, 14px);
+}
+.fim-placar-cab {
+  padding: 0 6px 3px;
+  font-size: clamp(8px, 2.4vmin, 10px);
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.fim-placar-cab span:first-child { grid-column: 1 / 4; }
+.fim-placar-cab .c-pts { text-align: right; }
+.fim-placar-cab .c-pir { text-align: center; }
+.fim-placar ol {
+  list-style: none;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+}
+.fim-placar li {
+  flex: 1 1 0;
+  min-height: 22px;
+  max-height: 40px;
+  padding: 0 6px;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid transparent;
+  opacity: 0;
+  transform: translateX(10px);
+  animation: fimEntrarLinha 0.35s ease forwards;
+}
+@keyframes fimEntrarLinha { to { opacity: 1; transform: none; } }
+.fim-placar li.campeao { background: rgba(245, 179, 1, 0.16); border-color: rgba(245, 179, 1, 0.6); }
+.fim-placar li.eu { background: var(--player-glass); border-color: var(--cor-jogador); }
+.fim-placar li.eu .nome { color: var(--cor-jogador); }
+.fim-placar .pos { font-weight: 900; color: var(--text-muted); text-align: center; }
+.fim-placar .bicho-mini { font-size: 1.15em; line-height: 1; text-align: center; }
+.fim-placar .nome { font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fim-placar .pts { font-weight: 900; text-align: right; font-variant-numeric: tabular-nums; }
+.fim-trajeto { display: flex; align-items: center; justify-content: center; gap: 2px; font-weight: 800; font-size: 0.86em; white-space: nowrap; }
+.fim-trajeto .de { color: var(--text-muted); }
+.fim-trajeto .seta { color: rgba(71, 85, 105, 0.5); }
+.fim-trajeto .ate { min-width: 1.5em; padding: 0 5px; border-radius: 100px; text-align: center; background: rgba(15, 23, 42, 0.07); }
+.fim-trajeto .ate.topo { background: var(--ouro); }
+
+.fim-botao-pe { display: none !important; }
+.fim-confete { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 40; }
+
+/* ---------- em pé ---------- */
+@media (orientation: portrait) {
+  #tela-fim {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(150px, 0.9fr) minmax(0, 1.2fr) auto;
+    grid-template-areas: "cab" "esq" "placar" "botao";
+  }
+  #tela-fim .cabecalho { flex-wrap: wrap; row-gap: 6px; }
+  #tela-fim .player-identity { max-width: 60%; }
+  .fim-titulo { white-space: normal; }
+  .fim-colocacao { margin-left: auto; }
+  .fim-esquerda .btn-primario { display: none; }
+  .fim-botao-pe { display: block !important; grid-area: botao; }
+  .fim-bicho { font-size: clamp(28px, 6vh, 50px); }
+  .fim-degrau.primeiro .fim-bicho { font-size: clamp(36px, 8vh, 66px); }
+  .fim-nome { font-size: clamp(12px, 2vh, 16px); }
+  .fim-posicao { font-size: clamp(18px, 3.4vh, 30px); }
+  .fim-detalhe { font-size: clamp(10px, 1.5vh, 13px); }
+  .fim-placar-cab, .fim-placar li { font-size: clamp(12px, 2vh, 15px); }
+  .fim-placar-cab { font-size: clamp(9px, 1.3vh, 11px); }
+}
+
+/* deitado e bem baixo */
+@media (orientation: landscape) and (max-height: 340px) {
+  .fim-detalhe { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fim-bicho, .fim-placar li { animation-duration: 0.01ms !important; }
+  .fim-bloco { transition-duration: 0.01ms !important; }
+}

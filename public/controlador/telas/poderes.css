@@ -1,0 +1,342 @@
+/* Escolha do poder (10s), escolha do alvo (20s) e o "Olhe para a TV" que
+   fica no celular enquanto a TV mostra quem atacou quem.
+   Referências: teste/teste-escolha-poder.html, teste/teste-escolha-alvo.html
+   e teste/teste-olhar-para-tv.html. */
+
+.rotulo-poder {
+  font-size: clamp(10px, 3vmin, 13px);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.titulo-poder {
+  font-size: clamp(16px, 5.4vmin, 24px);
+  font-weight: 900;
+  line-height: 1.15;
+  transition: color 0.3s ease;
+}
+.titulo-poder.confirmado { color: color-mix(in srgb, var(--cor-poder, var(--cor-jogador)) 70%, #0f172a); }
+
+/* ===================== ESCOLHA DO PODER ===================== */
+#tela-escolha-poder .poder-tipos {
+  --icone: clamp(26px, 11vh, 52px);
+  --nome: clamp(13px, 4.4vh, 20px);
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: clamp(6px, 2vmin, 12px);
+}
+/* só os 3 de ataque (nenhum especial disponível) */
+#tela-escolha-poder .poder-tipos.tres { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: minmax(0, 1fr); }
+
+.poder-btn {
+  --cor: #94a3b8;
+  position: relative;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(2px, 1vmin, 6px);
+  padding: 6px 8px;
+  border-radius: clamp(16px, 4.5vmin, 22px);
+  border: 2px solid var(--glass-border);
+  background:
+    radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, var(--cor) 22%, transparent), transparent 70%),
+    var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: var(--glass-shadow);
+  color: var(--text-main);
+  opacity: 0;
+  animation: poderEntrar 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease, filter 0.3s ease,
+              border-color 0.3s ease, box-shadow 0.3s ease;
+}
+@keyframes poderEntrar {
+  from { opacity: 0; transform: translateY(12px) scale(0.92); }
+  to { opacity: 1; transform: none; }
+}
+.poder-btn:active:not(:disabled) { transform: scale(0.95); }
+.poder-icone {
+  font-size: var(--icone);
+  line-height: 1;
+  filter: drop-shadow(0 6px 10px color-mix(in srgb, var(--cor) 35%, transparent));
+}
+.poder-nome {
+  max-width: 100%;
+  font-size: var(--nome);
+  font-weight: 900;
+  line-height: 1.1;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+/* usos restantes (só os poderes com limite) */
+.poder-usos {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  padding: 1px 7px;
+  border-radius: 100px;
+  font-size: clamp(10px, 2.8vmin, 12px);
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  background: color-mix(in srgb, var(--cor) 18%, white);
+  color: color-mix(in srgb, var(--cor) 65%, #0f172a);
+  border: 1px solid color-mix(in srgb, var(--cor) 40%, white);
+}
+.poder-btn.selecionada {
+  border: 3px solid var(--cor);
+  background:
+    radial-gradient(120% 100% at 50% 0%, color-mix(in srgb, var(--cor) 40%, transparent), color-mix(in srgb, var(--cor) 12%, transparent)),
+    var(--glass-bg);
+  box-shadow: 0 14px 30px color-mix(in srgb, var(--cor) 40%, transparent);
+  transform: scale(1.04);
+  z-index: 2;
+}
+.poder-btn.selecionada .poder-icone { animation: poderPular 0.5s cubic-bezier(0.34, 1.8, 0.64, 1); }
+@keyframes poderPular { 40% { transform: translateY(-8px) scale(1.2) rotate(-8deg); } }
+.poder-btn.apagado { opacity: 0.38 !important; filter: grayscale(0.85); }
+
+.rodape-centro { justify-content: center; }
+.btn-pular {
+  min-width: min(320px, 100%);
+  padding: clamp(7px, 2.2vmin, 12px) 20px;
+  border-radius: 100px;
+  border: 2px solid rgba(71, 85, 105, 0.35);
+  background: rgba(255, 255, 255, 0.55);
+  color: var(--text-muted);
+  font-size: clamp(13px, 3.8vmin, 16px);
+  font-weight: 800;
+  transition: transform 0.15s ease, opacity 0.3s ease;
+}
+.btn-pular:active:not(:disabled) { transform: scale(0.96); }
+.btn-pular:disabled { opacity: 0.4; }
+.btn-pular.escolhido { opacity: 1; border-color: var(--text-muted); background: rgba(71, 85, 105, 0.12); color: var(--text-main); }
+
+/* ===================== ESCOLHA DO ALVO ===================== */
+.poder-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 10px 2px 6px;
+  margin: 0 2px;
+  border-radius: 100px;
+  background: color-mix(in srgb, var(--cor-poder) 20%, white);
+  border: 2px solid color-mix(in srgb, var(--cor-poder) 55%, white);
+  color: color-mix(in srgb, var(--cor-poder) 60%, #0f172a);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.alvo-subtitulo {
+  margin-top: 2px;
+  font-size: clamp(11px, 3.2vmin, 14px);
+  font-weight: 700;
+  color: var(--text-muted);
+}
+#tela-escolha-alvo .corpo-alvo {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* colunas "duplas": cada cartão ocupa 2, o que deixa centralizar a última
+   linha incompleta deslocando meia coluna */
+#tela-escolha-alvo .poder-alvos {
+  --colunas: 4;
+  --linhas: 2;
+  --card-max: 150px;
+  --gap: clamp(6px, 2vmin, 12px);
+  --avatar: clamp(30px, 12vh, 58px);
+  --nome: clamp(13px, 4.4vh, 20px);
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  max-height: calc(var(--linhas) * var(--card-max) + (var(--linhas) - 1) * var(--gap));
+  margin: auto 0;
+  display: grid;
+  grid-template-columns: repeat(calc(var(--colunas) * 2), minmax(0, 1fr));
+  grid-template-rows: repeat(var(--linhas), minmax(0, 1fr));
+  gap: var(--gap);
+}
+.alvo-btn {
+  --cor-alvo: #94a3b8;
+  position: relative;
+  grid-column: span 2;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(2px, 1vmin, 6px);
+  padding: 6px 8px;
+  border-radius: clamp(16px, 4.5vmin, 22px);
+  border: 2px solid var(--glass-border);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--cor-alvo) 14%, transparent), transparent 70%),
+    var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: var(--glass-shadow);
+  color: var(--text-main);
+  opacity: 0;
+  animation: poderEntrar 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease, filter 0.3s ease,
+              border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.alvo-btn:active:not(:disabled) { transform: scale(0.95); }
+.alvo-avatar {
+  position: relative;
+  flex: none;
+  width: var(--avatar);
+  height: var(--avatar);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: calc(var(--avatar) * 0.58);
+  line-height: 1;
+  background: color-mix(in srgb, var(--cor-alvo) 24%, white);
+  border: 2px solid color-mix(in srgb, var(--cor-alvo) 55%, white);
+  box-shadow: 0 4px 10px color-mix(in srgb, var(--cor-alvo) 25%, transparent);
+}
+.alvo-coroa { position: absolute; top: -0.55em; right: -0.25em; font-size: 0.42em; transform: rotate(18deg); }
+/* o ícone do poder que pousa no alvo escolhido */
+.alvo-efeito {
+  position: absolute;
+  right: -0.3em;
+  bottom: -0.3em;
+  font-size: 0.55em;
+  transform: scale(0);
+  filter: drop-shadow(0 3px 5px rgba(15, 23, 42, 0.3));
+}
+.alvo-info { display: flex; flex-direction: column; align-items: center; min-width: 0; max-width: 100%; }
+.alvo-nome {
+  max-width: 100%;
+  font-size: var(--nome);
+  font-weight: 900;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.alvo-pontos {
+  font-size: calc(var(--nome) * 0.68);
+  font-weight: 700;
+  color: var(--text-muted);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.alvo-btn.selecionada {
+  border: 3px solid var(--cor-poder);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--cor-poder) 28%, transparent), color-mix(in srgb, var(--cor-poder) 10%, transparent)),
+    var(--glass-bg);
+  box-shadow: 0 14px 30px color-mix(in srgb, var(--cor-poder) 40%, transparent);
+  transform: scale(1.04);
+  z-index: 2;
+}
+.alvo-btn.selecionada .alvo-efeito { animation: alvoPousar 0.5s cubic-bezier(0.34, 1.8, 0.64, 1) forwards; }
+.alvo-btn.selecionada .alvo-avatar { animation: alvoTremer 0.4s ease 0.1s; }
+.alvo-btn.apagado { opacity: 0.38 !important; filter: grayscale(0.85); }
+@keyframes alvoPousar { to { transform: scale(1); } }
+@keyframes alvoTremer {
+  25% { transform: translateX(-3px) rotate(-6deg); }
+  50% { transform: translateX(3px) rotate(6deg); }
+  75% { transform: translateX(-2px) rotate(-3deg); }
+}
+/* o ícone voando do título até o alvo */
+.voo-poder {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 100;
+  pointer-events: none;
+  line-height: 1;
+  filter: drop-shadow(0 6px 10px rgba(15, 23, 42, 0.3));
+}
+
+/* sem poder, ou Escudo/Festa (que já valeram na escolha) */
+.sem-poder {
+  margin: auto;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+}
+.sem-poder-icone { font-size: clamp(40px, 16vmin, 72px); line-height: 1; animation: semPoderBalancar 2.6s ease-in-out infinite; }
+.sem-poder-titulo { font-size: clamp(18px, 6vmin, 28px); font-weight: 900; }
+.sem-poder-texto { font-size: clamp(13px, 4vmin, 17px); font-weight: 700; color: var(--text-muted); }
+@keyframes semPoderBalancar { 50% { transform: rotate(-8deg) translateY(-4px); } }
+
+/* ===================== OLHE PARA A TV ===================== */
+#tela-olhe-tv {
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  pointer-events: none; /* nada aqui é clicável */
+}
+.olhe-tv-icone {
+  font-size: clamp(44px, 18vmin, 64px);
+  line-height: 1;
+  filter: drop-shadow(0 8px 14px rgba(15, 23, 42, 0.18));
+  animation: olharTv 2.4s ease-in-out infinite;
+}
+.olhe-tv-mensagem {
+  font-size: clamp(32px, 15vmin, 64px);
+  font-weight: 900;
+  color: var(--text-main);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  line-height: 1;
+  text-align: center;
+  text-shadow: 0 6px 20px rgba(255, 255, 255, 0.9);
+}
+.olhe-tv-detalhe {
+  min-height: 1.2em;
+  font-size: clamp(14px, 4.4vmin, 20px);
+  font-weight: 800;
+  color: var(--text-muted);
+  text-align: center;
+}
+@keyframes olharTv { 50% { transform: translateY(-8px); } }
+
+/* ===================== EM PÉ ===================== */
+@media (orientation: portrait) {
+  #tela-escolha-poder .poder-tipos {
+    max-height: 460px;
+    margin: auto 0;
+    --icone: clamp(32px, 6.4vh, 56px);
+    --nome: clamp(15px, 2.6vh, 21px);
+  }
+  #tela-escolha-poder .poder-tipos.tres { grid-template-columns: minmax(0, 1fr); grid-template-rows: repeat(3, minmax(0, 1fr)); }
+  .btn-pular { width: 100%; }
+
+  #tela-escolha-alvo .poder-alvos { --avatar: clamp(38px, 7vh, 64px); --nome: clamp(15px, 2.7vh, 21px); }
+  /* uma coluna só (até 3 alvos): cartão deitado, avatar à esquerda */
+  #tela-escolha-alvo .poder-alvos.uma-coluna { --card-max: 120px; }
+  #tela-escolha-alvo .poder-alvos.uma-coluna .alvo-btn {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 14px;
+    padding: 6px 18px;
+  }
+  #tela-escolha-alvo .poder-alvos.uma-coluna .alvo-info { align-items: flex-start; flex: 1; }
+}
+
+/* celulares deitados bem baixos (até 340px de altura) */
+@media (orientation: landscape) and (max-height: 340px) {
+  .alvo-subtitulo { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .poder-btn, .alvo-btn, .sem-poder-icone, .olhe-tv-icone { animation-duration: 0.01ms !important; }
+}

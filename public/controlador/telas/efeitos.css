@@ -1,0 +1,150 @@
+/* Efeitos dos poderes nas alternativas do celular.
+   Congelamento: um bloco de gelo em cada alternativa (teste/teste-gelo.html).
+   Névoa: o texto borrado clareando sozinho (teste/teste-nevoa.html). */
+
+#alternativas .alternativa { position: relative; overflow: hidden; }
+.texto-alternativa { position: relative; z-index: 1; }
+
+/* ===================== GELO ===================== */
+:root {
+  /* opaco e leitoso: geada granulada, manchas azuladas, bolhas presas e brilho */
+  --gelo-geada: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  1.15 0 0 0 -0.6'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  --gelo-nuvem: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='360' height='220'><filter id='c'><feTurbulence type='fractalNoise' baseFrequency='.018 .03' numOctaves='4' seed='7' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .55  0 0 0 0 .78  0 0 0 0 .93  1.5 0 0 0 -0.55'/></filter><rect width='100%' height='100%' filter='url(%23c)'/></svg>");
+  --gelo-bolhas:
+    radial-gradient(circle at 14% 32%, rgba(255, 255, 255, .95) 0 1.8px, rgba(255, 255, 255, 0) 2.6px),
+    radial-gradient(circle at 17% 40%, rgba(255, 255, 255, .8) 0 1.1px, rgba(255, 255, 255, 0) 1.8px),
+    radial-gradient(circle at 63% 22%, rgba(255, 255, 255, .9) 0 2.2px, rgba(255, 255, 255, 0) 3px),
+    radial-gradient(circle at 82% 68%, rgba(255, 255, 255, .85) 0 1.6px, rgba(255, 255, 255, 0) 2.4px),
+    radial-gradient(circle at 40% 76%, rgba(255, 255, 255, .8) 0 1.3px, rgba(255, 255, 255, 0) 2px),
+    radial-gradient(circle at 91% 30%, rgba(255, 255, 255, .8) 0 1px, rgba(255, 255, 255, 0) 1.7px);
+}
+
+.gelo {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  z-index: 2;
+  pointer-events: none; /* o toque vai para o botão, que decide se derrete ou responde */
+  overflow: hidden;
+  background:
+    var(--gelo-bolhas),
+    var(--gelo-geada),
+    linear-gradient(118deg, transparent 15%, rgba(255, 255, 255, .7) 19%, rgba(255, 255, 255, 0) 30%,
+      transparent 58%, rgba(255, 255, 255, .45) 61%, transparent 67%),
+    var(--gelo-nuvem),
+    /* base semitransparente: a resposta aparece por trás, embaçada */
+    linear-gradient(180deg, rgba(246, 252, 255, .62) 0%, rgba(222, 241, 251, .55) 30%,
+      rgba(195, 228, 246, .58) 68%, rgba(166, 211, 238, .68) 100%);
+  background-size: auto, auto, auto, auto, auto, auto, 180px 180px, auto, 360px 220px, auto;
+  backdrop-filter: blur(1.5px);
+  -webkit-backdrop-filter: blur(1.5px);
+  /* borda congelada: aro branco grosso + profundidade azul embaixo */
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 255, 255, 0.95),
+    inset 0 0 22px 6px rgba(255, 255, 255, 0.8),
+    inset 0 -16px 28px rgba(60, 140, 195, 0.4),
+    0 4px 10px rgba(60, 130, 180, 0.25);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  transition: opacity 0.45s ease;
+}
+/* neve acumulada no topo do bloco */
+.gelo::after {
+  content: "";
+  position: absolute;
+  top: -3px;
+  left: 0;
+  right: 0;
+  height: 11px;
+  background:
+    radial-gradient(circle at 9px 0, #fff 8px, rgba(255, 255, 255, 0) 8.5px) 0 0 / 18px 11px repeat-x,
+    radial-gradient(circle at 4px 0, #fff 6px, rgba(255, 255, 255, 0) 6.5px) 9px 2px / 23px 11px repeat-x;
+  filter: drop-shadow(0 2px 2px rgba(80, 150, 200, 0.35));
+  pointer-events: none;
+}
+.gelo-dica {
+  position: relative;
+  margin-bottom: 6px;
+  font-size: clamp(10px, 2.8vh, 12px);
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(40, 110, 160, 0.75);
+  transition: opacity 0.3s ease;
+}
+.gelo.sumindo { opacity: 0; }
+
+/* flocos de neve: o gelo se desfaz neles */
+.camada-neve { position: fixed; inset: 0; pointer-events: none; z-index: 60; }
+.floco-neve {
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: #fff;
+  line-height: 1;
+  pointer-events: none;
+  text-shadow: 0 0 3px rgba(120, 190, 235, 0.95), 0 1px 2px rgba(40, 110, 160, 0.5);
+  will-change: transform, opacity;
+}
+
+/* ===================== NÉVOA ===================== */
+/* o JS vai baixando --blur até 0 */
+.com-nevoa .texto-alternativa {
+  filter: blur(var(--blur, 0px));
+  /* contorno colorido no borrão, que some junto com a névoa */
+  text-shadow:
+    0 0 3px rgba(99, 102, 241, calc(var(--halo, 0) * 0.7)),
+    0 0 8px rgba(56, 189, 248, calc(var(--halo, 0) * 0.5));
+}
+/* laterais escurecidas que somem junto com o borrão */
+.com-nevoa::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  z-index: 0;
+  pointer-events: none;
+  opacity: var(--borda, 0);
+  background: radial-gradient(ellipse 80% 90% at center, rgba(10, 12, 18, 0) 55%, rgba(10, 12, 18, 0.22) 100%);
+  box-shadow: inset 0 0 18px 3px rgba(10, 12, 18, 0.2);
+}
+.dica-nevoa {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 5px;
+  z-index: 3;
+  font-size: clamp(9px, 2.6vh, 11px);
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(51, 65, 85, 0.85);
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+  pointer-events: none;
+  opacity: var(--dica, 1);
+}
+/* com gelo e névoa juntos, vale a dica do gelo; a da névoa volta quando ele derrete */
+.alternativa:has(.gelo) .dica-nevoa { display: none; }
+
+/* bônus de velocidade caindo enquanto a névoa some: chutar no borrão vale mais */
+.bonus-nevoa {
+  flex: none;
+  min-width: 64px;
+  padding: 3px 9px;
+  border-radius: 100px;
+  background: #0f172a;
+  color: #fde68a;
+  font-size: 14px;
+  font-weight: 900;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+.bonus-nevoa.zero { background: rgba(15, 23, 42, 0.12); color: var(--text-muted); }
+.bonus-nevoa.travado { background: var(--cor-jogador); color: #fff; }
+
+@media (orientation: portrait) {
+  .bonus-nevoa { margin-left: auto; }
+  .bonus-nevoa + .timer-redondo-mini { margin-left: 8px !important; }
+}

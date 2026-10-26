@@ -280,24 +280,6 @@ input:focus { outline: 2px solid var(--cor-jogador); }
   .aviso-girar:not(.dispensado) { display: flex; }
 }
 
-/* ---------- Banner "fulano usou um poder em você" ---------- */
-#aviso-atingido {
-  position: fixed;
-  top: 8px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 50;
-  max-width: 90vw;
-  padding: 8px 18px;
-  border-radius: 100px;
-  background: rgba(255, 71, 87, 0.95);
-  color: #fff;
-  font-size: 14px;
-  font-weight: 800;
-  text-align: center;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-}
-
 /* ---------- Pop-up de reiniciar o jogo ---------- */
 .modal-fundo {
   position: fixed;
@@ -525,72 +507,6 @@ input:focus { outline: 2px solid var(--cor-jogador); }
 .fase-leitura #contagem-leitura { display: block; font-size: clamp(40px, 22vh, 80px); line-height: 1; }
 .area-alternativas { position: relative; flex: 1; min-height: 0; display: flex; }
 
-/* ---------- Efeitos dos Jogos de Poder (cobrem as respostas) ---------- */
-.obstrucao {
-  position: absolute;
-  inset: 0;
-  z-index: 5;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 12px;
-  border-radius: 22px;
-  background: rgba(15, 23, 42, 0.9);
-  text-align: center;
-}
-.obstrucao-mensagem { color: #fff; font-weight: 800; font-size: clamp(13px, 3.8vh, 18px); }
-.obstrucao-toque {
-  width: 100%;
-  padding: clamp(12px, 5vh, 24px);
-  border-radius: 16px;
-  background: repeating-linear-gradient(135deg, #2a6fb0, #2a6fb0 10px, #1c4a78 10px, #1c4a78 20px);
-  color: #fff;
-  font-weight: 900;
-  font-size: clamp(15px, 4vh, 20px);
-}
-.bolhas-area { position: relative; flex: 1; width: 100%; min-height: 60px; }
-.bolha {
-  position: absolute;
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  background: var(--verde);
-  font-size: 22px;
-}
-
-/* ---------- Poder: escolha do alvo ---------- */
-.poder-alvos {
-  flex: 1;
-  min-height: 0;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-auto-rows: minmax(52px, 96px);
-  align-content: start;
-  gap: 10px;
-}
-.poder-alvo-btn {
-  min-height: 0;
-  padding: 6px 8px;
-  border-radius: 20px;
-  background: var(--glass-bg);
-  border: 2px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
-  color: var(--text-main);
-  font-size: clamp(13px, 4vh, 20px);
-  font-weight: 900;
-  overflow-wrap: anywhere;
-}
-.poder-alvo-btn.selecionada {
-  background: var(--player-glass);
-  border: 3px solid var(--cor-jogador);
-  color: var(--cor-jogador);
-  box-shadow: 0 15px 35px var(--player-glow);
-}
-.poder-alvo-btn:disabled:not(.selecionada) { opacity: 0.5; filter: grayscale(80%); }
-#alvo-usado-msg { text-align: center; font-weight: 800; color: var(--cor-jogador); }
-
 /* ---------- Linking ---------- */
 .linking-lista {
   flex: 1;
@@ -720,6 +636,22 @@ input:focus { outline: 2px solid var(--cor-jogador); }
   max-width: 90%;
 }
 
+/* ---------- Festa, Aposta e Escudo no resultado da pergunta ---------- */
+.resultado-extras { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.resultado-extras:empty { display: none; }
+.resultado-extra {
+  padding: 3px 12px;
+  border-radius: 100px;
+  font-size: clamp(11px, 3.2vh, 15px);
+  font-weight: 800;
+  background: rgba(15, 23, 42, 0.06);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  color: var(--text-muted);
+}
+.resultado-extra.festa { background: #fff1e6; border-color: #ffb37a; color: #b45309; }
+.resultado-extra.aposta.ganhou { background: #e8f9ef; border-color: var(--verde); color: #0a7a3c; }
+.resultado-extra.escudo { background: #eef0ff; border-color: #a5b4fc; color: #4338ca; }
+
 /* ---------- Listas: placar, gabarito, posições ---------- */
 .lista-cartoes {
   list-style: none;
@@ -742,7 +674,6 @@ input:focus { outline: 2px solid var(--cor-jogador); }
   text-align: left;
 }
 .lista-cartoes li span:first-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70%; }
-.lista-cartoes li.vencedor { border: 2px solid var(--cor-jogador); color: var(--cor-jogador); font-weight: 900; }
 #linking-gabarito li, #sorting-gabarito li { display: block; white-space: normal; font-weight: 600; font-size: clamp(11px, 3vh, 14px); }
 
 /* ---------- Em pé: o mesmo layout, em uma coluna ---------- */
@@ -757,7 +688,6 @@ input:focus { outline: 2px solid var(--cor-jogador); }
 
   .animais-grid { grid-template-columns: repeat(2, 1fr); grid-auto-rows: minmax(84px, 1fr); }
   .alternativas { grid-template-columns: 1fr; grid-auto-rows: minmax(60px, 1fr); }
-  .poder-alvos { grid-template-columns: 1fr 1fr; }
   .linking-lista { grid-template-columns: 1fr; }
   .sorting-item { grid-template-columns: 1fr; }
   .corpo-duas-colunas { grid-template-columns: 1fr; }
