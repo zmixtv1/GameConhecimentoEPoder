@@ -8,7 +8,7 @@ Status: `[ ]` a fazer · `[~]` em andamento
 
 Branch de trabalho desta leva: `novos-poderes`.
 
-Os arquivos `teste*.html` na raiz são **referência visual de design**, feitos à parte.
+Os arquivos em `teste/` são **referência visual de design**, feitos à parte.
 Nenhum deles roda no jogo nem é portado para dentro dele: servem para a implementação
 em `public/` saber com o que se parecer.
 
@@ -103,7 +103,7 @@ em `public/` saber com o que se parecer.
 
 ## Pirâmide do Conhecimento
 
-Referência visual: `teste-piramide-final.html`. É uma pirâmide isométrica 3D de **8 níveis**,
+Referência visual: `teste/teste-piramide-final.html`. É uma pirâmide isométrica 3D de **8 níveis**,
 onde o nível N é uma laje de N×N blocos — 204 blocos no total, base 8×8, topo 1×1.
 Os níveis são numerados **0 na base e 7 no topo** (`TOPO = TOTAL_ANDARES - 1`).
 
@@ -167,7 +167,7 @@ desses dois valores.
       acontece — é o que deixa a mesa ver quem vai ganhar. O servidor já transmite
       `progressoPiramide` a cada acerto, para todos e para a TV (server/sala.js:776-778),
       então o gancho existe; falta ligar a TV nele.
-      A `teste-piramide-final.html` já resolve a animação inteira: salto com arco
+      A `teste/teste-piramide-final.html` já resolve a animação inteira: salto com arco
       (`ALTURA_PULO`), easing cúbico, sombra que encolhe e clareia no ar, e `z-index`
       calculado pela posição na tela para o boneco nunca sumir atrás de um bloco. A
       corrida de lá é simulada com sorteio ponderado por velocidade; no jogo de verdade
@@ -226,10 +226,10 @@ public/controlador/controlador.js:1038.
       tela separada).
       **Tempo: 2 segundos por jogador que usou poder.** Teto de 16s com os 8 atacando.
       **No celular**, durante a sequência inteira: tela nova com "Olhe para a TV" no centro.
-      **Referência visual** — `teste-poderes.html` (o projétil, a cena do escudo e o
+      **Referência visual** — `teste/teste-poderes.html` (o projétil, a cena do escudo e o
       dicionário `PODERES` classificando cada poder em `ataque | defesa | global`) e
-      `teste-poderes-festaDePontos.html` (a Festa de Pontos com confete, e os 8 jogadores
-      no `.players-dock` do `teste.html`, que resolve o layout da sala cheia).
+      `teste/teste-poderes-festaDePontos.html` (a Festa de Pontos com confete, e os 8 jogadores
+      no `.players-dock` do `teste/teste.html`, que resolve o layout da sala cheia).
       A implementação é nova, em `public/tv/tv.js` e `public/tv/tv.css`, mais a tela de
       espera em `public/controlador/`. Os arquivos `teste*` não entram no jogo.
       Duas decisões a tomar na implementação, porque a referência resolve de um jeito que
@@ -254,7 +254,7 @@ public/controlador/controlador.js:1038.
       **Números:** 2 toques por bloco. Cada ataque acumulado soma +1 toque em todos os
       blocos. Hoje são 3 toques para liberar tudo, então quem já decidiu passa a pagar
       menos que hoje e quem está em dúvida paga mais.
-      Referência visual: `teste-gelo.html`, que confirma a regra e resolve o detalhe de
+      Referência visual: `teste/teste-gelo.html`, que confirma a regra e resolve o detalhe de
       como o gelo some. O primeiro toque abre um buraco de ~38px no ponto onde o dedo
       encostou e deixa o resto do gelo translúcido; o segundo faz o buraco crescer até
       cobrir o bloco e o gelo é removido; **o terceiro toque é o que responde**
@@ -282,7 +282,7 @@ public/controlador/controlador.js:1038.
       Disponível **2 vezes na partida**: no tema 2 e no tema 4, o penúltimo antes da
       Pirâmide.
       **Na tela:** aparece normalmente na sequência de "quem atacou quem", seguindo a
-      referência visual de `teste-poderes-festaDePontos.html` (confete e os pods pulando). O
+      referência visual de `teste/teste-poderes-festaDePontos.html` (confete e os pods pulando). O
       **dobro só é revelado na tela de pontuação** — durante a animação a mesa vê que
       alguém ativou, mas o efeito nos pontos só aparece no placar.
 
