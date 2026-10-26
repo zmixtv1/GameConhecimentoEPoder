@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+    <title>Controle Mobile - Fim de jogo</title>
+
+    <!--
+      Tela final no celular (a TV mostra só o pódio).
+
+      - Cabeçalho: quem venceu + explicação curta (virada ou "liderou do começo
+        ao fim") + selo com a SUA colocação.
+      - Pódio pequeno (mesma regra da TV: topo vence, depois andar, pontos
+        desempatam).
+      - Ao lado: o placar das 5 rodadas, com o caminho de cada um na pirâmide
+        (largada → onde parou). A sua linha fica destacada.
+      - Botão "Jogar de novo".
+
+      Deitado: pódio + botão à esquerda, placar à direita.
+      Em pé: pódio em cima, placar no meio, botão embaixo.
+
+      Barra do protótipo: troca cenário e quem é "você". ?limpo esconde.
+    -->
+
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            color-scheme: light;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --bg: #f8fafc;
+            --ouro: #f5b301;
+            --glass-bg: rgba(255, 255, 255, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.9);
+            --glass-shadow: 0 6px 14px rgba(0, 0, 0, 0.07);
+
+            --cor-jogador: #1e90ff;
+            --player-glass: color-mix(in srgb, var(--cor-jogador) 15%, transparent);
+            --player-glow: color-mix(in srgb, var(--cor-jogador) 30%, transparent);
+
+            --pad-t: max(8px, env(safe-area-inset-top));
+            --pad-r: max(12px, env(safe-area-inset-right));
+            --pad-b: max(8px, env(safe-area-inset-bottom));
+            --pad-l: max(12px, env(safe-area-inset-left));
+
+            --gap: clamp(6px, 2vmin, 12px);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Outfit", system-ui, sans-serif;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html { height: 100%; }
+
+        body {
+            height: 100vh;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            padding: var(--pad-t) var(--pad-r) var(--pad-b) var(--pad-l);
+            background-color: var(--bg);
+            background-image: radial-gradient(#cbd5e1 2px, transparent 2px);
+            background-size: 40px 40px;
+            background-position: center;
+            color: var(--text-main);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .oculto { display: none !important; }
+
+        .ambient-light {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 0;
+            pointer-events: none;
+            animation: fluidMotion 20s infinite alternate ease-in-out;
+        }
+        .light-1 { top: -10%; left: -10%; width: 60vmax; height: 60vmax; background: rgba(226, 232, 240, 0.8); }
+        .light-2 { bottom: -20%; right: -10%; width: 50vmax; height: 50vmax; background: rgba(186, 230, 253, 0.5); animation-delay: -5s; }
+        .light-3 { top: 25%; left: 15%; width: 35vmax; height: 35vmax; background: rgba(255, 244, 200, 0.7); animation-delay: -10s; }
+        @keyframes fluidMotion {
+            0% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(15px, 20px) scale(1.05); }
+            66% { transform: translate(-15px, 10px) scale(0.95); }
+            100% { transform: translate(25px, -15px) scale(1.02); }
+        }
+
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 2px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+        }
+
+        /* ===================== ESTRUTURA ===================== */
+        .tela {
+            position: relative;
+            z-index: 1;
+            flex: 1;
+            min-height: 0;
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+            grid-template-rows: auto minmax(0, 1fr);
+            grid-template-areas:
+                "cab   cab"
+                "esq   placar";
+            gap: var(--gap) clamp(10px, 2.4vw, 20px);
+        }
+
+        /* ---------- Cabeçalho ---------- */
+        .cabecalho {
+            grid-area: cab;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .cabecalho-texto { flex: 1; min-width: 0; text-align: center; }
+        .titulo {
+            font-size: clamp(17px, 5.6vmin, 26px);
+            font-weight: 900;
+            line-height: 1.1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .titulo .campeao { color: #c58b00; }
+        .explica {
+            margin-top: 1px;
+            font-size: clamp(11px, 3.3vmin, 14px);
+            font-weight: 700;
+            color: var(--text-muted);
+            line-height: 1.2;
+        }
+        .explica b { color: #a16207; }
+
+        .player-identity {
+            flex: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 14px 5px 8px;
+            border-radius: 100px;
+            max-width: 30%;
+        }
+        .player-avatar { font-size: clamp(20px, 6vmin, 26px); line-height: 1; }
+        .player-name {
+            font-size: clamp(12px, 3.6vmin, 15px);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Sua colocação */
+        .minha-colocacao {
+            flex: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-width: clamp(52px, 15vmin, 68px);
+            padding: 4px 10px;
+            border-radius: 16px;
+            border: 2px solid var(--cor-jogador);
+            background: var(--player-glass);
+            box-shadow: 0 8px 20px var(--player-glow);
+            line-height: 1;
+        }
+        .minha-colocacao small { font-size: clamp(9px, 2.6vmin, 11px); font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); }
+        .minha-colocacao b { font-size: clamp(18px, 6vmin, 26px); font-weight: 900; color: var(--cor-jogador); }
+
+        /* ---------- Coluna esquerda: pódio + botão ---------- */
+        .esquerda {
+            grid-area: esq;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            gap: var(--gap);
+        }
+
+        .podio {
+            flex: 1;
+            min-height: 0;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            align-items: end;
+            gap: clamp(4px, 1.4vmin, 8px);
+        }
+
+        .degrau {
+            --cor: #94a3b8;
+            min-width: 0;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+        }
+        .degrau.primeiro { --cor: #f5b301; }
+        .degrau.segundo  { --cor: #94a3b8; }
+        .degrau.terceiro { --cor: #cd8a4f; }
+
+        .degrau .bicho {
+            position: relative;
+            font-size: clamp(22px, 9vmin, 44px);
+            line-height: 1;
+            filter: drop-shadow(0 5px 6px rgba(15, 23, 42, .22));
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        .degrau.primeiro .bicho { font-size: clamp(28px, 12vmin, 58px); }
+        .degrau.revelado .bicho { animation: cair .55s cubic-bezier(.3, 1.4, .5, 1) forwards; }
+        .degrau.primeiro.revelado .bicho { animation: cair .55s cubic-bezier(.3, 1.4, .5, 1) forwards, pular 1.2s ease-in-out .7s infinite; }
+        @keyframes cair { to { opacity: 1; transform: none; } }
+        @keyframes pular { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-12%); } }
+
+        .coroa {
+            position: absolute;
+            left: 50%;
+            top: -.45em;
+            font-size: .45em;
+            transform: translateX(-50%);
+        }
+
+        .degrau .nome {
+            max-width: 100%;
+            margin-top: 2px;
+            font-size: clamp(11px, 3.4vmin, 15px);
+            font-weight: 900;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .degrau.eu .nome { color: var(--cor-jogador); }
+
+        .bloco {
+            width: 100%;
+            height: 0;
+            margin-top: 3px;
+            border-radius: 12px 12px 4px 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 4px;
+            overflow: hidden;
+            color: #fff;
+            background: linear-gradient(180deg, color-mix(in srgb, var(--cor) 78%, white), var(--cor) 45%, color-mix(in srgb, var(--cor) 82%, black));
+            box-shadow: inset 0 2px 0 rgba(255, 255, 255, .55), 0 8px 18px color-mix(in srgb, var(--cor) 30%, transparent);
+            transition: height .6s cubic-bezier(.2, .9, .3, 1.05);
+        }
+        .degrau.primeiro .bloco { color: #4a3500; }
+        .degrau.eu .bloco { outline: 3px solid var(--cor-jogador); outline-offset: 2px; }
+        .degrau.primeiro.revelado .bloco { height: 46%; }
+        .degrau.segundo.revelado  .bloco { height: 32%; }
+        .degrau.terceiro.revelado .bloco { height: 22%; }
+        .bloco .posicao { font-size: clamp(15px, 6vmin, 28px); font-weight: 900; line-height: 1; }
+        .bloco .detalhe { font-size: clamp(9px, 2.6vmin, 12px); font-weight: 800; white-space: nowrap; opacity: .95; }
+
+        .btn-primario {
+            flex: none;
+            width: 100%;
+            padding: clamp(9px, 3vmin, 14px) 18px;
+            border: 0;
+            border-radius: 16px;
+            background: var(--cor-jogador);
+            color: #fff;
+            font-size: clamp(15px, 4.6vmin, 20px);
+            font-weight: 900;
+            box-shadow: 0 10px 25px var(--player-glow);
+            cursor: pointer;
+            transition: transform .15s cubic-bezier(.34, 1.56, .64, 1), opacity .2s;
+        }
+        .btn-primario:active:not(:disabled) { transform: scale(.96); }
+        .btn-primario:disabled { opacity: .6; box-shadow: none; cursor: default; }
+
+        /* ---------- Placar da partida ---------- */
+        .placar {
+            grid-area: placar;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            padding: clamp(6px, 1.6vmin, 10px) clamp(6px, 1.8vmin, 10px);
+            border-radius: 18px;
+        }
+
+        .placar-cab, .placar li {
+            display: grid;
+            grid-template-columns: 1.7em 1.5em minmax(0, 1fr) 3.4em 4.6em;
+            align-items: center;
+            column-gap: 5px;
+            font-size: clamp(11px, 3.3vmin, 14px);
+        }
+        .placar-cab {
+            padding: 0 6px 3px;
+            font-size: clamp(8px, 2.4vmin, 10px);
+            font-weight: 800;
+            letter-spacing: .07em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+        .placar-cab span:first-child { grid-column: 1 / 4; }
+        .placar-cab .c-pts { text-align: right; }
+        .placar-cab .c-pir { text-align: center; }
+
+        .placar ol {
+            list-style: none;
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            overflow-y: auto;
+        }
+        .placar li {
+            flex: 1 1 0;
+            min-height: 22px;
+            max-height: 40px;
+            padding: 0 6px;
+            border-radius: 9px;
+            background: rgba(255, 255, 255, .5);
+            border: 1px solid transparent;
+            opacity: 0;
+            transform: translateX(10px);
+            animation: entrarLinha .35s ease forwards;
+        }
+        @keyframes entrarLinha { to { opacity: 1; transform: none; } }
+        .placar li.campeao { background: rgba(245, 179, 1, .16); border-color: rgba(245, 179, 1, .6); }
+        .placar li.eu { background: var(--player-glass); border-color: var(--cor-jogador); }
+        .placar li.eu .nome { color: var(--cor-jogador); }
+
+        .placar .pos { font-weight: 900; color: var(--text-muted); text-align: center; }
+        .placar .bicho-mini { font-size: 1.15em; line-height: 1; text-align: center; }
+        .placar .nome { font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .placar .pts { font-weight: 900; text-align: right; font-variant-numeric: tabular-nums; }
+
+        .trajeto { display: flex; align-items: center; justify-content: center; gap: 2px; font-weight: 800; font-size: .86em; white-space: nowrap; }
+        .trajeto .de { color: var(--text-muted); }
+        .trajeto .seta { color: rgba(71, 85, 105, .5); }
+        .trajeto .ate { min-width: 1.5em; padding: 0 5px; border-radius: 100px; text-align: center; background: rgba(15, 23, 42, .07); }
+        .trajeto .ate.topo { background: var(--ouro); }
+
+        /* ===================== EM PÉ ===================== */
+        @media (orientation: portrait) {
+            .tela {
+                grid-template-columns: minmax(0, 1fr);
+                grid-template-rows: auto minmax(150px, .9fr) minmax(0, 1.2fr) auto;
+                grid-template-areas: "cab" "esq" "placar" "botao";
+            }
+            .cabecalho { flex-wrap: wrap; row-gap: 6px; }
+            .cabecalho-texto { order: 3; flex-basis: 100%; }
+            .titulo { white-space: normal; }
+            .player-identity { max-width: 60%; }
+            .minha-colocacao { margin-left: auto; }
+            .esquerda .btn-primario { display: none; }
+            .botao-pe { display: block !important; grid-area: botao; }
+            .degrau .bicho { font-size: clamp(28px, 6vh, 50px); }
+            .degrau.primeiro .bicho { font-size: clamp(36px, 8vh, 66px); }
+            .degrau .nome { font-size: clamp(12px, 2vh, 16px); }
+            .bloco .posicao { font-size: clamp(18px, 3.4vh, 30px); }
+            .bloco .detalhe { font-size: clamp(10px, 1.5vh, 13px); }
+            .placar-cab, .placar li { font-size: clamp(12px, 2vh, 15px); }
+            .placar-cab { font-size: clamp(9px, 1.3vh, 11px); }
+        }
+        .botao-pe { display: none; }
+
+        /* Deitado e bem baixo: sem subtítulo extra */
+        @media (orientation: landscape) and (max-height: 340px) {
+            :root { --gap: 6px; }
+            .bloco .detalhe { display: none; }
+        }
+
+        #confete { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 40; }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+        }
+
+        /* ===== só deste protótipo, não existe no jogo ===== */
+        .barra-prototipo {
+            position: fixed; bottom: 6px; right: 6px; z-index: 500;
+            display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+            padding: 4px 6px; border-radius: 8px;
+            background: rgba(15, 23, 42, 0.88); color: #fff;
+            font-size: 10px; font-weight: 700;
+        }
+        .barra-prototipo select, .barra-prototipo button { font: inherit; font-size: 10px; padding: 2px 4px; border-radius: 5px; border: 0; }
+        .barra-prototipo button { background: #fff; color: #0f172a; font-weight: 800; cursor: pointer; }
+    </style>
+</head>
+
+<body>
+    <div class="ambient-light light-1"></div>
+    <div class="ambient-light light-2"></div>
+    <div class="ambient-light light-3"></div>
+
+    <section id="tela-fim" class="tela">
+        <header class="cabecalho">
+            <div class="player-identity glass-panel" data-identidade></div>
+            <div class="cabecalho-texto">
+                <h2 class="titulo" id="fim-titulo"></h2>
+                <p class="explica" id="fim-explica"></p>
+            </div>
+            <div class="minha-colocacao" id="minha-colocacao">
+                <small>Você</small>
+                <b id="minha-posicao">–</b>
+            </div>
+        </header>
+
+        <div class="esquerda">
+            <div class="podio" id="podio"></div>
+            <button class="btn-primario" type="button" data-jogar-de-novo>↻ Jogar de novo</button>
+        </div>
+
+        <div class="placar glass-panel">
+            <div class="placar-cab">
+                <span>Placar das rodadas</span>
+                <span class="c-pts">Pts</span>
+                <span class="c-pir">Andar</span>
+            </div>
+            <ol id="placar"></ol>
+        </div>
+
+        <button class="btn-primario botao-pe" type="button" data-jogar-de-novo>↻ Jogar de novo</button>
+    </section>
+
+    <canvas id="confete"></canvas>
+
+    <div class="barra-prototipo" id="barra-prototipo">
+        <select id="proto-cenario">
+            <option value="virada">Virada</option>
+            <option value="lider">Líder confirma</option>
+        </select>
+        <select id="proto-eu"></select>
+        <button id="botao-repetir" type="button">Repetir</button>
+    </div>
+
+    <script>
+    (() => {
+        'use strict';
+
+        const TOPO = 8; // 0 = chão, 8 = topo
+
+        const CENARIOS = {
+            virada: [
+                { id: '8', nome: 'Luciana',   bicho: '🐯', cor: '#ff7f50', pontos: 2300, largada: 0, andarFinal: 8 },
+                { id: '1', nome: 'Fernanda',   bicho: '🦊', cor: '#ff4757', pontos: 2600, largada: 4, andarFinal: 6 },
+                { id: '2', nome: 'Rodrigo',   bicho: '🐼', cor: '#1e90ff', pontos: 2550, largada: 3, andarFinal: 6 },
+                { id: '4', nome: 'Adamor',    bicho: '🦁', cor: '#ffa502', pontos: 2480, largada: 2, andarFinal: 5 },
+                { id: '3', nome: 'Cecília',   bicho: '🐸', cor: '#2ed573', pontos: 2500, largada: 2, andarFinal: 4 },
+                { id: '5', nome: 'Catarina',  bicho: '🦄', cor: '#9b59b6', pontos: 2450, largada: 1, andarFinal: 4 },
+                { id: '6', nome: 'Guilherme', bicho: '🐧', cor: '#00d2d3', pontos: 2400, largada: 1, andarFinal: 3 },
+                { id: '7', nome: 'Mônica',    bicho: '🐙', cor: '#ff6b81', pontos: 2380, largada: 0, andarFinal: 2 }
+            ],
+            lider: [
+                { id: '1', nome: 'Fernanda',   bicho: '🦊', cor: '#ff4757', pontos: 2600, largada: 4, andarFinal: 8 },
+                { id: '2', nome: 'Rodrigo',   bicho: '🐼', cor: '#1e90ff', pontos: 2550, largada: 3, andarFinal: 7 },
+                { id: '3', nome: 'Cecília',   bicho: '🐸', cor: '#2ed573', pontos: 2500, largada: 2, andarFinal: 5 },
+                { id: '4', nome: 'Adamor',    bicho: '🦁', cor: '#ffa502', pontos: 2480, largada: 2, andarFinal: 5 },
+                { id: '5', nome: 'Catarina',  bicho: '🦄', cor: '#9b59b6', pontos: 2450, largada: 1, andarFinal: 4 },
+                { id: '8', nome: 'Luciana',   bicho: '🐯', cor: '#ff7f50', pontos: 2300, largada: 0, andarFinal: 4 },
+                { id: '6', nome: 'Guilherme', bicho: '🐧', cor: '#00d2d3', pontos: 2400, largada: 1, andarFinal: 3 },
+                { id: '7', nome: 'Mônica',    bicho: '🐙', cor: '#ff6b81', pontos: 2380, largada: 0, andarFinal: 1 }
+            ]
+        };
+
+        // Mesma regra da TV: topo vence; depois andar; pontos desempatam.
+        function classificar(lista) {
+            return [...lista].sort((a, b) => {
+                if (a.andarFinal !== b.andarFinal) return b.andarFinal - a.andarFinal;
+                return b.pontos - a.pontos;
+            });
+        }
+
+        const $ = id => document.getElementById(id);
+        function el(tag, classe, texto) {
+            const e = document.createElement(tag);
+            if (classe) e.className = classe;
+            if (texto !== undefined) e.textContent = texto;
+            return e;
+        }
+        const nomeAndar = n => n === 0 ? 'chão' : n === TOPO ? 'topo' : `andar ${n}`;
+        const medalha = p => (p === 1 ? ' 🥇' : p === 2 ? ' 🥈' : p === 3 ? ' 🥉' : '');
+
+        let timers = [];
+        const depois = (ms, fn) => timers.push(setTimeout(fn, ms));
+
+        function montar(cenario, euId) {
+            timers.forEach(clearTimeout);
+            timers = [];
+            pararConfete();
+
+            const jogadores = CENARIOS[cenario];
+            const eu = jogadores.find(j => j.id === euId) || jogadores[0];
+            const corrida = classificar(jogadores);
+            const campeao = corrida[0];
+            const porPontos = [...jogadores].sort((a, b) => b.pontos - a.pontos);
+            const lugarEmPontos = porPontos.indexOf(campeao) + 1;
+            const minhaPos = corrida.indexOf(eu) + 1;
+
+            // ---- identidade e cor do jogador ----
+            document.documentElement.style.setProperty('--cor-jogador', eu.cor);
+            document.querySelectorAll('[data-identidade]').forEach(e =>
+                e.replaceChildren(el('span', 'player-avatar', eu.bicho), el('span', 'player-name', eu.nome)));
+            $('minha-posicao').textContent = `${minhaPos}º`;
+
+            // ---- título e explicação ----
+            const titulo = $('fim-titulo');
+            titulo.replaceChildren(
+                eu === campeao ? '🏆 Você venceu, ' : `${campeao.bicho} `,
+                el('span', 'campeao', campeao.nome),
+                eu === campeao ? '!' : ' venceu!'
+            );
+            const explica = $('fim-explica');
+            if (lugarEmPontos > 1) {
+                explica.replaceChildren(el('b', '', '🔄 Virada! '),
+                    `Era ${lugarEmPontos}º em pontos, largou no ${nomeAndar(campeao.largada)} e chegou ao topo primeiro.`);
+            } else {
+                explica.replaceChildren(el('b', '', '💪 '), 'Liderou nos pontos e confirmou no topo da Pirâmide.');
+            }
+
+            // ---- pódio (2º, 1º, 3º) ----
+            const podio = $('podio');
+            podio.replaceChildren();
+            const degraus = [];
+            [[1, 'segundo'], [0, 'primeiro'], [2, 'terceiro']].forEach(([i, classe]) => {
+                const j = corrida[i];
+                if (!j) return;
+                const d = el('div', `degrau ${classe}` + (j === eu ? ' eu' : ''));
+                const bicho = el('div', 'bicho', j.bicho);
+                if (i === 0) bicho.append(el('span', 'coroa', '👑'));
+                const bloco = el('div', 'bloco');
+                bloco.append(el('span', 'posicao', `${i + 1}º`),
+                    el('span', 'detalhe', j.andarFinal === TOPO ? 'topo 🏆' : nomeAndar(j.andarFinal)));
+                d.append(bicho, el('div', 'nome', j === eu ? 'Você' : j.nome), bloco);
+                podio.append(d);
+                degraus[i] = d;
+            });
+
+            // ---- placar das rodadas + caminho na pirâmide ----
+            const placar = $('placar');
+            placar.replaceChildren();
+            porPontos.forEach((j, k) => {
+                const li = el('li', (j === campeao ? 'campeao ' : '') + (j === eu ? 'eu' : ''));
+                li.style.animationDelay = `${300 + k * 50}ms`;
+                const traj = el('span', 'trajeto');
+                traj.append(
+                    el('span', 'de', j.largada === 0 ? 'chão' : String(j.largada)),
+                    el('span', 'seta', '→'),
+                    el('span', 'ate' + (j.andarFinal === TOPO ? ' topo' : ''), j.andarFinal === TOPO ? '🏆' : String(j.andarFinal))
+                );
+                li.append(
+                    el('span', 'pos', `${k + 1}º`),
+                    el('span', 'bicho-mini', j.bicho),
+                    el('span', 'nome', j === eu ? `${j.nome} (você)` : j.nome),
+                    el('span', 'pts', String(j.pontos)),
+                    traj
+                );
+                placar.append(li);
+            });
+
+            // ---- revelação rápida: 3º, 2º, 1º ----
+            depois(200, () => degraus[2]?.classList.add('revelado'));
+            depois(550, () => degraus[1]?.classList.add('revelado'));
+            depois(950, () => {
+                degraus[0]?.classList.add('revelado');
+                soltarConfete(eu === campeao ? 120 : 50);
+                if (eu === campeao && navigator.vibrate) navigator.vibrate([60, 40, 60]);
+            });
+
+            // ---- botão ----
+            document.querySelectorAll('[data-jogar-de-novo]').forEach(b => {
+                b.disabled = false;
+                b.textContent = '↻ Jogar de novo';
+            });
+        }
+
+        document.querySelectorAll('[data-jogar-de-novo]').forEach(b => b.addEventListener('click', () => {
+            document.querySelectorAll('[data-jogar-de-novo]').forEach(x => {
+                x.disabled = true;
+                x.textContent = 'Aguardando a sala…';
+            });
+            // Aqui o controlador.js avisa o servidor que este jogador quer jogar de novo (socket)
+            console.log('Jogar de novo');
+        }));
+
+        // ===================== CONFETE (leve) =====================
+        const canvas = $('confete');
+        const ctx = canvas.getContext('2d');
+        const CORES = ['#f5b301', '#ff4757', '#1e90ff', '#2ed573', '#9b59b6', '#ff7f50', '#00d2d3'];
+        let pecas = [], animando = null;
+
+        function ajustarCanvas() {
+            const dpr = Math.min(2, window.devicePixelRatio || 1);
+            canvas.width = innerWidth * dpr;
+            canvas.height = innerHeight * dpr;
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+
+        function soltarConfete(qtd) {
+            if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+            ajustarCanvas();
+            for (let i = 0; i < qtd; i++) {
+                pecas.push({
+                    x: Math.random() * innerWidth, y: -10 - Math.random() * innerHeight * .5,
+                    vx: (Math.random() - .5) * 1.5, vy: 1.5 + Math.random() * 2.5,
+                    w: 4 + Math.random() * 5, h: 3 + Math.random() * 4,
+                    rot: Math.random() * Math.PI, vr: (Math.random() - .5) * .25, giro: Math.random() * 6,
+                    cor: CORES[Math.floor(Math.random() * CORES.length)]
+                });
+            }
+            if (!animando) animando = requestAnimationFrame(quadro);
+        }
+
+        function quadro() {
+            ctx.clearRect(0, 0, innerWidth, innerHeight);
+            pecas = pecas.filter(p => p.y < innerHeight + 20);
+            for (const p of pecas) {
+                p.vy += .03;
+                p.x += p.vx + Math.sin(p.giro) * .5;
+                p.y += p.vy;
+                p.rot += p.vr;
+                p.giro += .07;
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.rot);
+                ctx.scale(1, Math.cos(p.giro));
+                ctx.fillStyle = p.cor;
+                ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+                ctx.restore();
+            }
+            animando = pecas.length ? requestAnimationFrame(quadro) : null;
+        }
+
+        function pararConfete() {
+            pecas = [];
+            if (animando) cancelAnimationFrame(animando);
+            animando = null;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        window.addEventListener('resize', ajustarCanvas);
+
+        // ===== protótipo =====
+        const params = new URLSearchParams(location.search);
+        if (params.has('limpo')) $('barra-prototipo').classList.add('oculto');
+        const selCen = $('proto-cenario'), selEu = $('proto-eu');
+        CENARIOS.virada.forEach(j => {
+            const o = el('option', '', `Eu: ${j.nome}`);
+            o.value = j.id;
+            selEu.append(o);
+        });
+        selEu.value = params.get('eu') || '2';
+        if (params.has('cenario')) selCen.value = params.get('cenario');
+        const remontar = () => montar(selCen.value, selEu.value);
+        selCen.addEventListener('change', remontar);
+        selEu.addEventListener('change', remontar);
+        $('botao-repetir').addEventListener('click', remontar);
+        remontar();
+    })();
+    </script>
+</body>
+
+</html>

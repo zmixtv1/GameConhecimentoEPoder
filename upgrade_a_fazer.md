@@ -103,7 +103,9 @@ em `public/` saber com o que se parecer.
 
 ## Pirâmide do Conhecimento
 
-Referência visual: `teste/teste-piramide-final.html`. É uma pirâmide isométrica 3D de **8 níveis**,
+Referência visual: `teste/teste-piramide-final.html` (a corrida), `teste/teste-conversao-andar.html`
+(a largada sendo calculada na TV), `teste/teste-podio.html` e `teste/teste-podio-celular.html`
+(o fim). É uma pirâmide isométrica 3D de **8 andares**,
 onde o nível N é uma laje de N×N blocos — 204 blocos no total, base 8×8, topo 1×1.
 Os níveis são numerados **0 na base e 7 no topo** (`TOPO = TOTAL_ANDARES - 1`).
 
@@ -130,12 +132,12 @@ desses dois valores.
         tLugar  = (n - 1 - colocação) / (n - 1)        // 1 = primeiro, 0 = último
         t       = 0,5 × tPontos + 0,5 × tLugar
         pulos   = arredondar(MAX_PULOS × t^1,5)        // 0 a 4
-        nível   = pulos                                // 0 = base, 7 = topo
+        andar   = pulos                                // 0 = chão, 1 a 8 = andares
       ```
 
       Três decisões embutidas, cada uma resolvendo um problema:
-      1. **Teto de 4 pulos** em 8 níveis puxa o campo todo para baixo: o primeiro larga no
-         meio da pirâmide, não perto do topo. Precisa de 3 acertos contra 7 do último —
+      1. **Teto de 4 pulos** em 8 andares puxa o campo todo para baixo: o primeiro larga no
+         meio da pirâmide, não perto do topo. Precisa de 4 acertos contra 8 do último —
          vantagem real, mas bem menor que os 2 contra 10 de hoje. Pelas simulações, só o
          primeiro colocado chega no teto; o resto fica entre 0 e 3 pulos.
       2. **Expoente 1,5** faz a vantagem crescer devagar no meio da tabela e acelerar só
@@ -155,13 +157,13 @@ desses dois valores.
 - [ ] **Cada acerto sobe um nível.** A largada vale só para o começo; dali em diante quem
       sobe é quem acerta, **um nível por resposta certa**. A regra de subida que o jogo já
       tem está certa (`progresso.posicao++`, server/sala.js:775) — o que muda é só o
-      total, de 10 degraus para 8 níveis, e de onde cada um parte.
+      total, de 10 degraus para 8 andares, e de onde cada um parte.
       Errar continua como já é hoje e **não** custa nível: a alternativa errada entra em
       `tentativasErradas`, a pergunta continua na tela e o jogador tenta de novo até
       acertar (server/sala.js:769-772). O custo de errar é tempo, não posição — é a única
       fase da partida em que isso vale.
-      Quantas respostas certas cada um precisa: **3 para quem larga no nível 4** e **7
-      para quem larga na base**.
+      Quantas respostas certas cada um precisa: **4 para quem larga no andar 4** e **8
+      para quem larga no chão**.
 
 - [ ] **Animação da corrida na TV.** Os bonecos sobem de nível em nível enquanto a corrida
       acontece — é o que deixa a mesa ver quem vai ganhar. O servidor já transmite
@@ -180,6 +182,25 @@ desses dois valores.
       0.40, 0.62 e 0.83). O jogo tem de 2 a 8, então as faixas precisam ser distribuídas
       conforme a sala — por exemplo dividindo cada borda igualmente entre os jogadores que
       couberem nela.
+
+- [ ] **Tela da largada sendo calculada, na TV.** Fase nova entre a última rodada e a
+      corrida: a TV mostra o placar final virando posição de largada, com os pontos de
+      cada um "fluindo" para a escadinha de andares e o animal pulando conforme os
+      degraus acendem, do último colocado para o primeiro.
+      Referência: `teste/teste-conversao-andar.html`. Sem ela a conversão acontece
+      escondida e o jogador chega na Pirâmide sem entender por que está onde está.
+
+- [ ] **Telas de fim de partida.** Substituem a `tela-fim` e a `tela-resultado-piramide`
+      de hoje, feitas para a Pirâmide de 10 degraus.
+      **A TV mostra só o pódio** (`teste/teste-podio.html`): 3º sobe, 2º sobe, rufar,
+      campeão sobe com coroa e confete, e só então o 4º em diante.
+      **O celular mostra o resto** (`teste/teste-podio-celular.html`): a sua colocação, o
+      placar das 5 rodadas com o caminho de cada um na pirâmide (largada → onde parou, com
+      a sua linha destacada), a explicação da virada e o botão de jogar de novo.
+      A divisão existe porque o detalhe não cabe na TV sem poluir a comemoração, e porque
+      cada pessoa quer saber da própria partida.
+      **Classificação:** 1º é quem chegou ao topo, e só isso. Do 2º em diante vale o andar
+      alcançado, com os pontos das rodadas desempatando quem parou no mesmo andar.
 
 ---
 

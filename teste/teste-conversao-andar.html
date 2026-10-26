@@ -4,163 +4,526 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz TV - Pontuação vira andar da Pirâmide</title>
+    <title>Quiz TV - Pontos viram andares</title>
 
     <!--
-      BASE SIMPLES, de propósito. Serve para a lógica ficar à mostra e depois
-      virar uma tela bonita.
+      Tela da TV entre a última rodada e a corrida da Pirâmide.
 
-      O que esta tela faz: pega a pontuação das 5 rodadas e converte no nível
-      onde cada jogador começa a Pirâmide. É o momento entre a última rodada e
-      a corrida, quando a TV anuncia as posições de largada.
+      Sequência:
+        1. Placar final à esquerda; todos os animais na base da pirâmide à direita.
+        2. Do último colocado para o primeiro: os pontos "fluem" para a
+           escadinha de andares da linha e, a cada degrau que acende, o animal
+           pula um andar na pirâmide.
+        3. Cada linha termina com "Andar X · faltam Y acertos".
+        4. As 3 regras no rodapé acendem: pontos → andares, cada acerto = +1
+           andar, primeiro no topo vence.
 
-      A FÓRMULA (os três números no rodapé mexem nela ao vivo):
-
-        MENOR = menor pontuação da sala
-        MAIOR = maior pontuação da sala
-
-        para cada jogador:
-          tPontos = (pontos - MENOR) / (MAIOR - MENOR)   // 0 a 1
-          tLugar  = (n - 1 - colocação) / (n - 1)        // 1 = primeiro, 0 = último
-          t       = PESO × tPontos + (1 - PESO) × tLugar
-          pulos   = arredondar(MAX_PULOS × t^CURVA)      // 0 a MAX_PULOS
-          nível   = pulos                                // 0 = base, 7 = topo
-
-      POR QUE METADE PONTOS E METADE COLOCAÇÃO: só com pontos, um jogador muito
-      disparado estica a faixa e achata todo o resto. Com 3400 contra 2300, do
-      2º ao 8º largavam todos juntos na base. A parte da colocação garante que o
-      placar sempre vire níveis diferentes; a dos pontos mantém a proporção.
-
-      O QUE A TELA PROFISSIONAL PRECISA MOSTRAR, no mínimo:
-        - a pontuação final de cada um
-        - quantos níveis cada um pula (0 a 4)
-        - onde isso coloca a pessoa na pirâmide
-        - quantos acertos faltam para o topo (nível 7)
-      E idealmente animar: placar -> conversão -> bonecos aparecendo na pirâmide.
+      A fórmula é a mesma da base (função converter); só o "faltam" passou a
+      contar a partir do chão.
+      Posições: 0 = chão (na frente da pirâmide, onde todos começam),
+      1 a 8 = andares da pirâmide (8 = topo). Vantagem máxima = andar 4.
     -->
 
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
 
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Outfit", system-ui, sans-serif; }
+        :root {
+            color-scheme: light;
+            --ink: #0f172a;
+            --ink-soft: #475569;
+            --verde: #15a356;
+            --ouro: #f5b301;
+            --glass-bg: rgba(255, 255, 255, 0.68);
+            --glass-border: rgba(255, 255, 255, 0.9);
+            --glass-shadow: 0 14px 30px rgba(0, 0, 0, 0.07);
+
+            /* Definidos pelo JS conforme o espaço da pirâmide */
+            --b: 56px;
+            --bz: 22px;
+            --emoji: 34px;
+
+            font-family: "Outfit", system-ui, sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            background: #f8fafc;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+            background-color: #f8fafc;
             background-image: radial-gradient(#cbd5e1 2px, transparent 2px);
             background-size: 40px 40px;
-            color: #0f172a;
-            min-height: 100vh;
-            padding: 24px 24px 120px;
+            background-position: center;
+            color: var(--ink);
+            display: grid;
+            grid-template-rows: auto minmax(0, 1fr) auto;
+            gap: clamp(8px, 2vh, 22px);
+            padding: clamp(12px, 2.6vh, 34px) clamp(16px, 3vw, 56px);
+            position: relative;
         }
 
-        h1 { font-size: 28px; font-weight: 900; text-align: center; margin-bottom: 4px; }
-        .sub { text-align: center; color: #475569; font-size: 14px; margin-bottom: 22px; }
-
-        .colunas { display: grid; grid-template-columns: 1.15fr 1fr; gap: 24px; max-width: 1200px; margin: 0 auto; }
-        @media (max-width: 900px) { .colunas { grid-template-columns: 1fr; } }
-
-        h2 { font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #475569; margin-bottom: 10px; }
-
-        /* ---- tabela da conversão ---- */
-        table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 6px 20px rgba(0,0,0,.06); }
-        th, td { padding: 9px 10px; text-align: right; font-size: 14px; }
-        th { background: #0f172a; color: #fff; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; font-weight: 800; }
-        th:nth-child(1), td:nth-child(1) { text-align: left; }
-        tbody tr + tr { border-top: 1px solid #e2e8f0; }
-        td.destaque { font-weight: 900; color: #1e90ff; font-size: 17px; }
-        .bicho { font-size: 20px; margin-right: 6px; }
-        .conta { color: #94a3b8; font-size: 12px; font-variant-numeric: tabular-nums; }
-
-        /* ---- pirâmide esquemática ---- */
-        .piramide { display: flex; flex-direction: column-reverse; gap: 4px; background: #fff; padding: 14px; border-radius: 12px; box-shadow: 0 6px 20px rgba(0,0,0,.06); }
-        .nivel { display: flex; align-items: center; gap: 10px; min-height: 42px; }
-        .nivel-rotulo { flex: none; width: 92px; font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: .05em; }
-        .nivel-barra { flex: 1; display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 8px; background: #f1f5f9; min-height: 34px; }
-        .nivel.topo .nivel-barra { background: rgba(241,196,15,.25); }
-        .nivel.topo .nivel-rotulo { color: #a16207; }
-        .ocupante { font-size: 22px; line-height: 1; }
-        .vazio { color: #cbd5e1; font-size: 12px; font-weight: 700; }
-
-        /* ---- controles ---- */
-        .controles {
-            position: fixed; bottom: 0; left: 0; right: 0;
-            background: rgba(255,255,255,.96);
-            border-top: 1px solid #e2e8f0;
-            padding: 12px 20px;
-            display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; align-items: center;
-            box-shadow: 0 -6px 20px rgba(0,0,0,.05);
+        .ambient-light {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(100px);
+            z-index: 0;
+            pointer-events: none;
+            animation: fluidMotion 20s infinite alternate ease-in-out;
         }
-        .ctrl { display: flex; flex-direction: column; gap: 2px; min-width: 170px; }
-        .ctrl label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: #475569; }
-        .ctrl .valor { font-weight: 900; color: #1e90ff; }
-        input[type=range] { width: 100%; accent-color: #1e90ff; }
-        .nota { font-size: 12px; color: #64748b; max-width: 330px; line-height: 1.35; }
+        .light-1 { top: -10%; left: -10%; width: 60vw; height: 60vw; background: rgba(226, 232, 240, 0.8); }
+        .light-2 { bottom: -20%; right: -10%; width: 50vw; height: 50vw; background: rgba(186, 230, 253, 0.4); animation-delay: -5s; }
+        .light-3 { top: 30%; left: 30%; width: 40vw; height: 40vw; background: rgba(255, 255, 255, 0.9); animation-delay: -10s; }
+        @keyframes fluidMotion {
+            0% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(5vw, 10vh) scale(1.1); }
+            66% { transform: translate(-5vw, 5vh) scale(0.9); }
+            100% { transform: translate(10vw, -5vh) scale(1.05); }
+        }
+
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 2px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+        }
+
+        header, main, footer { position: relative; z-index: 1; width: 100%; max-width: 1760px; margin: 0 auto; }
+
+        /* ===================== CABEÇALHO ===================== */
+        header { text-align: center; }
+        .rotulo {
+            display: inline-block;
+            padding: 4px 16px;
+            border-radius: 100px;
+            font-size: clamp(11px, 1.6vh, 18px);
+            font-weight: 800;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--ink-soft);
+        }
+        h1 {
+            margin-top: clamp(4px, .8vh, 10px);
+            font-size: clamp(26px, 5.4vh, 64px);
+            font-weight: 900;
+            line-height: 1.05;
+            letter-spacing: -1px;
+        }
+        h1 .destaque { color: var(--verde); }
+        .subtitulo {
+            margin-top: 4px;
+            font-size: clamp(14px, 2.2vh, 26px);
+            font-weight: 700;
+            color: var(--ink-soft);
+            transition: color .3s ease;
+        }
+        .subtitulo.final { color: var(--verde); }
+
+        /* ===================== CORPO ===================== */
+        main {
+            min-height: 0;
+            display: grid;
+            grid-template-columns: minmax(0, .95fr) minmax(0, 1.15fr);
+            gap: clamp(12px, 2.4vw, 44px);
+        }
+
+        /* ---------- Lista: pontos → andares ---------- */
+        .lista {
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            gap: clamp(4px, .8vh, 10px);
+        }
+
+        .colunas, .linha {
+            display: grid;
+            grid-template-columns: 1.9em 2.2em minmax(0, 1fr) 4.3em 1em 3.8em 2em 6.6em;
+            align-items: center;
+            column-gap: clamp(6px, .7vw, 12px);
+            font-size: clamp(13px, 2.15vh, 26px);
+        }
+
+        .colunas {
+            padding: 0 clamp(8px, .9vw, 16px);
+            font-size: clamp(10px, 1.45vh, 17px);
+            font-weight: 800;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: var(--ink-soft);
+            white-space: nowrap;
+        }
+        .colunas span:nth-child(1) { grid-column: 1 / 4; }
+        .colunas .c-pts { text-align: right; }
+        .colunas .c-vant { grid-column: 6 / 8; text-align: center; }
+        .colunas .c-larg { text-align: center; }
+
+        ol { list-style: none; flex: 1; min-height: 0; display: flex; flex-direction: column; gap: clamp(4px, .8vh, 10px); }
+
+        .linha {
+            --cor: #94a3b8;
+            flex: 1 1 0;
+            min-height: 0;
+            max-height: 9.5vh;
+            padding: 0 clamp(8px, .9vw, 16px);
+            border-radius: clamp(12px, 1.6vh, 18px);
+            opacity: 0;
+            transform: translateX(-24px);
+            transition: opacity .4s ease, transform .4s ease, border-color .3s ease, box-shadow .3s ease, background .3s ease;
+        }
+        .linha.entrou { opacity: 1; transform: none; }
+        .linha.ativa {
+            border-color: var(--cor);
+            background: color-mix(in srgb, var(--cor) 12%, var(--glass-bg));
+            box-shadow: 0 12px 28px color-mix(in srgb, var(--cor) 30%, transparent);
+            transform: scale(1.02);
+        }
+        .linha.espera { opacity: .55; }
+
+        .pos { font-weight: 900; color: var(--ink-soft); text-align: center; }
+        .pos.p1 { color: var(--ouro); }
+
+        .av {
+            width: 2.1em;
+            height: 2.1em;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            font-size: 1em;
+            background: color-mix(in srgb, var(--cor) 22%, white);
+            border: 2px solid color-mix(in srgb, var(--cor) 50%, white);
+        }
+        .av span { font-size: 1.2em; line-height: 1; }
+
+        .nome { font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .pts {
+            text-align: right;
+            font-weight: 900;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+        .pts small { font-size: .55em; font-weight: 800; color: var(--ink-soft); margin-left: 2px; }
+        .linha.ativa .pts { color: color-mix(in srgb, var(--cor) 75%, #0f172a); }
+
+        .seta { color: var(--ink-soft); font-weight: 900; text-align: center; opacity: .6; }
+
+        /* Escadinha (1 degrau por andar ganho, até MAX_PULOS) */
+        .degraus {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: .14em;
+            height: 1.5em;
+        }
+        .degraus i {
+            width: .72em;
+            border-radius: .14em .14em .08em .08em;
+            background: rgba(15, 23, 42, 0.1);
+            transition: background .2s ease, transform .3s cubic-bezier(.34, 1.8, .64, 1);
+        }
+        .degraus i.aceso { background: var(--cor); transform: scaleY(1.12); box-shadow: 0 0 10px color-mix(in srgb, var(--cor) 60%, transparent); }
+
+        .ganho {
+            font-weight: 900;
+            font-variant-numeric: tabular-nums;
+            text-align: center;
+            color: rgba(71, 85, 105, .45);
+        }
+        .ganho.positivo { color: color-mix(in srgb, var(--cor) 75%, #0f172a); }
+
+        .largada {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            line-height: 1.05;
+            opacity: .35;
+            transition: opacity .3s ease;
+        }
+        .largada b { font-weight: 900; white-space: nowrap; }
+        .largada small { font-size: .6em; font-weight: 700; color: var(--ink-soft); white-space: nowrap; }
+        .largada.pronta { opacity: 1; animation: pop .4s cubic-bezier(.34, 1.8, .64, 1); }
+        @keyframes pop { 40% { transform: scale(1.18); } }
+
+        /* ---------- Pirâmide (mesmo desenho da corrida) ---------- */
+        .area-piramide { position: relative; min-height: 0; }
+
+        .piramide-wrap {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 0;
+            height: 0;
+            perspective: 2500px;
+        }
+
+        .stage {
+            position: absolute;
+            width: 0;
+            height: 0;
+            transform: rotateX(60deg) rotateZ(45deg);
+            transform-style: preserve-3d;
+        }
+
+        .bloco {
+            position: absolute;
+            width: var(--b);
+            height: var(--b);
+            background: var(--topo);
+            border: 1px solid rgba(255, 255, 255, 0.75);
+            transform-style: preserve-3d;
+        }
+        .bloco::before {
+            content: '';
+            position: absolute;
+            width: var(--bz);
+            height: 100%;
+            top: 0;
+            right: calc(var(--bz) * -1);
+            background: var(--lado-d);
+            transform-origin: left;
+            transform: rotateY(90deg);
+        }
+        .bloco::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: var(--bz);
+            bottom: calc(var(--bz) * -1);
+            left: 0;
+            background: var(--lado-b);
+            transform-origin: top;
+            transform: rotateX(-90deg);
+        }
+        /* Andares alternando bege claro / bege mais escuro; topo dourado */
+        .bloco.claro  { --topo: #f6f0e4; --lado-b: #e4d7bf; --lado-d: #d6c6aa; }
+        .bloco.escuro { --topo: #e8dabd; --lado-b: #d6c29f; --lado-d: #c4ad86; }
+        .bloco.topo   { --topo: #f5c518; --lado-b: #f4d03f; --lado-d: #d4ac0d; }
+
+        /* Chão (andar 0) */
+        .bloco-chao {
+            position: absolute;
+            border-radius: 18%;
+            background: radial-gradient(closest-side, rgba(226, 212, 186, 0.75), rgba(226, 212, 186, 0.35) 70%, rgba(226, 212, 186, 0) 100%);
+        }
+
+        .anchors { position: absolute; inset: 0; transform-style: preserve-3d; pointer-events: none; }
+        .anchor { position: absolute; left: 0; top: 0; width: 0; height: 0; }
+
+        /* ---------- Camada 2D por cima de tudo ---------- */
+        .overlay { position: fixed; inset: 0; pointer-events: none; z-index: 50; }
+        .overlay > * { position: absolute; left: 0; top: 0; will-change: transform; }
+
+        .rotulo-andar span {
+            display: inline-block;
+            transform: translate(calc(-100% + var(--b) * 0.3), -50%);
+            min-width: 1.9em;
+            padding: 1px 8px;
+            border-radius: 100px;
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid #e2d5bd;
+            color: #6b5a3e;
+            font-size: calc(var(--b) * 0.3);
+            font-weight: 900;
+            text-align: center;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
+            transition: transform .2s ease;
+        }
+        .rotulo-andar.topo span { background: #fff6d6; border-color: #f5c518; color: #8a6a00; }
+        .rotulo-andar.chao span { background: rgba(241, 245, 249, .95); border-color: #cbd5e1; color: #64748b; }
+        .rotulo-andar.pulso span { animation: pulsoRotulo .45s ease; }
+        @keyframes pulsoRotulo { 40% { transform: translate(calc(-100% + var(--b) * 0.3), -50%) scale(1.3); } }
+
+        .sombra span {
+            display: block;
+            width: calc(var(--b) * 0.55);
+            height: calc(var(--b) * 0.22);
+            border-radius: 50%;
+            background: radial-gradient(ellipse at center, rgba(40, 30, 15, 0.45) 0%, rgba(40, 30, 15, 0.22) 45%, rgba(40, 30, 15, 0) 72%);
+            transform: translate(-50%, -50%) scale(var(--s, 1));
+            opacity: var(--o, 1);
+        }
+
+        .animal .icone {
+            position: relative;
+            font-size: var(--emoji);
+            line-height: 1;
+            transform: translate(-50%, -85%);
+            filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.3));
+            opacity: 0;
+        }
+        .animal.visivel .icone { animation: aparecer .4s cubic-bezier(.34, 1.8, .64, 1) forwards; }
+        @keyframes aparecer { from { opacity: 0; scale: .3; } to { opacity: 1; scale: 1; } }
+        .animal.ativo .icone {
+            filter: drop-shadow(0 0 6px #fff) drop-shadow(0 0 12px var(--cor)) drop-shadow(0 4px 4px rgba(0, 0, 0, 0.3));
+        }
+
+        .particula {
+            width: 9px;
+            height: 9px;
+            margin: -4.5px 0 0 -4.5px;
+            border-radius: 50%;
+            background: var(--cor);
+            box-shadow: 0 0 8px var(--cor), 0 0 2px #fff inset;
+        }
+
+        /* ===================== REGRAS ===================== */
+        footer {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: clamp(8px, 1.4vw, 24px);
+        }
+        .regra {
+            display: flex;
+            align-items: center;
+            gap: clamp(8px, 1vw, 16px);
+            padding: clamp(8px, 1.4vh, 16px) clamp(10px, 1.2vw, 22px);
+            border-radius: clamp(14px, 2vh, 22px);
+            opacity: .5;
+            transition: opacity .4s ease, border-color .4s ease, box-shadow .4s ease, transform .4s ease;
+        }
+        .regra.ativa {
+            opacity: 1;
+            border-color: rgba(21, 163, 86, .55);
+            box-shadow: 0 14px 30px rgba(21, 163, 86, .18);
+            transform: translateY(-3px);
+        }
+        .regra .num {
+            flex: none;
+            width: clamp(26px, 3.6vh, 42px);
+            height: clamp(26px, 3.6vh, 42px);
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            background: #0f172a;
+            color: #fff;
+            font-weight: 900;
+            font-size: clamp(13px, 1.9vh, 22px);
+        }
+        .regra.ativa .num { background: var(--verde); }
+        .regra .icone-regra { flex: none; font-size: clamp(22px, 3.6vh, 42px); line-height: 1; }
+        .regra b { display: block; font-size: clamp(14px, 2.1vh, 25px); font-weight: 900; line-height: 1.1; }
+        .regra small { display: block; margin-top: 2px; font-size: clamp(11px, 1.6vh, 18px); font-weight: 700; color: var(--ink-soft); line-height: 1.2; }
+
+        @media (max-width: 1280px) {
+            .colunas, .linha { grid-template-columns: 1.8em 2.1em minmax(0, 1fr) 4.3em 3.7em 2em 6.6em; }
+            .seta, .colunas .c-seta { display: none; }
+            .colunas .c-vant { grid-column: 5 / 7; }
+        }
+
+        /* Telas estreitas: pirâmide em cima, lista embaixo */
+        @media (max-width: 900px) {
+            main { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) minmax(0, 1.1fr); }
+            .area-piramide { order: -1; }
+            .colunas, .linha { grid-template-columns: 2em 2.2em minmax(0, 1fr) 4.4em 3.8em 2.1em 6.6em; }
+            .seta, .colunas .c-seta { display: none; }
+            .colunas .c-vant { grid-column: 5 / 7; }
+            .regra small { display: none; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+        }
+
+        /* ===== só deste protótipo, não existe no jogo ===== */
+        .barra-prototipo {
+            position: fixed; top: 10px; right: 10px; z-index: 200;
+            display: flex; align-items: center; gap: 8px;
+            padding: 6px 10px; border-radius: 10px;
+            background: rgba(15, 23, 42, 0.88); color: #fff;
+            font-size: 12px; font-weight: 700;
+        }
+        .barra-prototipo select, .barra-prototipo button {
+            font: inherit; font-size: 12px; padding: 4px 8px; border-radius: 6px; border: 0;
+        }
+        .barra-prototipo button { background: #fff; color: #0f172a; font-weight: 800; cursor: pointer; }
+        .oculto { display: none !important; }
     </style>
 </head>
 
 <body>
-    <h1>Pontuação vira andar da Pirâmide</h1>
-    <p class="sub">Tela entre a última rodada e a corrida: onde cada um começa a escalar</p>
+    <div class="ambient-light light-1"></div>
+    <div class="ambient-light light-2"></div>
+    <div class="ambient-light light-3"></div>
 
-    <div class="colunas">
-        <div>
-            <h2>A conversão, jogador por jogador</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Jogador</th>
-                        <th>Pontos</th>
-                        <th>t pontos</th>
-                        <th>t lugar</th>
-                        <th>t</th>
-                        <th>Pulos</th>
-                        <th>Nível</th>
-                        <th>Faltam</th>
-                    </tr>
-                </thead>
-                <tbody id="corpo-tabela"></tbody>
-            </table>
-        </div>
+    <header>
+        <span class="rotulo glass-panel" id="rotulo">Fim das 5 rodadas</span>
+        <h1>Seus pontos viram <span class="destaque">andares</span>!</h1>
+        <p class="subtitulo" id="subtitulo">Quem fez mais pontos começa mais alto na Pirâmide</p>
+    </header>
 
-        <div>
-            <h2>Onde isso coloca cada um</h2>
-            <div class="piramide" id="piramide"></div>
-        </div>
-    </div>
+    <main>
+        <section class="lista">
+            <div class="colunas">
+                <span>Jogador</span>
+                <span class="c-pts">Pontos</span>
+                <span class="c-seta"></span>
+                <span class="c-vant">Vantagem</span>
+                <span class="c-larg">Começa no</span>
+            </div>
+            <ol id="lista"></ol>
+        </section>
 
-    <div class="controles">
-        <div class="ctrl">
-            <label>Teto de pulos: <span class="valor" id="v-pulos">4</span></label>
-            <input type="range" id="c-pulos" min="1" max="7" step="1" value="4">
+        <section class="area-piramide" id="area-piramide">
+            <div class="piramide-wrap" id="piramide-wrap">
+                <div class="stage" id="stage">
+                    <div class="anchors" id="anchors"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="regra glass-panel" id="regra-1">
+            <span class="num">1</span><span class="icone-regra">🪜</span>
+            <div><b>Pontos viram andares</b><small>Do chão (0) até o andar 4, pelos pontos</small></div>
         </div>
-        <div class="ctrl">
-            <label>Curva: <span class="valor" id="v-curva">1,5</span></label>
-            <input type="range" id="c-curva" min="1" max="3" step="0.1" value="1.5">
+        <div class="regra glass-panel" id="regra-2">
+            <span class="num">2</span><span class="icone-regra">✅</span>
+            <div><b>Cada acerto = +1 andar</b><small>Na corrida, toda resposta certa te faz subir</small></div>
         </div>
-        <div class="ctrl">
-            <label>Peso dos pontos: <span class="valor" id="v-peso">50%</span></label>
-            <input type="range" id="c-peso" min="0" max="1" step="0.05" value="0.5">
+        <div class="regra glass-panel" id="regra-3">
+            <span class="num">3</span><span class="icone-regra">🏆</span>
+            <div><b>Chegue ao topo primeiro</b><small>O andar 8 é a vitória</small></div>
         </div>
-        <div class="ctrl">
-            <label>Cenário</label>
-            <select id="c-cenario" style="padding:6px;border-radius:8px;border:1px solid #cbd5e1;font-weight:700;">
-                <option value="apertada">Partida apertada</option>
-                <option value="disparado">Líder disparado</option>
-                <option value="lanterna">Lanterna muito atrás</option>
-                <option value="empate">Empate geral</option>
-            </select>
-        </div>
-        <p class="nota" id="nota"></p>
+    </footer>
+
+    <div class="overlay" id="overlay"></div>
+
+    <div class="barra-prototipo" id="barra-prototipo">
+        <span>Protótipo:</span>
+        <select id="proto-cenario">
+            <option value="apertada">Partida apertada</option>
+            <option value="disparado">Líder disparado</option>
+            <option value="lanterna">Lanterna muito atrás</option>
+            <option value="empate">Empate geral</option>
+        </select>
+        <button id="botao-repetir" type="button">Repetir</button>
     </div>
 
     <script>
     (() => {
         'use strict';
 
-        const TOTAL_NIVEIS = 8;   // nível 0 = base, 7 = topo
+        const TOTAL_NIVEIS = 8;          // blocos da pirâmide (andares 1 a 8)
+        const TOPO = TOTAL_NIVEIS;       // posição do topo: 0 = chão, 8 = topo
 
-        const BICHOS = ['🦊', '🐼', '🐸', '🦁', '🦄', '🐧', '🐙', '🐯'];
-        const NOMES = ['Vítoria', 'Rodrigo', 'Cecília', 'Adamor', 'Catarina', 'Guilherme', 'Mônica', 'Luciana'];
+        // Parâmetros da fórmula (mesmos da base)
+        const MAX_PULOS = 4;   // do chão (0) até no máximo o andar 4
+        const CURVA = 1.5;
+        const PESO = 0.5;
+
+        // Mesmo lado/faixa de cada animal na corrida
+        const JOGADORES = [
+            { nome: 'Vítoria',   emoji: '🦊', cor: '#ff4757', lado: 'esquerda', faixa: 0.40 },
+            { nome: 'Rodrigo',   emoji: '🐼', cor: '#1e90ff', lado: 'esquerda', faixa: 0.18 },
+            { nome: 'Cecília',   emoji: '🐸', cor: '#2ed573', lado: 'esquerda', faixa: 0.62 },
+            { nome: 'Adamor',    emoji: '🦁', cor: '#ffa502', lado: 'esquerda', faixa: 0.83 },
+            { nome: 'Catarina',  emoji: '🦄', cor: '#9b59b6', lado: 'direita',  faixa: 0.18 },
+            { nome: 'Guilherme', emoji: '🐧', cor: '#00d2d3', lado: 'direita',  faixa: 0.40 },
+            { nome: 'Mônica',    emoji: '🐙', cor: '#ff6b81', lado: 'direita',  faixa: 0.62 },
+            { nome: 'Luciana',   emoji: '🐯', cor: '#ff7f50', lado: 'direita',  faixa: 0.83 }
+        ];
 
         const CENARIOS = {
             apertada:  [2600, 2550, 2500, 2480, 2450, 2400, 2380, 2300],
@@ -169,8 +532,13 @@
             empate:    [2500, 2500, 2500, 2500, 2500, 2500, 2500, 2500]
         };
 
+        // Ritmo (ms)
+        const T = { inicio: 1000, fluxo: 260, pulo: 300, pausa: 260, semPulo: 520, regra: 800 };
+        const ALTURA_PULO = 1.1;
+        const AVANCO_BORDA = 0.25;
+
         // ============================================================
-        // A CONVERSÃO. É só isto que importa levar para a tela final.
+        // A CONVERSÃO (igual à base)
         // ============================================================
         function converter(pontos, maxPulos, curva, peso) {
             const maior = Math.max(...pontos);
@@ -181,82 +549,408 @@
 
             return pontos.map((p) => {
                 const tPontos = faixa === 0 ? 0 : (p - menor) / faixa;
-                // empate compartilha a colocação: indexOf acha sempre a primeira
                 const colocacao = ordenado.indexOf(p);
                 const tLugar = n === 1 ? 0 : (n - 1 - colocacao) / (n - 1);
                 const t = peso * tPontos + (1 - peso) * tLugar;
                 const pulos = Math.round(maxPulos * Math.pow(t, curva));
                 const nivel = pulos;
-                return { tPontos, tLugar, t, pulos, nivel, faltam: (TOTAL_NIVEIS - 1) - nivel };
+                return { tPontos, tLugar, t, pulos, nivel, faltam: TOPO - nivel }; // nível 0 = chão
             });
         }
         // ============================================================
 
-        const el = (tag, txt, cls) => {
+        const $ = id => document.getElementById(id);
+        function el(tag, classe, texto) {
             const e = document.createElement(tag);
-            if (txt !== undefined) e.textContent = txt;
-            if (cls) e.className = cls;
+            if (classe) e.className = classe;
+            if (texto !== undefined) e.textContent = texto;
             return e;
-        };
+        }
+        const esperar = ms => new Promise(r => setTimeout(r, ms));
 
-        function desenhar() {
-            const maxPulos = Number(document.getElementById('c-pulos').value);
-            const curva = Number(document.getElementById('c-curva').value);
-            const peso = Number(document.getElementById('c-peso').value);
-            const pontos = CENARIOS[document.getElementById('c-cenario').value];
+        const area = $('area-piramide');
+        const wrap = $('piramide-wrap');
+        const stage = $('stage');
+        const anchors = $('anchors');
+        const overlay = $('overlay');
 
-            document.getElementById('v-pulos').textContent = maxPulos;
-            document.getElementById('v-curva').textContent = curva.toFixed(1).replace('.', ',');
-            document.getElementById('v-peso').textContent = Math.round(peso * 100) + '%';
+        let b = 56, bz = 22;
+        let token = 0;
+        let rotulos = [];
+        let estado = []; // { j, r, pontos, linha, animal, sombra, ancora, ancoraSombra, nivel }
 
-            const r = converter(pontos, maxPulos, curva, peso);
+        // ===================== PIRÂMIDE =====================
+        const ESPACO_ROTULOS = 70;
 
-            // ---- tabela ----
-            const corpo = document.getElementById('corpo-tabela');
-            corpo.innerHTML = '';
-            pontos.map((p, i) => ({ i, p })).sort((a, b) => b.p - a.p).forEach(({ i, p }) => {
-                const tr = document.createElement('tr');
-                const nome = el('td');
-                nome.append(el('span', BICHOS[i], 'bicho'), document.createTextNode(NOMES[i]));
-                tr.append(
-                    nome,
-                    el('td', String(p)),
-                    el('td', r[i].tPontos.toFixed(2), 'conta'),
-                    el('td', r[i].tLugar.toFixed(2), 'conta'),
-                    el('td', r[i].t.toFixed(2), 'conta'),
-                    el('td', String(r[i].pulos), 'destaque'),
-                    el('td', String(r[i].nivel)),
-                    el('td', r[i].faltam + ' acertos')
-                );
-                corpo.appendChild(tr);
-            });
-
-            // ---- pirâmide esquemática ----
-            const pir = document.getElementById('piramide');
-            pir.innerHTML = '';
-            for (let nivel = 0; nivel < TOTAL_NIVEIS; nivel++) {
-                const linha = el('div', undefined, 'nivel' + (nivel === TOTAL_NIVEIS - 1 ? ' topo' : ''));
-                linha.append(el('span', nivel === TOTAL_NIVEIS - 1 ? 'Topo · vitória' : 'Nível ' + nivel, 'nivel-rotulo'));
-                const barra = el('div', undefined, 'nivel-barra');
-                const aqui = r.map((x, i) => ({ x, i })).filter(({ x }) => x.nivel === nivel);
-                if (aqui.length === 0) barra.append(el('span', nivel === 0 ? '—' : '', 'vazio'));
-                else aqui.forEach(({ i }) => barra.append(el('span', BICHOS[i], 'ocupante')));
-                linha.append(barra);
-                pir.appendChild(linha);
-            }
-
-            // ---- nota ----
-            const distintos = new Set(r.map(x => x.nivel)).size;
-            const noTeto = r.filter(x => x.pulos === maxPulos).length;
-            document.getElementById('nota').textContent =
-                `${distintos} níveis diferentes para ${pontos.length} jogadores · ` +
-                `${noTeto} no teto de ${maxPulos} pulos · ` +
-                `o 1º precisa de ${Math.min(...r.map(x => x.faltam))} acertos, o último de ${Math.max(...r.map(x => x.faltam))}`;
+        function medirPiramide() {
+            const a = area.getBoundingClientRect();
+            // largura ≈ 11,6 blocos (losango) ; altura ≈ 9,6 blocos (losango + andares + animais)
+            b = Math.max(20, Math.min((a.width - ESPACO_ROTULOS) / 11.6, a.height / 9.6, 96));
+            bz = b * 0.4;
+            const root = document.documentElement.style;
+            root.setProperty('--b', `${b}px`);
+            root.setProperty('--bz', `${bz}px`);
+            root.setProperty('--emoji', `${b * 0.62}px`);
         }
 
-        ['c-pulos', 'c-curva', 'c-peso', 'c-cenario'].forEach(id =>
-            document.getElementById(id).addEventListener('input', desenhar));
-        desenhar();
+        function construirPiramide() {
+            stage.querySelectorAll('.bloco, .bloco-chao').forEach(e => e.remove());
+            const frag = document.createDocumentFragment();
+            for (let nivel = 0; nivel < TOTAL_NIVEIS; nivel++) {
+                const tam = TOTAL_NIVEIS - nivel;
+                const classe = nivel === TOTAL_NIVEIS - 1 ? 'topo' : nivel % 2 === 0 ? 'claro' : 'escuro';
+                for (let x = 0; x < tam; x++) {
+                    for (let y = 0; y < tam; y++) {
+                        const bloco = el('div', 'bloco ' + classe);
+                        bloco.style.left = `${(x - (tam - 1) / 2) * b - b / 2}px`;
+                        bloco.style.top = `${(y - (tam - 1) / 2) * b - b / 2}px`;
+                        bloco.style.transform = `translateZ(${nivel * bz}px)`;
+                        frag.append(bloco);
+                    }
+                }
+            }
+            const chao = el('div', 'bloco-chao');
+            const lado = (TOTAL_NIVEIS + 3) * b;
+            chao.style.left = `${-lado / 2}px`;
+            chao.style.top = `${-lado / 2}px`;
+            chao.style.width = chao.style.height = `${lado}px`;
+            chao.style.transform = `translateZ(${-bz}px)`;
+            frag.prepend(chao);
+            stage.insertBefore(frag, anchors);
+        }
+
+        // Centraliza o desenho projetado dentro da área (deixando espaço para os números)
+        function centralizar() {
+            wrap.style.transform = '';
+            const blocos = stage.querySelectorAll('.bloco');
+            let l = Infinity, t = Infinity, r = -Infinity, bt = -Infinity;
+            blocos.forEach(e => {
+                const q = e.getBoundingClientRect();
+                l = Math.min(l, q.left); t = Math.min(t, q.top);
+                r = Math.max(r, q.right); bt = Math.max(bt, q.bottom);
+            });
+            const a = area.getBoundingClientRect();
+            const dx = (a.left + a.width / 2 + ESPACO_ROTULOS / 2) - (l + r) / 2;
+            const dy = (a.top + a.height / 2 + b * 0.15) - (t + bt) / 2;
+            wrap.style.transform = `translate(${dx}px, ${dy}px)`;
+        }
+
+        function criarAncora() {
+            const a = el('div', 'anchor');
+            anchors.append(a);
+            return a;
+        }
+
+        function projetar(ancora, pos) {
+            ancora.style.transform = `translate3d(${pos.x}px, ${pos.y}px, ${pos.z}px)`;
+            const q = ancora.getBoundingClientRect();
+            return { x: q.left, y: q.top };
+        }
+
+        function criarRotulos() {
+            rotulos.forEach(rt => rt.el.remove());
+            rotulos = [];
+            for (let pos = 0; pos <= TOPO; pos++) {
+                const rt = el('div', 'rotulo-andar' + (pos === TOPO ? ' topo' : pos === 0 ? ' chao' : ''));
+                rt.append(el('span', '', pos === TOPO ? '8 🏆' : String(pos)));
+                overlay.append(rt);
+                rotulos.push({ pos, el: rt, ancora: criarAncora() });
+            }
+            posicionarRotulos();
+        }
+
+        // Altura dos números acima do degrau (aumente para subir) e quanto encostam à direita
+        const ALTURA_ROTULOS = 1.5;
+
+        function posicionarRotulos() {
+            // Andares 1 a 7: ponto onde o animal pisa (meio do degrau), na quina esquerda
+            const pts = [];
+            for (let pos = 1; pos < TOPO; pos++) {
+                const bloco = pos - 1;
+                const h = (TOTAL_NIVEIS - 1 - bloco) / 2 + AVANCO_BORDA;
+                pts[pos] = projetar(rotulos[pos].ancora, { x: -h * b, y: h * b, z: bloco * bz + bz * ALTURA_ROTULOS });
+            }
+            // Chão (0) e topo (8) seguem o mesmo espaçamento da escada de números
+            pts[0] = { x: 2 * pts[1].x - pts[2].x, y: 2 * pts[1].y - pts[2].y };
+            pts[TOPO] = { x: 2 * pts[TOPO - 1].x - pts[TOPO - 2].x, y: 2 * pts[TOPO - 1].y - pts[TOPO - 2].y };
+            // Ajuste fino só do 8 🏆: um pouco mais para a direita e para cima
+            pts[TOPO].x += b * 0.45;
+            pts[TOPO].y -= b * 0.3;
+            for (const rt of rotulos) {
+                const p = pts[rt.pos];
+                rt.el.style.transform = `translate(${p.x}px, ${p.y}px)`;
+            }
+        }
+
+        function pulsarRotulo(pos) {
+            const rt = rotulos[pos];
+            if (!rt) return;
+            rt.el.classList.remove('pulso');
+            void rt.el.offsetWidth;
+            rt.el.classList.add('pulso');
+        }
+
+        // ===================== ANIMAIS =====================
+        function posicaoNoNivel(j, pos) {
+            if (pos === 0) {
+                // Chão: na frente da base, um pouco para fora da pirâmide
+                const metade = TOTAL_NIVEIS / 2;
+                const aoLongo = (j.faixa * 2 - 1) * (metade - 0.5);
+                const borda = metade + 0.5;
+                const p = j.lado === 'direita' ? { x: borda, y: aoLongo } : { x: aoLongo, y: borda };
+                return { x: p.x * b, y: p.y * b, z: -bz + 2 };
+            }
+            const bloco = pos - 1;
+            const metade = (TOTAL_NIVEIS - 1 - bloco) / 2;
+            const aoLongo = (j.faixa * 2 - 1) * metade;
+            const borda = pos < TOPO ? metade + AVANCO_BORDA : 0;
+            const p = j.lado === 'direita' ? { x: borda, y: aoLongo } : { x: aoLongo, y: borda };
+            return { x: p.x * b, y: p.y * b, z: bloco * bz + 2 };
+        }
+
+        function aplicarPosicao(s, pos, chao = pos, altura = 0) {
+            const p = projetar(s.ancora, pos);
+            const c = projetar(s.ancoraSombra, chao);
+            s.animal.style.transform = `translate(${p.x}px, ${p.y}px)`;
+            s.sombra.style.transform = `translate(${c.x}px, ${c.y}px)`;
+            const z = Math.round(Math.max(p.y, c.y)) * 2;
+            s.animal.style.zIndex = z + 1;
+            s.sombra.style.zIndex = z;
+            const f = Math.min(1, altura / (bz * 2));
+            s.sombra.style.setProperty('--s', (1 - f * 0.45).toFixed(3));
+            s.sombra.style.setProperty('--o', (1 - f * 0.5).toFixed(3));
+        }
+
+        function animarSubida(s, destino, duracao, tk) {
+            const ini = posicaoNoNivel(s.j, s.nivel);
+            const fim = posicaoNoNivel(s.j, destino);
+            const t0 = performance.now();
+            return new Promise(resolve => {
+                function frame(agora) {
+                    if (tk !== token) { resolve(false); return; }
+                    const t = Math.min(1, (agora - t0) / duracao);
+                    const e = t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+                    const arco = Math.sin(Math.PI * t) * bz * ALTURA_PULO;
+                    const x = ini.x + (fim.x - ini.x) * e;
+                    const y = ini.y + (fim.y - ini.y) * e;
+                    const z = ini.z + (fim.z - ini.z) * e + arco;
+                    const chaoZ = e < 0.5 ? ini.z : fim.z;
+                    aplicarPosicao(s, { x, y, z }, { x, y, z: chaoZ }, z - chaoZ);
+                    if (t < 1) requestAnimationFrame(frame);
+                    else { s.nivel = destino; resolve(true); }
+                }
+                requestAnimationFrame(frame);
+            });
+        }
+
+        // Pulinho no lugar (quem não ganhou andar)
+        function pularNoLugar(s, tk) {
+            const base = posicaoNoNivel(s.j, s.nivel);
+            const t0 = performance.now();
+            return new Promise(resolve => {
+                function frame(agora) {
+                    if (tk !== token) { resolve(false); return; }
+                    const t = Math.min(1, (agora - t0) / 380);
+                    const arco = Math.sin(Math.PI * t) * bz * 0.7;
+                    aplicarPosicao(s, { ...base, z: base.z + arco }, base, arco);
+                    if (t < 1) requestAnimationFrame(frame); else resolve(true);
+                }
+                requestAnimationFrame(frame);
+            });
+        }
+
+        // ===================== LISTA =====================
+        function criarLinha(j, pontos, posicao) {
+            const li = el('li', 'linha glass-panel');
+            li.style.setProperty('--cor', j.cor);
+
+            const av = el('span', 'av');
+            av.append(el('span', '', j.emoji));
+
+            const pts = el('span', 'pts');
+            pts.append(document.createTextNode(String(pontos)), el('small', '', 'pts'));
+
+            const degraus = el('span', 'degraus');
+            for (let i = 0; i < MAX_PULOS; i++) {
+                const d = el('i');
+                d.style.height = `${Math.round(100 * (i + 1) / MAX_PULOS)}%`; // degraus crescentes
+                degraus.append(d);
+            }
+
+            const largada = el('span', 'largada');
+            largada.append(el('b', '', '—'), el('small', '', ' '));
+
+            li.append(
+                el('span', 'pos' + (posicao === 1 ? ' p1' : ''), `${posicao}º`),
+                av,
+                el('span', 'nome', j.nome),
+                pts,
+                el('span', 'seta', '➜'),
+                degraus,
+                el('span', 'ganho', '+0'),
+                largada
+            );
+            return li;
+        }
+
+        // Partículas saindo dos pontos e entrando no degrau
+        function fluxo(deEl, paraEl, cor, qtd, duracao, tk) {
+            const a = deEl.getBoundingClientRect();
+            const d = paraEl.getBoundingClientRect();
+            const x0 = a.left + a.width * 0.7, y0 = a.top + a.height / 2;
+            const x1 = d.left + d.width / 2, y1 = d.top + d.height / 2;
+            const promessas = [];
+            for (let i = 0; i < qtd; i++) {
+                const p = el('div', 'particula');
+                p.style.setProperty('--cor', cor);
+                overlay.append(p);
+                const alt = 18 + Math.random() * 22;
+                const frames = [];
+                for (let k = 0; k <= 8; k++) {
+                    const t = k / 8;
+                    frames.push({
+                        transform: `translate(${x0 + (x1 - x0) * t}px, ${y0 + (y1 - y0) * t - Math.sin(Math.PI * t) * alt}px) scale(${1 - t * 0.4})`,
+                        opacity: t < .1 ? t * 10 : 1
+                    });
+                }
+                const anim = p.animate(frames, { duration: duracao, delay: i * 20, easing: 'cubic-bezier(.45,0,.55,1)', fill: 'both' });
+                promessas.push(anim.finished.then(() => p.remove(), () => p.remove()));
+            }
+            return Promise.all(promessas).then(() => tk === token);
+        }
+
+        // ===================== SEQUÊNCIA =====================
+        function limpar() {
+            overlay.replaceChildren();
+            anchors.replaceChildren();
+            $('lista').replaceChildren();
+            ['regra-1', 'regra-2', 'regra-3'].forEach(id => $(id).classList.remove('ativa'));
+            $('rotulo').textContent = 'Fim das 5 rodadas';
+            const sub = $('subtitulo');
+            sub.classList.remove('final');
+            sub.textContent = 'Quem fez mais pontos começa mais alto na Pirâmide';
+        }
+
+        async function iniciar(cenario) {
+            const tk = ++token;
+            limpar();
+            medirPiramide();
+            construirPiramide();
+            centralizar();
+            criarRotulos();
+
+            const pontos = CENARIOS[cenario];
+            const r = converter(pontos, MAX_PULOS, CURVA, PESO);
+
+            // Ordena pelo placar (maior primeiro), posição com empate
+            const ordem = JOGADORES.map((j, i) => ({ j, i, p: pontos[i] }))
+                .sort((a, c) => c.p - a.p || a.j.nome.localeCompare(c.j.nome));
+
+            estado = ordem.map(({ j, i, p }) => {
+                const posicao = pontos.filter(o => o > p).length + 1;
+                const linha = criarLinha(j, p, posicao);
+                $('lista').append(linha);
+
+                const sombra = el('div', 'sombra');
+                sombra.append(el('span'));
+                const animal = el('div', 'animal');
+                animal.style.setProperty('--cor', j.cor);
+                animal.append(el('div', 'icone', j.emoji));
+                overlay.append(sombra, animal);
+
+                const s = { j, r: r[i], pontos: p, linha, animal, sombra, ancora: criarAncora(), ancoraSombra: criarAncora(), nivel: 0 };
+                aplicarPosicao(s, posicaoNoNivel(j, 0));
+                return s;
+            });
+
+            // 1) Entrada: linhas e animais na base
+            estado.forEach((s, k) => setTimeout(() => {
+                if (tk !== token) return;
+                s.linha.classList.add('entrou');
+                s.animal.classList.add('visivel');
+            }, 120 + k * 70));
+
+            await esperar(T.inicio);
+            if (tk !== token) return;
+            $('regra-1').classList.add('ativa');
+            estado.forEach(s => s.linha.classList.add('espera'));
+
+            // 2) Conversão do último para o primeiro
+            for (let k = estado.length - 1; k >= 0; k--) {
+                const s = estado[k];
+                const { linha, animal } = s;
+                linha.classList.remove('espera');
+                linha.classList.add('ativa');
+                animal.classList.add('ativo');
+
+                const ptsEl = linha.querySelector('.pts');
+                const degraus = linha.querySelectorAll('.degraus i');
+                const ganhoEl = linha.querySelector('.ganho');
+
+                if (s.r.pulos === 0) {
+                    await pularNoLugar(s, tk);
+                    await esperar(T.semPulo - 380);
+                } else {
+                    // O próximo degrau já começa a encher enquanto o animal pula
+                    let pulo = Promise.resolve(true);
+                    for (let passo = 1; passo <= s.r.pulos; passo++) {
+                        const ok = await fluxo(ptsEl, degraus[passo - 1], s.j.cor, 5, T.fluxo, tk);
+                        if (!ok || !(await pulo)) return;
+                        degraus[passo - 1].classList.add('aceso');
+                        ganhoEl.textContent = `+${passo}`;
+                        ganhoEl.classList.add('positivo');
+                        pulo = animarSubida(s, passo, T.pulo, tk).then(ok2 => { if (ok2) pulsarRotulo(passo); return ok2; });
+                    }
+                    if (!(await pulo)) return;
+                }
+                if (tk !== token) return;
+
+                const larg = linha.querySelector('.largada');
+                larg.querySelector('b').textContent = s.r.nivel === 0 ? 'Chão' : `Andar ${s.r.nivel}`;
+                larg.querySelector('small').textContent = s.r.faltam === 1 ? 'falta 1 acerto' : `faltam ${s.r.faltam} acertos`;
+                larg.classList.add('pronta');
+
+                await esperar(T.pausa);
+                if (tk !== token) return;
+                linha.classList.remove('ativa');
+                animal.classList.remove('ativo');
+            }
+
+            // 3) Regras da corrida
+            $('rotulo').textContent = 'Tudo pronto!';
+            await esperar(T.regra * 0.5);
+            if (tk !== token) return;
+            $('regra-2').classList.add('ativa');
+            await esperar(T.regra);
+            if (tk !== token) return;
+            $('regra-3').classList.add('ativa');
+            const sub = $('subtitulo');
+            sub.classList.add('final');
+            sub.textContent = 'Valendo! Cada acerto = +1 andar 🚀';
+        }
+
+        // Ao redimensionar: refaz a pirâmide e reprojeta tudo sem reiniciar
+        let redim;
+        window.addEventListener('resize', () => {
+            clearTimeout(redim);
+            redim = setTimeout(() => {
+                medirPiramide();
+                construirPiramide();
+                centralizar();
+                posicionarRotulos();
+                estado.forEach(s => aplicarPosicao(s, posicaoNoNivel(s.j, s.nivel)));
+            }, 120);
+        });
+
+        // ===== protótipo =====
+        const params = new URLSearchParams(location.search);
+        if (params.has('limpo')) $('barra-prototipo').classList.add('oculto');
+        const sel = $('proto-cenario');
+        if (params.has('cenario')) sel.value = params.get('cenario');
+        const remontar = () => iniciar(sel.value);
+        sel.addEventListener('change', remontar);
+        $('botao-repetir').addEventListener('click', remontar);
+        if (document.fonts) document.fonts.ready.then(remontar); else remontar();
     })();
     </script>
 </body>

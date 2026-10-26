@@ -106,10 +106,10 @@ Terminada a sequência, o jogo segue normal e a pergunta aparece.
 
 | | Hoje | Depois |
 |---|---|---|
-| Tamanho | 10 degraus | **8 níveis** |
+| Tamanho | 10 degraus | **8 andares** |
 | Largada | Pelo **lugar** no placar | Pelos **pontos** |
-| 1º lugar precisa de | 2 acertos | **3 acertos** |
-| Último precisa de | 10 acertos | **7 acertos** |
+| 1º lugar precisa de | 2 acertos | **4 acertos** |
+| Último precisa de | 10 acertos | **8 acertos** |
 
 Hoje quem lidera por 10 pontos larga igual a quem lidera por 1000 — a pontuação não entra
 na conta, só a ordem de chegada. E a vantagem é brutal: 2 acertos contra 10.
@@ -126,7 +126,7 @@ para cada jogador:
   tLugar  = (n - 1 - colocação) / (n - 1)
   t       = 0,5 × tPontos + 0,5 × tLugar
   pulos   = arredondar(MAX_PULOS × t^1,5)     // 0 a 4
-  nível   = pulos                             // 0 = base, 7 = topo
+  andar   = pulos                             // 0 = chão, 1 a 8 = andares
 ```
 
 Metade do peso vem da colocação, não só dos pontos, por um motivo prático: com um líder
@@ -279,11 +279,12 @@ Antes de cada pergunta, você escolhe um poder e uma vítima. São sete.
 
 **A pontuação acumulada deixa de valer para ganhar.** Ela só decide **onde você começa**.
 
-A pirâmide tem 8 níveis. Quem fez mais pontos começa mais perto do topo — no máximo 4
+A pirâmide tem 8 andares, e todo mundo começa no chão, na frente dela. Quem fez mais pontos
+já larga alguns andares acima — no máximo 4
 níveis acima da base. Quem ficou em último começa lá embaixo.
 
-Na prática: o primeiro colocado precisa de **3 respostas certas** para chegar ao topo, e o
-último precisa de **7**. É vantagem de verdade, mas não é partida ganha.
+Na prática: o primeiro colocado precisa de **4 respostas certas** para chegar ao topo, e o
+último precisa de **8**. É vantagem de verdade, mas não é partida ganha.
 
 A partir daí, todo mundo corre ao mesmo tempo, cada um no seu ritmo, com suas próprias
 perguntas. **Cada acerto sobe um nível.**
