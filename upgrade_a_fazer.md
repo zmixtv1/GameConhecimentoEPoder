@@ -79,6 +79,47 @@ em `public/` saber com o que se parecer.
 
 ---
 
+## Pirâmide do Conhecimento
+
+- [ ] **Largada por pontuação, em 8 andares.** Hoje a Pirâmide tem 10 degraus
+      (`piramideDegraus: 10`) e a largada sai do **lugar no placar**, não dos pontos:
+      `posicaoInicial = alturaMaximaLargada × (total - 1 - rank) / (total - 1)`
+      (server/sala.js:1269-1275). Quem lidera por 10 pontos larga igual a quem lidera por
+      1000. E a vantagem é enorme: o primeiro larga no degrau 8 de 10, precisando de 2
+      acertos, contra 10 do último.
+      Passa a ter **8 andares** (referência visual: `teste-piramide.html`), com o andar 1
+      no topo e o 8 na base, e a largada calculada assim:
+
+      ```
+      MENOR = menor pontuação da sala
+      MAIOR = maior pontuação da sala
+
+      para cada jogador:
+        tPontos = (pontos - MENOR) / (MAIOR - MENOR)   // 0 a 1; se todos empatados, 0
+        tLugar  = (n - 1 - colocação) / (n - 1)        // 1 = primeiro, 0 = último
+        t       = 0,5 × tPontos + 0,5 × tLugar
+        andar   = 8 - arredondar(4 × t^1,5)
+      ```
+
+      Três decisões embutidas, cada uma resolvendo um problema:
+      1. **Altura máxima 4** de 8 andares puxa o campo todo para baixo: o primeiro larga
+         no meio da pirâmide, não perto do topo. Precisa de 3 acertos contra 7 do último
+         — vantagem real, mas bem menor que os 2 contra 10 de hoje.
+      2. **Expoente 1,5** faz a vantagem crescer devagar no meio da tabela e acelerar só
+         perto do topo, em vez de distribuir linearmente.
+      3. **Metade pontos, metade colocação.** Só com pontos (min-max puro), um jogador
+         muito na frente ou muito atrás estica a faixa e achata todo o resto no mesmo
+         andar — simulei e, com um líder disparado, do 2º ao 8º largavam todos juntos na
+         base. A parte da colocação garante que o placar sempre se traduza em andares
+         diferentes, e a parte dos pontos mantém a proporção.
+
+      **Cuidado de implementação:** o andar N tem exatamente N blocos
+      (`for (blocoIndice = 0; blocoIndice < andarAtual; ...)` no protótipo), então o topo
+      cabe 1 jogador e a base cabe 8. Empate de pontos cai no mesmo andar e precisa de
+      `posicaoNoAndar` diferente; se faltar bloco, o excedente desce um andar.
+
+---
+
 ## Jogos de Poder — reformulação
 
 A lista final fica com 7 poderes: Congelamento, Mordicadores, Névoa, Pedágio,

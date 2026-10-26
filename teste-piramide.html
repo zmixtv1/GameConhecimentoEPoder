@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="pt-BR"> 
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz TV - Pirâmide do Conhecimento</title>
+    <!-- Fonte 'Outfit' -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --text-main: #0f172a;
+            
+            /* Cores da Pirâmide de Areia/Bege */
+            --glass-beige-bg: rgba(245, 240, 230, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.9);
+            --glass-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: #f8fafc;
+            background-image: radial-gradient(#cbd5e1 2px, transparent 2px);
+            background-size: 40px 40px;
+            background-position: center;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end; /* A pirâmide fica apoiada em baixo */
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+            padding-bottom: 5vh; 
+        }
+
+        /* Luzes de Fundo */
+        .ambient-light {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            z-index: -1;
+            animation: fluidMotion 20s infinite alternate ease-in-out;
+        }
+
+        .light-1 { top: -10%; left: -10%; width: 60vw; height: 60vw; background: rgba(226, 232, 240, 0.8); }
+        .light-2 { bottom: -20%; right: -10%; width: 50vw; height: 50vw; background: rgba(186, 230, 253, 0.4); animation-delay: -5s; }
+        .light-3 { top: 30%; left: 30%; width: 40vw; height: 40vw; background: rgba(255, 255, 255, 0.9); animation-delay: -10s; }
+        .light-4 { top: -20%; right: 10%; width: 45vw; height: 45vw; background: rgba(243, 234, 216, 0.4); /* Tom areia claro */ animation-delay: -7s; }
+
+        @keyframes fluidMotion {
+            0% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(5vw, 10vh) scale(1.1); }
+            66% { transform: translate(-5vw, 5vh) scale(0.9); }
+            100% { transform: translate(10vw, -5vh) scale(1.05); }
+        }
+
+        /* === BANNER DO TÍTULO === */
+        .title-banner {
+            position: absolute;
+            top: clamp(2vh, 4vh, 5vh);
+            left: 50%;
+            transform: translateX(-50%) translateY(-50px);
+            padding: clamp(10px, 2vh, 15px) clamp(20px, 4vw, 50px);
+            border-radius: 50px;
+            font-size: clamp(18px, 3vw, 42px);
+            font-weight: 900;
+            color: var(--text-main);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(24px);
+            border: 2px solid rgba(241, 196, 15, 0.6); /* Borda Dourada */
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08), 0 0 30px rgba(241, 196, 15, 0.2);
+            z-index: 100;
+            text-align: center;
+            white-space: nowrap; /* Impede o texto de quebrar linha em telas pequenas */
+            opacity: 0;
+            animation: slideDownTitle 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards 0.5s;
+            transition: all 0.5s ease;
+        }
+
+        @keyframes slideDownTitle {
+            0% { transform: translateX(-50%) translateY(-50px); opacity: 0; }
+            100% { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+
+        /* === TROFÉU LATERAL DO VENCEDOR === */
+        .side-trophy {
+            position: absolute;
+            left: 115%; /* Posiciona totalmente do lado direito do bloco */
+            top: 50%; /* Alinha verticalmente ao meio */
+            font-size: clamp(30px, 5vh, 45px); 
+            opacity: 0;
+            transform: translateY(-50%) scale(0) rotate(-30deg);
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            filter: drop-shadow(0 10px 15px rgba(241, 196, 15, 0.8));
+            z-index: 30;
+        }
+
+        .side-trophy.show {
+            opacity: 1;
+            transform: translateY(-50%) scale(1.2) rotate(10deg);
+        }
+
+        /* === ESTRUTURA DA PIRÂMIDE === */
+        .pyramid-stage {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: clamp(4px, 0.8vh, 10px); /* Espaço vertical entre andares */
+            z-index: 10;
+        }
+
+        .pyramid-row {
+            display: flex;
+            justify-content: center;
+            gap: clamp(4px, 0.8vh, 10px); /* Espaço horizontal entre blocos */
+        }
+
+        .pyramid-block {
+            width: clamp(30px, 6.5vh, 80px); /* Reduzido levemente para sobrar espaço no topo do monitor */
+            height: clamp(30px, 6.5vh, 80px);
+            background: var(--glass-beige-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 2px solid var(--glass-border);
+            border-radius: 12px;
+            box-shadow: inset 0 5px 10px rgba(255,255,255,0.5), 0 5px 15px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+        }
+
+        .pyramid-block.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* O avatar do jogador */
+        .player-icon {
+            font-size: clamp(20px, 4.5vh, 55px); /* Tamanho adaptado ao novo bloco */
+            line-height: 1;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+            z-index: 20;
+            /* Animação inicial de surgimento */
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) backwards;
+            position: relative; /* Necessário para o FLIP funcionar bem */
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+    </style>
+</head>
+
+<body>
+    <!-- Título do Jogo -->
+    <div class="title-banner">Pirâmide do Conhecimento!</div>
+
+    <!-- Fundo de Luzes -->
+    <div class="ambient-light light-1"></div>
+    <div class="ambient-light light-2"></div>
+    <div class="ambient-light light-3"></div>
+    <div class="ambient-light light-4"></div>
+
+    <!-- A Pirâmide -->
+    <div class="pyramid-stage" id="pyramid-stage"></div>
+
+    <script>
+        // Configuração da Pirâmide (8 andares agora)
+        const TOTAL_ANDARES = 8;
+        
+        // Estado inicial da partida (Rodrigo começa lá embaixo no Andar 6)
+        const posicaoJogadores = [
+            { emoji: '🐼', andar: 6, posicaoNoAndar: 2 }, // Rodrigo
+            { emoji: '🦁', andar: 5, posicaoNoAndar: 2 }, // Adamor
+            { emoji: '🦊', andar: 7, posicaoNoAndar: 1 }, // Vítoria
+            { emoji: '🐸', andar: 8, posicaoNoAndar: 4 }, // Cecília
+            { emoji: '🦄', andar: 7, posicaoNoAndar: 3 }, // Catarina
+            { emoji: '🐧', andar: 8, posicaoNoAndar: 1 }, // Guilherme
+            { emoji: '🐙', andar: 8, posicaoNoAndar: 6 }, // Mônica
+            { emoji: '🐯', andar: 8, posicaoNoAndar: 7 }  // Luciana
+        ];
+
+        window.onload = () => {
+            const stage = document.getElementById('pyramid-stage');
+            const rowsArray = []; 
+
+            // 1. GERADOR DE ANDARES E BLOCOS
+            for (let andarAtual = 1; andarAtual <= TOTAL_ANDARES; andarAtual++) {
+                const row = document.createElement('div');
+                row.className = 'pyramid-row';
+                
+                for (let blocoIndice = 0; blocoIndice < andarAtual; blocoIndice++) {
+                    const block = document.createElement('div');
+                    block.className = 'pyramid-block';
+                    
+                    const playerHere = posicaoJogadores.find(p => p.andar === andarAtual && p.posicaoNoAndar === blocoIndice);
+                    if (playerHere) {
+                        const icon = document.createElement('span');
+                        icon.className = 'player-icon';
+                        icon.innerText = playerHere.emoji;
+                        
+                        // CORREÇÃO: Dá um ID único para cada boneco não ser confundido!
+                        icon.id = `boneco-${posicaoJogadores.indexOf(playerHere)}`;
+                        
+                        icon.style.animationDelay = `${(TOTAL_ANDARES - andarAtual) * 80 + 300}ms`; 
+                        block.appendChild(icon);
+                    }
+
+                    row.appendChild(block);
+                }
+                
+                rowsArray.push(row);
+                stage.appendChild(row);
+            }
+
+            // 2. ANIMAÇÃO DE CONSTRUÇÃO DE BAIXO PARA CIMA
+            let delayOffset = 100;
+            
+            for (let i = TOTAL_ANDARES - 1; i >= 0; i--) {
+                const row = rowsArray[i];
+                const blocks = row.querySelectorAll('.pyramid-block');
+                
+                setTimeout(() => {
+                    blocks.forEach(block => block.classList.add('show'));
+                }, delayOffset);
+                
+                delayOffset += 80; 
+            }
+
+            // 3. INICIAR A CORRIDA ATÉ O TOPO
+            setTimeout(iniciarCorrida, delayOffset + 800); 
+
+            function moverJogador(emojiIndex, destAndar, destPosicao) {
+                const jogadorInfo = posicaoJogadores[emojiIndex];
+                
+                // Encontra o bloco para onde ele vai
+                const destRow = rowsArray[destAndar - 1];
+                const destBloco = destRow.querySelectorAll('.pyramid-block')[destPosicao];
+                
+                // CORREÇÃO: Pega EXATAMENTE o boneco certo pelo ID, mesmo que tenha outro junto!
+                const icon = document.getElementById(`boneco-${emojiIndex}`);
+                
+                // --- TÉCNICA FLIP (Movimentação suave entre elementos HTML diferentes) ---
+                
+                // 1. Descobre exatamente onde o boneco está na tela (First)
+                const firstRect = icon.getBoundingClientRect();
+                
+                // 2. Desativa a animação de pulo inicial (popIn) para não piscar
+                icon.style.animation = 'none';
+                
+                // Move o elemento no HTML (Instantâneo)
+                destBloco.appendChild(icon);
+                
+                // 3. Descobre a nova posição (Last)
+                const lastRect = icon.getBoundingClientRect();
+                
+                // 4. Calcula a diferença (Invert)
+                const deltaX = firstRect.left - lastRect.left;
+                const deltaY = firstRect.top - lastRect.top;
+                
+                // Volta ele visualmente pra posição antiga
+                icon.style.transition = 'none';
+                icon.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+                icon.style.zIndex = '100'; // Fica por cima de todos os blocos enquanto voa
+                
+                // 5. Inicia o voo para a posição nova (Play)
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        icon.style.transition = 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                        icon.style.transform = 'translate(0, 0)';
+                        
+                        setTimeout(() => {
+                            icon.style.zIndex = '20'; // Volta z-index ao normal
+                        }, 500);
+                    });
+                });
+                
+                // Atualiza o estado
+                jogadorInfo.andar = destAndar;
+                jogadorInfo.posicaoNoAndar = destPosicao;
+            }
+
+            function iniciarCorrida() {
+                // Passos coreografados para o Rodrigo (Index 0) subir até o topo
+                const passos = [
+                    { a: 5, p: 2 },
+                    { a: 4, p: 1 },
+                    { a: 3, p: 1 },
+                    { a: 2, p: 0 },
+                    { a: 1, p: 0 }
+                ];
+                
+                let tempoCena = 0;
+                
+                // Executa cada passo com um delay
+                passos.forEach((passo) => {
+                    setTimeout(() => {
+                        moverJogador(0, passo.a, passo.p);
+                    }, tempoCena);
+                    tempoCena += 600; // Tempo de cada pulo (rítmico)
+                });
+                
+                // Aciona a comemoração final logo após o último pulo
+                setTimeout(iniciarComemoracao, tempoCena + 200);
+            }
+
+            // 4. COMEMORAÇÃO DA VITÓRIA
+            function iniciarComemoracao() {
+                // O Bloco do Topo fica dourado
+                const topBlock = rowsArray[0].querySelector('.pyramid-block');
+                topBlock.style.background = 'linear-gradient(135deg, #f1c40f, #f39c12)';
+                topBlock.style.boxShadow = '0 0 50px rgba(241, 196, 15, 0.8), inset 0 5px 10px rgba(255,255,255,0.9)';
+                topBlock.style.borderColor = '#fff';
+                
+                // O Troféu aparece do lado do boneco vencedor!
+                const sideTrophy = document.createElement('div');
+                sideTrophy.className = 'side-trophy';
+                sideTrophy.innerText = '🏆';
+                topBlock.appendChild(sideTrophy);
+                
+                setTimeout(() => sideTrophy.classList.add('show'), 50);
+                
+                // Atualiza o Título
+                const title = document.querySelector('.title-banner');
+                if(title) {
+                    title.innerHTML = '🐼 RODRIGO VENCEU!';
+                    title.style.color = '#fff';
+                    title.style.background = '#f39c12';
+                    title.style.borderColor = '#f1c40f';
+                }
+            }
+        };
+    </script>
+</body>
+</html>
