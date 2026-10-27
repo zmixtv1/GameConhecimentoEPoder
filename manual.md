@@ -230,9 +230,13 @@ e se rendeu. Todo mundo confirma no celular e a próxima pergunta começa.
 Depois das 3 perguntas, vem um desafio de **30 segundos**:
 
 - **Desafio de Ligação** — ligar pares que combinam. País com capital, cantor com música,
-  autor com livro. Cada par certo vale pontos, e quem completa tudo rápido ganha bônus
+  autor com livro. Cada par certo vale pontos, e quem completa tudo rápido ganha bônus.
+  No celular, as duas colunas ficam lado a lado: toque num item e depois no par dele, ou
+  arraste de um até o outro. Errar não tira ponto, só custa tempo
 - **Desafio de Classificação** — separar itens em dois grupos. Marvel ou DC, animal ou
-  planta, time brasileiro ou europeu. Cada item certo vale pontos, sem bônus de velocidade
+  planta, time brasileiro ou europeu. Cada item certo vale pontos, sem bônus de velocidade.
+  No celular, cada item aparece numa carta no meio: arraste (ou dê um peteleco) para o lado
+  da categoria, ou toque direto no painel. Cada item tem uma tentativa só
 
 Os dois se alternam: Ligação no primeiro tema, Classificação no segundo, e assim por
 diante.

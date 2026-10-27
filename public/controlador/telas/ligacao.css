@@ -11,6 +11,8 @@
   touch-action: none;
 }
 :is(#tela-linking, #tela-resultado-linking) * { -webkit-user-select: none; }
+/* como no design, o corpo inteiro não rola nem vira gesto do navegador (voltar) */
+body:has(#tela-linking:not(.oculto), #tela-resultado-linking:not(.oculto)) { touch-action: none; }
 
 /* o fundo desta tela tem um toque lilás */
 body:has(#tela-linking:not(.oculto)) .light-3,

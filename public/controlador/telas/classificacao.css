@@ -15,6 +15,8 @@
   touch-action: none;
 }
 :is(#tela-sorting, #tela-resultado-sorting) * { -webkit-user-select: none; }
+/* como no design, o corpo inteiro não rola nem vira gesto do navegador (voltar) */
+body:has(#tela-sorting:not(.oculto), #tela-resultado-sorting:not(.oculto)) { touch-action: none; }
 
 /* o fundo desta tela puxa para as cores das duas categorias */
 body:has(#tela-sorting:not(.oculto)) .light-1,
