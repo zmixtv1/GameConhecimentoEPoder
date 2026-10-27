@@ -44,8 +44,16 @@ em `public/` saber com o que se parecer.
       difíceis sem usar (`sortearPortas` em server/perguntas.js), então **Esportes e
       Cinema e TV nunca aparecem no tema 5**, e Ciência e Games, quando aparecem, trazem
       sempre as mesmas três.
+      **O jogo não quebra por causa disso** — 2000 partidas simuladas com a config real
+      não repetiram nenhuma pergunta nem entregaram pergunta fora do nível. O preço é
+      outro: sobram só 6 temas elegíveis para o tema 5, e 4 deles já foram jogados nos
+      temas 1 a 4, então em **99,5% das partidas uma das 4 portas do tema difícil é um
+      tema repetido**. Nos temas 1 a 4 isso nunca acontece.
       Meta sugerida: pelo menos 12 perguntas por (tema × nível), o que levaria o difícil
       de 28 para perto de 96. Os níveis fácil e médio já estão razoáveis.
+      Ao adicionar perguntas, rode `npm run validar` dentro de `server/`: ele confere id
+      repetido, nível escrito errado, alternativa igual à resposta e enunciado duplicado,
+      e mostra o estoque por tema × nível. O mesmo check roda em `npm test`.
 
 - [ ] **Mais temas e mais perguntas.** Com 5 temas usados por partida e 8 temas no
       acervo, duas partidas seguidas repetem a maioria dos temas. Ampliar o acervo de
@@ -55,6 +63,22 @@ em `public/` saber com o que se parecer.
       dentro da mesma partida, mas existem só **6 de cada** (data/associacoes.json e
       data/classificacoes.json). Com o alternado fixo são 3 Ligações e 2 Classificações
       por partida, então toda partida mostra metade do acervo de Ligação.
+
+---
+
+## Desempenho
+
+- [ ] **Guardar o banco de perguntas na memória.** `carregarBanco()`
+      (server/perguntas.js) faz `readFileSync` + `JSON.parse` do `perguntas.json`
+      inteiro **a cada pergunta sorteada** e a cada sorteio de portas. Numa partida são
+      umas 100 leituras do mesmo arquivo; no teste do acervo, 67 mil, o que fazia a
+      suíte levar 3 minutos.
+      Num PC não se nota, mas o jogo roda em Raspberry Pi com cartão SD, onde ler
+      arquivo é lento — e a leitura acontece no meio da partida, entre uma pergunta e
+      outra. Ler uma vez ao subir o servidor resolve.
+      Era "fora do escopo"; está aqui agora porque o custo apareceu medido. O cuidado:
+      hoje dá pra editar o `perguntas.json` com o servidor ligado e a mudança vale na
+      hora; com cache, passaria a precisar reiniciar.
 
 ---
 
@@ -68,4 +92,4 @@ em `public/` saber com o que se parecer.
 
 ## Fora do escopo por enquanto
 
-Salas múltiplas, hospedagem na web, timeout da Pirâmide e cache do banco de perguntas.
+Salas múltiplas, hospedagem na web e timeout da Pirâmide.

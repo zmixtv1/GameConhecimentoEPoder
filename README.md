@@ -235,7 +235,16 @@ cd server
 npm test
 ```
 
-São 150 testes do motor do jogo (sala, placar, poderes, Pirâmide, reconexão, partida completa). Levam cerca de 35 segundos, porque alguns esperam timers reais.
+São 154 testes do motor do jogo (sala, placar, poderes, Pirâmide, reconexão, partida completa e o acervo de perguntas). Levam cerca de 35 segundos, porque alguns esperam timers reais.
+
+**Conferir o banco de perguntas** (ao adicionar perguntas novas):
+
+```bash
+cd server
+npm run validar
+```
+
+Mostra quantas perguntas cada tema tem em cada nível e acusa os erros de digitação que só apareceriam no meio de uma partida: id repetido, nível escrito errado (`difícil` em vez de `dificil`), alternativa igual à resposta certa, enunciado duplicado. Um tema precisa de **3 perguntas de um nível** para poder ser sorteado como porta naquele nível.
 
 ---
 
