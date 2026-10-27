@@ -38,6 +38,11 @@ function validarPerguntas(erros, avisos) {
   const temas = [...new Set(banco.map((p) => p.categoria))].filter(Boolean);
   const idsVistos = new Map();
   const textosVistos = new Map();
+  // Duas perguntas do mesmo tema com a mesma resposta costumam ser o mesmo
+  // fato escrito de outro jeito ("Quem pintou A Noite Estrelada?" e "Qual
+  // pintor holandês é autor de Noite Estrelada?"). Na partida isso cansa:
+  // o jogador responde a mesma coisa duas vezes.
+  const respostasVistas = new Map();
 
   banco.forEach((p, i) => {
     const onde = `pergunta ${p.id ?? `na posição ${i}`}`;
@@ -70,7 +75,24 @@ function validarPerguntas(erros, avisos) {
     } else if (chave) {
       textosVistos.set(chave, p.id);
     }
+
+    if (p.categoria && p.resposta_correta) {
+      const chaveResposta = `${p.categoria}|${normalizar(p.resposta_correta)}`;
+      if (!respostasVistas.has(chaveResposta)) respostasVistas.set(chaveResposta, []);
+      respostasVistas.get(chaveResposta).push(p);
+    }
   });
+
+  // Agrupado, e não par a par: com três perguntas de mesma resposta, mostrar
+  // só o primeiro par escondia a repetição de verdade.
+  for (const [chave, grupo] of respostasVistas) {
+    if (grupo.length < 2) continue;
+    const resposta = chave.split("|").slice(1).join("|");
+    avisos.push(
+      `mesma resposta ("${grupo[0].resposta_correta}") em ${grupo.length} perguntas de ${grupo[0].categoria} — confira se não é o mesmo fato:\n` +
+        grupo.map((p) => `      ${p.id} [${p.dificuldade}] ${p.pergunta}`).join("\n")
+    );
+  }
 
   return { banco, temas };
 }

@@ -34,18 +34,19 @@ Ligações e 2 Classificações por partida.
 
 ## Dois problemas de conteúdo que isso revela
 
-**O nível difícil está quase vazio.** O campo `dificuldade` existe nas 344 perguntas, e
-agora o servidor sorteia por ele. Olhando o acervo:
+**O nível difícil estava quase vazio.** O campo `dificuldade` existia nas 344 perguntas,
+mas o servidor não usava. Quando passou a usar, o buraco apareceu: só 28 perguntas
+difíceis no acervo inteiro, com Esportes tendo 1 e Cinema e TV tendo 2 — nenhum dos dois
+conseguia montar uma rodada difícil, e o tema 5 sempre caía nos mesmos seis assuntos.
+
+O acervo foi para **470 perguntas**, com 28 fáceis e 12 difíceis em cada tema:
 
 | | fácil | médio | difícil |
 |---|---|---|---|
-| Total | 166 | 150 | **28** |
+| Antes | 166 | 150 | **28** |
+| Agora | 224 | 150 | **96** |
 
-Um tema difícil precisa de 3 perguntas daquele nível. **Esportes tem 1 e Cinema e TV tem
-2** — nenhum dos dois consegue montar uma rodada difícil. Ciência e Games têm exatamente
-3, então cairiam sempre as mesmas. Só 4 dos 8 temas têm folga. Enquanto o acervo não
-cresce, as portas do tema difícil só oferecem temas que ainda têm 3 perguntas daquele
-nível sem usar.
+Com 12 difíceis por tema, os oito temas disputam a rodada difícil em pé de igualdade.
 
 **Os desafios se repetiam.** Existem 6 conjuntos de Ligação e 6 de Classificação, e o
 sorteio não tinha memória: com 5 desafios por partida, a chance de repetir um dentro da

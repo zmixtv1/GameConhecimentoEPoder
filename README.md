@@ -274,7 +274,7 @@ upgrade_a_fazer.md fila de mudanças planejadas do projeto
 
 Tudo fica em [data/](data/), em JSON. Os arquivos são lidos a cada sorteio, então **não precisa reiniciar o servidor** depois de editar — só não vale mexer no meio de uma partida.
 
-**[data/perguntas.json](data/perguntas.json)** — 344 perguntas em 8 temas (Geografia, História, Ciência e Natureza, Esportes, Cinema e TV, Música, Games, Arte e Literatura):
+**[data/perguntas.json](data/perguntas.json)** — 470 perguntas em 8 temas, 28 fáceis, 12 difíceis e o resto médias em cada um (Geografia, História, Ciência e Natureza, Esportes, Cinema e TV, Música, Games, Arte e Literatura):
 
 ```json
 {

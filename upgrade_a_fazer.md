@@ -25,39 +25,24 @@ em `public/` saber com o que se parecer.
 
 ## Banco de perguntas
 
-- [ ] **O nível difícil está quase vazio.** Distribuição real hoje:
+Hoje são **470 perguntas**: 28 fáceis e 12 difíceis em cada um dos 8 temas, mais as
+médias (de 16 a 24, conforme o tema). Ao mexer no banco, rode `npm run validar` dentro
+de `server/`: ele confere id repetido, nível escrito errado, alternativa igual à
+resposta, enunciado duplicado e perguntas do mesmo tema com a mesma resposta — que
+costumam ser o mesmo fato escrito de outro jeito. O mesmo check roda em `npm test`.
 
-      | Tema | fácil | médio | difícil |
-      |---|---|---|---|
-      | Geografia | 23 | 16 | 4 |
-      | História | 19 | 20 | 4 |
-      | Ciência e Natureza | 24 | 16 | 3 |
-      | Esportes | 21 | 21 | **1** |
-      | Cinema e TV | 25 | 16 | **2** |
-      | Música | 20 | 17 | 6 |
-      | Games | 20 | 20 | 3 |
-      | Arte e Literatura | 14 | 24 | 5 |
-      | **Total** | **166** | **150** | **28** |
+- [ ] **Trocar as perguntas que o Rodrigo quiser substituir.** As 126 que entraram na
+      última leva foram escritas para tapar o buraco do nível difícil e nivelar o fácil;
+      a ideia é que sejam trocadas aos poucos por outras melhores. Os ids 345 a 470 são
+      todos dessa leva.
 
-      O tema difícil da partida precisa de 3 perguntas daquele nível. Enquanto o acervo
-      não cresce, as portas do tema difícil só oferecem temas que ainda têm 3 perguntas
-      difíceis sem usar (`sortearPortas` em server/perguntas.js), então **Esportes e
-      Cinema e TV nunca aparecem no tema 5**, e Ciência e Games, quando aparecem, trazem
-      sempre as mesmas três.
-      **O jogo não quebra por causa disso** — 2000 partidas simuladas com a config real
-      não repetiram nenhuma pergunta nem entregaram pergunta fora do nível. O preço é
-      outro: sobram só 6 temas elegíveis para o tema 5, e 4 deles já foram jogados nos
-      temas 1 a 4, então em **99,5% das partidas uma das 4 portas do tema difícil é um
-      tema repetido**. Nos temas 1 a 4 isso nunca acontece.
-      Meta sugerida: pelo menos 12 perguntas por (tema × nível), o que levaria o difícil
-      de 28 para perto de 96. Os níveis fácil e médio já estão razoáveis.
-      Ao adicionar perguntas, rode `npm run validar` dentro de `server/`: ele confere id
-      repetido, nível escrito errado, alternativa igual à resposta e enunciado duplicado,
-      e mostra o estoque por tema × nível. O mesmo check roda em `npm test`.
+- [ ] **Médio é o nível mais magro agora.** Ficou em 150 perguntas, com Cinema e TV,
+      Ciência e Natureza e Geografia com 16 cada. Dá e sobra para uma partida (precisa de
+      3), mas é o nível que menos varia entre partidas seguidas.
 
-- [ ] **Mais temas e mais perguntas.** Com 5 temas usados por partida e 8 temas no
-      acervo, duas partidas seguidas repetem a maioria dos temas. Ampliar o acervo de
-      temas, e as perguntas de cada um, nos três níveis.
+- [ ] **Mais temas.** Com 5 temas usados por partida e 8 no acervo, duas partidas
+      seguidas repetem a maioria dos assuntos. Um tema novo precisa de pelo menos 3
+      perguntas em cada nível para poder ser sorteado em qualquer rodada.
 
 - [ ] **Mais conjuntos de Ligação e de Classificação.** O sorteio já não repete conjunto
       dentro da mesma partida, mas existem só **6 de cada** (data/associacoes.json e

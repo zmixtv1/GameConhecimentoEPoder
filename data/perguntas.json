@@ -4126,5 +4126,1517 @@
       "Machado de Assis",
       "Erico Verissimo"
     ]
+  },
+  {
+    "id": 345,
+    "categoria": "Esportes",
+    "dificuldade": "dificil",
+    "pergunta": "Qual seleção venceu a primeira Copa do Mundo de futebol, disputada em casa em 1930?",
+    "resposta_correta": "Uruguai",
+    "alternativas_erradas": [
+      "Brasil",
+      "Argentina",
+      "Itália"
+    ]
+  },
+  {
+    "id": 346,
+    "categoria": "Esportes",
+    "dificuldade": "dificil",
+    "pergunta": "Quem foi o primeiro brasileiro a conquistar o campeonato mundial de Fórmula 1, em 1972?",
+    "resposta_correta": "Emerson Fittipaldi",
+    "alternativas_erradas": [
+      "Nelson Piquet",
+      "Ayrton Senna",
+      "José Carlos Pace"
+    ]
+  },
+  {
+    "id": 347,
+    "categoria": "Esportes",
+    "dificuldade": "dificil",
+    "pergunta": "Adhemar Ferreira da Silva deu ao Brasil o primeiro ouro olímpico em 1952, em qual prova do atletismo?",
+    "resposta_correta": "Salto triplo",
+    "alternativas_erradas": [
+      "Salto em distância",
+      "Arremesso de peso",
+      "Corrida de 400 metros"
+    ]
+  },
+  {
+    "id": 348,
+    "categoria": "Esportes",
+    "dificuldade": "dificil",
+    "pergunta": "Qual piloto brasileiro foi tricampeão mundial de Fórmula 1 ainda na década de 1980?",
+    "resposta_correta": "Nelson Piquet",
+    "alternativas_erradas": [
+      "Ayrton Senna",
+      "Emerson Fittipaldi",
+      "Rubens Barrichello"
+    ]
+  },
+  {
+    "id": 349,
+    "categoria": "Esportes",
+    "dificuldade": "dificil",
+    "pergunta": "Qual clube brasileiro conquistou o primeiro Mundial Interclubes para o país, em 1962?",
+    "resposta_correta": "Santos",
+    "alternativas_erradas": [
+      "Palmeiras",
+      "Flamengo",
+      "São Paulo"
+    ]
+  },
+  {
+    "id": 350,
+    "categoria": "Esportes",
+    "dificuldade": "dificil",
+    "pergunta": "Qual seleção o Brasil derrotou na final para conquistar seu primeiro ouro olímpico no vôlei masculino, em 1992?",
+    "resposta_correta": "Holanda",
+    "alternativas_erradas": [
+      "Itália",
+      "União Soviética",
+      "Estados Unidos"
+    ]
+  },
+  {
+    "id": 351,
+    "categoria": "Esportes",
+    "dificuldade": "dificil",
+    "pergunta": "Qual maratonista brasileiro foi empurrado por um invasor de pista quando liderava a maratona olímpica de Atenas, em 2004?",
+    "resposta_correta": "Vanderlei Cordeiro de Lima",
+    "alternativas_erradas": [
+      "Joaquim Cruz",
+      "Marílson dos Santos",
+      "Robson Caetano"
+    ]
+  },
+  {
+    "id": 352,
+    "categoria": "Esportes",
+    "dificuldade": "dificil",
+    "pergunta": "Qual tenista alemã conquistou em 1988 os quatro torneios de Grand Slam e ainda o ouro olímpico no mesmo ano?",
+    "resposta_correta": "Steffi Graf",
+    "alternativas_erradas": [
+      "Martina Navratilova",
+      "Chris Evert",
+      "Monica Seles"
+    ]
+  },
+  {
+    "id": 353,
+    "categoria": "Esportes",
+    "dificuldade": "dificil",
+    "pergunta": "Em qual luta de 1974, no Zaire, Muhammad Ali recuperou o título dos pesos-pesados ao nocautear George Foreman?",
+    "resposta_correta": "Rumble in the Jungle",
+    "alternativas_erradas": [
+      "Thrilla in Manila",
+      "Fight of the Century",
+      "Luta do Século"
+    ]
+  },
+  {
+    "id": 354,
+    "categoria": "Esportes",
+    "dificuldade": "dificil",
+    "pergunta": "Qual enxadrista americano venceu Boris Spassky em 1972, numa disputa marcada pela Guerra Fria?",
+    "resposta_correta": "Bobby Fischer",
+    "alternativas_erradas": [
+      "Garry Kasparov",
+      "Anatoly Karpov",
+      "Mikhail Tal"
+    ]
+  },
+  {
+    "id": 355,
+    "categoria": "Esportes",
+    "dificuldade": "dificil",
+    "pergunta": "Quantas voltas tem uma prova de 10.000 metros numa pista oficial de atletismo?",
+    "resposta_correta": "25",
+    "alternativas_erradas": [
+      "20",
+      "30",
+      "40"
+    ]
+  },
+  {
+    "id": 356,
+    "categoria": "Cinema e TV",
+    "dificuldade": "dificil",
+    "pergunta": "Qual filme foi o primeiro brasileiro indicado ao Oscar de Melhor Filme Estrangeiro, após vencer a Palma de Ouro em Cannes?",
+    "resposta_correta": "O Pagador de Promessas",
+    "alternativas_erradas": [
+      "Central do Brasil",
+      "Cidade de Deus",
+      "O Cangaceiro"
+    ]
+  },
+  {
+    "id": 357,
+    "categoria": "Cinema e TV",
+    "dificuldade": "dificil",
+    "pergunta": "Qual diretor brasileiro assina Cidade de Deus, filme indicado a quatro Oscars?",
+    "resposta_correta": "Fernando Meirelles",
+    "alternativas_erradas": [
+      "Walter Salles",
+      "Glauber Rocha",
+      "José Padilha"
+    ]
+  },
+  {
+    "id": 358,
+    "categoria": "Cinema e TV",
+    "dificuldade": "dificil",
+    "pergunta": "Qual atriz brasileira foi indicada ao Oscar de Melhor Atriz pelo papel de Dora em Central do Brasil?",
+    "resposta_correta": "Fernanda Montenegro",
+    "alternativas_erradas": [
+      "Sonia Braga",
+      "Marieta Severo",
+      "Regina Casé"
+    ]
+  },
+  {
+    "id": 359,
+    "categoria": "Cinema e TV",
+    "dificuldade": "dificil",
+    "pergunta": "Qual movimento do cinema brasileiro dos anos 1960, liderado por Glauber Rocha, pregava 'uma câmera na mão e uma ideia na cabeça'?",
+    "resposta_correta": "Cinema Novo",
+    "alternativas_erradas": [
+      "Chanchada",
+      "Cinema Marginal",
+      "Tropicalismo"
+    ]
+  },
+  {
+    "id": 360,
+    "categoria": "Cinema e TV",
+    "dificuldade": "dificil",
+    "pergunta": "Qual filme levou o primeiro Oscar de Melhor Filme da história, na cerimônia de 1929?",
+    "resposta_correta": "Asas",
+    "alternativas_erradas": [
+      "O Cantor de Jazz",
+      "Luzes da Cidade",
+      "Nosferatu"
+    ]
+  },
+  {
+    "id": 361,
+    "categoria": "Cinema e TV",
+    "dificuldade": "dificil",
+    "pergunta": "Qual objeto da infância de Charles Foster Kane é revelado no plano final de Cidadão Kane, explicando a palavra Rosebud?",
+    "resposta_correta": "Um trenó",
+    "alternativas_erradas": [
+      "Um globo de neve",
+      "Uma bicicleta",
+      "Um cavalo de balanço"
+    ]
+  },
+  {
+    "id": 362,
+    "categoria": "Cinema e TV",
+    "dificuldade": "dificil",
+    "pergunta": "Qual novela foi a primeira produzida inteiramente em cores no Brasil, em 1973?",
+    "resposta_correta": "O Bem-Amado",
+    "alternativas_erradas": [
+      "Selva de Pedra",
+      "Irmãos Coragem",
+      "Dancin' Days"
+    ]
+  },
+  {
+    "id": 363,
+    "categoria": "Cinema e TV",
+    "dificuldade": "dificil",
+    "pergunta": "Qual animação japonesa de Hayao Miyazaki venceu o Oscar de Melhor Animação em 2003?",
+    "resposta_correta": "A Viagem de Chihiro",
+    "alternativas_erradas": [
+      "Meu Amigo Totoro",
+      "Princesa Mononoke",
+      "O Castelo Animado"
+    ]
+  },
+  {
+    "id": 364,
+    "categoria": "Cinema e TV",
+    "dificuldade": "dificil",
+    "pergunta": "Qual diretor italiano dirigiu A Doce Vida, de 1960, cuja cena na Fontana di Trevi virou símbolo do cinema?",
+    "resposta_correta": "Federico Fellini",
+    "alternativas_erradas": [
+      "Vittorio De Sica",
+      "Michelangelo Antonioni",
+      "Luchino Visconti"
+    ]
+  },
+  {
+    "id": 365,
+    "categoria": "Cinema e TV",
+    "dificuldade": "dificil",
+    "pergunta": "Qual ator interpretou João Grilo em O Auto da Compadecida, adaptação da peça de Ariano Suassuna?",
+    "resposta_correta": "Matheus Nachtergaele",
+    "alternativas_erradas": [
+      "Selton Mello",
+      "Wagner Moura",
+      "Lázaro Ramos"
+    ]
+  },
+  {
+    "id": 366,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "dificil",
+    "pergunta": "O físico brasileiro César Lattes participou em 1947 da descoberta de qual partícula subatômica?",
+    "resposta_correta": "Méson pi",
+    "alternativas_erradas": [
+      "Nêutron",
+      "Pósitron",
+      "Neutrino"
+    ]
+  },
+  {
+    "id": 367,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "dificil",
+    "pergunta": "Qual elemento químico tem símbolo W, herdado do nome alemão wolfrâmio?",
+    "resposta_correta": "Tungstênio",
+    "alternativas_erradas": [
+      "Vanádio",
+      "Tântalo",
+      "Molibdênio"
+    ]
+  },
+  {
+    "id": 368,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "dificil",
+    "pergunta": "Qual astrônomo formulou no século XVII as três leis que descrevem o movimento dos planetas em órbitas elípticas?",
+    "resposta_correta": "Johannes Kepler",
+    "alternativas_erradas": [
+      "Galileu Galilei",
+      "Nicolau Copérnico",
+      "Tycho Brahe"
+    ]
+  },
+  {
+    "id": 369,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "dificil",
+    "pergunta": "Que nome recebe a quantidade 6,02 × 10²³, usada na química para contar átomos e moléculas?",
+    "resposta_correta": "Número de Avogadro",
+    "alternativas_erradas": [
+      "Constante de Planck",
+      "Número de Faraday",
+      "Constante de Boltzmann"
+    ]
+  },
+  {
+    "id": 370,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "dificil",
+    "pergunta": "Qual parte do encéfalo humano responde pelo equilíbrio e pela coordenação dos movimentos?",
+    "resposta_correta": "Cerebelo",
+    "alternativas_erradas": [
+      "Hipotálamo",
+      "Bulbo",
+      "Córtex frontal"
+    ]
+  },
+  {
+    "id": 371,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "dificil",
+    "pergunta": "Qual bioma brasileiro, que ia do Rio Grande do Norte ao Rio Grande do Sul, é o que menos preserva sua cobertura original?",
+    "resposta_correta": "Mata Atlântica",
+    "alternativas_erradas": [
+      "Cerrado",
+      "Caatinga",
+      "Pampa"
+    ]
+  },
+  {
+    "id": 372,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "dificil",
+    "pergunta": "Qual cientista alemão propôs em 1912 a deriva continental, ideia rejeitada na época e confirmada décadas depois?",
+    "resposta_correta": "Alfred Wegener",
+    "alternativas_erradas": [
+      "Charles Lyell",
+      "James Hutton",
+      "Harry Hess"
+    ]
+  },
+  {
+    "id": 373,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "dificil",
+    "pergunta": "Qual fenômeno físico explica por que o céu aparece azul durante o dia?",
+    "resposta_correta": "Espalhamento da luz pela atmosfera",
+    "alternativas_erradas": [
+      "Refração nas nuvens",
+      "Efeito Doppler",
+      "Reflexão nos oceanos"
+    ]
+  },
+  {
+    "id": 374,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "dificil",
+    "pergunta": "Qual planeta do Sistema Solar abriga o Monte Olimpo, o maior vulcão já identificado?",
+    "resposta_correta": "Marte",
+    "alternativas_erradas": [
+      "Vênus",
+      "Júpiter",
+      "Mercúrio"
+    ]
+  },
+  {
+    "id": 375,
+    "categoria": "Games",
+    "dificuldade": "dificil",
+    "pergunta": "Qual estúdio japonês criou a série Final Fantasy, lançada originalmente em 1987?",
+    "resposta_correta": "Square",
+    "alternativas_erradas": [
+      "Capcom",
+      "Konami",
+      "Namco"
+    ]
+  },
+  {
+    "id": 376,
+    "categoria": "Games",
+    "dificuldade": "dificil",
+    "pergunta": "Em qual jogo de 1981 Mario apareceu pela primeira vez, ainda chamado de Jumpman?",
+    "resposta_correta": "Donkey Kong",
+    "alternativas_erradas": [
+      "Super Mario Bros.",
+      "Mario Bros.",
+      "Popeye"
+    ]
+  },
+  {
+    "id": 377,
+    "categoria": "Games",
+    "dificuldade": "dificil",
+    "pergunta": "Qual console da Sega, do fim dos anos 1990, saiu de fábrica com modem para jogar pela internet?",
+    "resposta_correta": "Dreamcast",
+    "alternativas_erradas": [
+      "Saturn",
+      "Mega Drive",
+      "Game Gear"
+    ]
+  },
+  {
+    "id": 378,
+    "categoria": "Games",
+    "dificuldade": "dificil",
+    "pergunta": "Em qual jogo de 1997 a personagem Aeris é morta por Sephiroth, numa das cenas mais lembradas dos videogames?",
+    "resposta_correta": "Final Fantasy VII",
+    "alternativas_erradas": [
+      "Chrono Trigger",
+      "Final Fantasy VI",
+      "Xenogears"
+    ]
+  },
+  {
+    "id": 379,
+    "categoria": "Games",
+    "dificuldade": "dificil",
+    "pergunta": "Qual programador sueco criou o Minecraft, lançado em versão final em 2011?",
+    "resposta_correta": "Markus Persson",
+    "alternativas_erradas": [
+      "Toby Fox",
+      "Eric Barone",
+      "Jonathan Blow"
+    ]
+  },
+  {
+    "id": 380,
+    "categoria": "Games",
+    "dificuldade": "dificil",
+    "pergunta": "Qual jogo da Konami, de 1998, estrelado por Solid Snake, firmou o gênero de infiltração?",
+    "resposta_correta": "Metal Gear Solid",
+    "alternativas_erradas": [
+      "Splinter Cell",
+      "Thief",
+      "Hitman"
+    ]
+  },
+  {
+    "id": 381,
+    "categoria": "Games",
+    "dificuldade": "dificil",
+    "pergunta": "Qual jogo de luta da Capcom, de 1991, dominou os fliperamas com personagens como Ryu e Chun-Li?",
+    "resposta_correta": "Street Fighter II",
+    "alternativas_erradas": [
+      "Mortal Kombat",
+      "Fatal Fury",
+      "Tekken"
+    ]
+  },
+  {
+    "id": 382,
+    "categoria": "Games",
+    "dificuldade": "dificil",
+    "pergunta": "Qual estúdio polonês desenvolveu a série The Witcher, baseada nos livros de Andrzej Sapkowski?",
+    "resposta_correta": "CD Projekt Red",
+    "alternativas_erradas": [
+      "Techland",
+      "11 bit studios",
+      "People Can Fly"
+    ]
+  },
+  {
+    "id": 383,
+    "categoria": "Games",
+    "dificuldade": "dificil",
+    "pergunta": "Qual jogo de 1996 da id Software foi o primeiro da empresa com mundo inteiramente em 3D poligonal?",
+    "resposta_correta": "Quake",
+    "alternativas_erradas": [
+      "Doom",
+      "Wolfenstein 3D",
+      "Heretic"
+    ]
+  },
+  {
+    "id": 384,
+    "categoria": "Geografia",
+    "dificuldade": "dificil",
+    "pergunta": "Qual país tem o maior número de fusos horários, por causa de seus territórios espalhados pelo mundo?",
+    "resposta_correta": "França",
+    "alternativas_erradas": [
+      "Rússia",
+      "Estados Unidos",
+      "Reino Unido"
+    ]
+  },
+  {
+    "id": 385,
+    "categoria": "Geografia",
+    "dificuldade": "dificil",
+    "pergunta": "Qual é o rio mais extenso situado inteiramente em território brasileiro?",
+    "resposta_correta": "Rio São Francisco",
+    "alternativas_erradas": [
+      "Rio Amazonas",
+      "Rio Paraná",
+      "Rio Tocantins"
+    ]
+  },
+  {
+    "id": 386,
+    "categoria": "Geografia",
+    "dificuldade": "dificil",
+    "pergunta": "Qual é a capital da Mongólia, uma das capitais mais frias do mundo?",
+    "resposta_correta": "Ulan Bator",
+    "alternativas_erradas": [
+      "Astana",
+      "Bishkek",
+      "Tashkent"
+    ]
+  },
+  {
+    "id": 387,
+    "categoria": "Geografia",
+    "dificuldade": "dificil",
+    "pergunta": "Qual deserto do norte do Chile é apontado como o lugar mais árido do planeta?",
+    "resposta_correta": "Deserto do Atacama",
+    "alternativas_erradas": [
+      "Saara",
+      "Gobi",
+      "Kalahari"
+    ]
+  },
+  {
+    "id": 388,
+    "categoria": "Geografia",
+    "dificuldade": "dificil",
+    "pergunta": "Qual país africano derrotou a Itália na Batalha de Adwa, em 1896, e escapou da colonização europeia?",
+    "resposta_correta": "Etiópia",
+    "alternativas_erradas": [
+      "Gana",
+      "Quênia",
+      "Senegal"
+    ]
+  },
+  {
+    "id": 389,
+    "categoria": "Geografia",
+    "dificuldade": "dificil",
+    "pergunta": "Qual estado brasileiro é dividido no maior número de municípios?",
+    "resposta_correta": "Minas Gerais",
+    "alternativas_erradas": [
+      "São Paulo",
+      "Bahia",
+      "Rio Grande do Sul"
+    ]
+  },
+  {
+    "id": 390,
+    "categoria": "Geografia",
+    "dificuldade": "dificil",
+    "pergunta": "Qual cadeia de montanhas é usada para marcar a divisa entre a Europa e a Ásia?",
+    "resposta_correta": "Montes Urais",
+    "alternativas_erradas": [
+      "Cáucaso",
+      "Alpes",
+      "Cárpatos"
+    ]
+  },
+  {
+    "id": 391,
+    "categoria": "Geografia",
+    "dificuldade": "dificil",
+    "pergunta": "Qual é o ponto mais alto do território brasileiro, na fronteira com a Venezuela?",
+    "resposta_correta": "Pico da Neblina",
+    "alternativas_erradas": [
+      "Pico da Bandeira",
+      "Monte Roraima",
+      "Pico Paraná"
+    ]
+  },
+  {
+    "id": 392,
+    "categoria": "História",
+    "dificuldade": "dificil",
+    "pergunta": "Qual tratado de 1494 repartiu as terras do Novo Mundo entre Portugal e Espanha antes mesmo de elas serem exploradas?",
+    "resposta_correta": "Tratado de Tordesilhas",
+    "alternativas_erradas": [
+      "Tratado de Madri",
+      "Tratado de Utrecht",
+      "Tratado de Saragoça"
+    ]
+  },
+  {
+    "id": 393,
+    "categoria": "História",
+    "dificuldade": "dificil",
+    "pergunta": "Qual imperador romano tornou o cristianismo uma religião tolerada com o Édito de Milão, em 313?",
+    "resposta_correta": "Constantino",
+    "alternativas_erradas": [
+      "Nero",
+      "Diocleciano",
+      "Augusto"
+    ]
+  },
+  {
+    "id": 394,
+    "categoria": "História",
+    "dificuldade": "dificil",
+    "pergunta": "Qual povoado do sertão da Bahia, liderado por Antônio Conselheiro, foi destruído pelo Exército em 1897?",
+    "resposta_correta": "Canudos",
+    "alternativas_erradas": [
+      "Caldeirão",
+      "Contestado",
+      "Juazeiro"
+    ]
+  },
+  {
+    "id": 395,
+    "categoria": "História",
+    "dificuldade": "dificil",
+    "pergunta": "Qual lei brasileira de 1871 declarou livres os filhos de mulheres escravizadas nascidos a partir dali?",
+    "resposta_correta": "Lei do Ventre Livre",
+    "alternativas_erradas": [
+      "Lei Áurea",
+      "Lei Eusébio de Queirós",
+      "Lei dos Sexagenários"
+    ]
+  },
+  {
+    "id": 396,
+    "categoria": "História",
+    "dificuldade": "dificil",
+    "pergunta": "Qual revolta de 1910 reuniu marinheiros negros contra os castigos físicos na Marinha, sob o comando de João Cândido?",
+    "resposta_correta": "Revolta da Chibata",
+    "alternativas_erradas": [
+      "Revolta da Vacina",
+      "Revolta dos Malês",
+      "Intentona Comunista"
+    ]
+  },
+  {
+    "id": 397,
+    "categoria": "História",
+    "dificuldade": "dificil",
+    "pergunta": "Qual conferência de 1945 reuniu Roosevelt, Churchill e Stálin para desenhar a Europa do pós-guerra?",
+    "resposta_correta": "Conferência de Yalta",
+    "alternativas_erradas": [
+      "Conferência de Potsdam",
+      "Conferência de Teerã",
+      "Tratado de Versalhes"
+    ]
+  },
+  {
+    "id": 398,
+    "categoria": "História",
+    "dificuldade": "dificil",
+    "pergunta": "Qual período da história do Japão, entre 1603 e 1868, foi marcado pelo isolamento e pelo governo dos xoguns Tokugawa?",
+    "resposta_correta": "Período Edo",
+    "alternativas_erradas": [
+      "Era Meiji",
+      "Período Heian",
+      "Era Showa"
+    ]
+  },
+  {
+    "id": 399,
+    "categoria": "História",
+    "dificuldade": "dificil",
+    "pergunta": "Quem assumiu a Presidência do Brasil em 1985 por causa da morte de Tancredo Neves antes da posse?",
+    "resposta_correta": "José Sarney",
+    "alternativas_erradas": [
+      "Ulysses Guimarães",
+      "Itamar Franco",
+      "Fernando Collor"
+    ]
+  },
+  {
+    "id": 400,
+    "categoria": "Música",
+    "dificuldade": "dificil",
+    "pergunta": "Qual escala musical de cinco notas é a base de boa parte do blues e do rock?",
+    "resposta_correta": "Escala pentatônica",
+    "alternativas_erradas": [
+      "Escala cromática",
+      "Escala diatônica",
+      "Escala menor harmônica"
+    ]
+  },
+  {
+    "id": 401,
+    "categoria": "Música",
+    "dificuldade": "dificil",
+    "pergunta": "Qual álbum de 1972, de Milton Nascimento e Lô Borges, deu nome a um grupo de músicos mineiros?",
+    "resposta_correta": "Clube da Esquina",
+    "alternativas_erradas": [
+      "Acabou Chorare",
+      "Secos & Molhados",
+      "A Tábua de Esmeralda"
+    ]
+  },
+  {
+    "id": 402,
+    "categoria": "Música",
+    "dificuldade": "dificil",
+    "pergunta": "Quem compôs Aquarela do Brasil, samba de 1939 que virou cartão de visita do país no exterior?",
+    "resposta_correta": "Ary Barroso",
+    "alternativas_erradas": [
+      "Noel Rosa",
+      "Cartola",
+      "Dorival Caymmi"
+    ]
+  },
+  {
+    "id": 403,
+    "categoria": "Música",
+    "dificuldade": "dificil",
+    "pergunta": "Numa partitura, qual símbolo indica que a nota deve ser tocada meio tom acima?",
+    "resposta_correta": "Sustenido",
+    "alternativas_erradas": [
+      "Bemol",
+      "Bequadro",
+      "Fermata"
+    ]
+  },
+  {
+    "id": 404,
+    "categoria": "Música",
+    "dificuldade": "dificil",
+    "pergunta": "Qual compositor brasileiro escreveu as Bachianas Brasileiras, unindo Bach e música popular do país?",
+    "resposta_correta": "Heitor Villa-Lobos",
+    "alternativas_erradas": [
+      "Carlos Gomes",
+      "Chiquinha Gonzaga",
+      "Pixinguinha"
+    ]
+  },
+  {
+    "id": 405,
+    "categoria": "Música",
+    "dificuldade": "dificil",
+    "pergunta": "Como se chama a obra escrita para um instrumento solista acompanhado de orquestra, em geral em três movimentos?",
+    "resposta_correta": "Concerto",
+    "alternativas_erradas": [
+      "Sinfonia",
+      "Sonata",
+      "Suíte"
+    ]
+  },
+  {
+    "id": 406,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "dificil",
+    "pergunta": "Qual romance de Machado de Assis é narrado por um defunto que conta a própria vida depois de morto?",
+    "resposta_correta": "Memórias Póstumas de Brás Cubas",
+    "alternativas_erradas": [
+      "Dom Casmurro",
+      "Quincas Borba",
+      "Esaú e Jacó"
+    ]
+  },
+  {
+    "id": 407,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "dificil",
+    "pergunta": "Qual arquiteto projetou os principais prédios públicos de Brasília, como o Congresso e a Catedral?",
+    "resposta_correta": "Oscar Niemeyer",
+    "alternativas_erradas": [
+      "Lúcio Costa",
+      "Roberto Burle Marx",
+      "Affonso Eduardo Reidy"
+    ]
+  },
+  {
+    "id": 408,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "dificil",
+    "pergunta": "Qual pintora brasileira criou o Abaporu, quadro que inspirou o Manifesto Antropofágico?",
+    "resposta_correta": "Tarsila do Amaral",
+    "alternativas_erradas": [
+      "Anita Malfatti",
+      "Djanira",
+      "Lygia Clark"
+    ]
+  },
+  {
+    "id": 409,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "dificil",
+    "pergunta": "Qual escritor argentino, autor de Ficções, povoou seus contos de labirintos e bibliotecas infinitas?",
+    "resposta_correta": "Jorge Luis Borges",
+    "alternativas_erradas": [
+      "Julio Cortázar",
+      "Ernesto Sabato",
+      "Adolfo Bioy Casares"
+    ]
+  },
+  {
+    "id": 410,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "dificil",
+    "pergunta": "Qual poeta brasileiro abre um de seus poemas mais citados com o verso 'No meio do caminho tinha uma pedra'?",
+    "resposta_correta": "Carlos Drummond de Andrade",
+    "alternativas_erradas": [
+      "Manuel Bandeira",
+      "João Cabral de Melo Neto",
+      "Mário de Andrade"
+    ]
+  },
+  {
+    "id": 411,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "dificil",
+    "pergunta": "Qual romance de Graciliano Ramos acompanha Fabiano e a cadela Baleia numa fuga pela seca do sertão?",
+    "resposta_correta": "Vidas Secas",
+    "alternativas_erradas": [
+      "O Quinze",
+      "Grande Sertão: Veredas",
+      "Morte e Vida Severina"
+    ]
+  },
+  {
+    "id": 412,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "dificil",
+    "pergunta": "Como se chama a técnica de pintar sobre argamassa ainda fresca, usada por Michelangelo na Capela Sistina?",
+    "resposta_correta": "Afresco",
+    "alternativas_erradas": [
+      "Têmpera",
+      "Óleo sobre tela",
+      "Mosaico"
+    ]
+  },
+  {
+    "id": 413,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "facil",
+    "pergunta": "Quem escreveu o romance Os Miseráveis?",
+    "resposta_correta": "Victor Hugo",
+    "alternativas_erradas": [
+      "Alexandre Dumas",
+      "Émile Zola",
+      "Gustave Flaubert"
+    ]
+  },
+  {
+    "id": 414,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "facil",
+    "pergunta": "Quem escreveu Os Três Mosqueteiros?",
+    "resposta_correta": "Alexandre Dumas",
+    "alternativas_erradas": [
+      "Victor Hugo",
+      "Júlio Verne",
+      "Molière"
+    ]
+  },
+  {
+    "id": 415,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "facil",
+    "pergunta": "Quem escreveu A Metamorfose, sobre um homem que acorda transformado em inseto?",
+    "resposta_correta": "Franz Kafka",
+    "alternativas_erradas": [
+      "Albert Camus",
+      "Thomas Mann",
+      "Hermann Hesse"
+    ]
+  },
+  {
+    "id": 416,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "facil",
+    "pergunta": "Qual escultor francês criou a estátua O Pensador?",
+    "resposta_correta": "Auguste Rodin",
+    "alternativas_erradas": [
+      "Michelangelo",
+      "Donatello",
+      "Antonio Canova"
+    ]
+  },
+  {
+    "id": 417,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "facil",
+    "pergunta": "Em qual museu de Paris está exposta a Mona Lisa?",
+    "resposta_correta": "Louvre",
+    "alternativas_erradas": [
+      "Museu d'Orsay",
+      "Centro Pompidou",
+      "Museu Rodin"
+    ]
+  },
+  {
+    "id": 418,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "facil",
+    "pergunta": "Qual escultura de Michelangelo mostra um jovem antes do duelo contra Golias?",
+    "resposta_correta": "Davi",
+    "alternativas_erradas": [
+      "Pietà",
+      "Moisés",
+      "Baco"
+    ]
+  },
+  {
+    "id": 419,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "facil",
+    "pergunta": "Quem escreveu a série de livros do Harry Potter?",
+    "resposta_correta": "J.K. Rowling",
+    "alternativas_erradas": [
+      "Stephenie Meyer",
+      "Suzanne Collins",
+      "C.S. Lewis"
+    ]
+  },
+  {
+    "id": 420,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "facil",
+    "pergunta": "Qual poeta escreveu o Soneto de Fidelidade e letras da Bossa Nova?",
+    "resposta_correta": "Vinícius de Moraes",
+    "alternativas_erradas": [
+      "Carlos Drummond de Andrade",
+      "Manuel Bandeira",
+      "Mário Quintana"
+    ]
+  },
+  {
+    "id": 421,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "facil",
+    "pergunta": "Quem escreveu Alice no País das Maravilhas?",
+    "resposta_correta": "Lewis Carroll",
+    "alternativas_erradas": [
+      "Roald Dahl",
+      "J.M. Barrie",
+      "Irmãos Grimm"
+    ]
+  },
+  {
+    "id": 422,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "facil",
+    "pergunta": "Qual romance de Mary Shelley conta a história de um cientista que cria uma criatura?",
+    "resposta_correta": "Frankenstein",
+    "alternativas_erradas": [
+      "Drácula",
+      "O Médico e o Monstro",
+      "O Fantasma da Ópera"
+    ]
+  },
+  {
+    "id": 423,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "facil",
+    "pergunta": "Qual pintor brasileiro é autor do quadro Os Retirantes?",
+    "resposta_correta": "Candido Portinari",
+    "alternativas_erradas": [
+      "Di Cavalcanti",
+      "Anita Malfatti",
+      "Alfredo Volpi"
+    ]
+  },
+  {
+    "id": 424,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "facil",
+    "pergunta": "Qual escritor americano é autor de O Velho e o Mar?",
+    "resposta_correta": "Ernest Hemingway",
+    "alternativas_erradas": [
+      "John Steinbeck",
+      "William Faulkner",
+      "F. Scott Fitzgerald"
+    ]
+  },
+  {
+    "id": 425,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "facil",
+    "pergunta": "Qual pintora mexicana ficou conhecida por seus autorretratos?",
+    "resposta_correta": "Frida Kahlo",
+    "alternativas_erradas": [
+      "Tarsila do Amaral",
+      "Georgia O'Keeffe",
+      "Anita Malfatti"
+    ]
+  },
+  {
+    "id": 426,
+    "categoria": "Arte e Literatura",
+    "dificuldade": "facil",
+    "pergunta": "Quem escreveu O Cortiço, retrato da vida num cortiço carioca?",
+    "resposta_correta": "Aluísio Azevedo",
+    "alternativas_erradas": [
+      "José de Alencar",
+      "Raul Pompeia",
+      "Manuel Antônio de Almeida"
+    ]
+  },
+  {
+    "id": 427,
+    "categoria": "História",
+    "dificuldade": "facil",
+    "pergunta": "Qual faraó egípcio teve a tumba encontrada quase intacta em 1922?",
+    "resposta_correta": "Tutancâmon",
+    "alternativas_erradas": [
+      "Ramsés II",
+      "Quéops",
+      "Akhenaton"
+    ]
+  },
+  {
+    "id": 428,
+    "categoria": "História",
+    "dificuldade": "facil",
+    "pergunta": "Qual rei francês foi guilhotinado durante a Revolução Francesa?",
+    "resposta_correta": "Luís XVI",
+    "alternativas_erradas": [
+      "Luís XIV",
+      "Carlos X",
+      "Napoleão Bonaparte"
+    ]
+  },
+  {
+    "id": 429,
+    "categoria": "História",
+    "dificuldade": "facil",
+    "pergunta": "Qual guerra do século XIX opôs o Norte e o Sul dos Estados Unidos?",
+    "resposta_correta": "Guerra de Secessão",
+    "alternativas_erradas": [
+      "Guerra da Independência",
+      "Guerra do Vietnã",
+      "Guerra Hispano-Americana"
+    ]
+  },
+  {
+    "id": 430,
+    "categoria": "História",
+    "dificuldade": "facil",
+    "pergunta": "Quem proclamou a Independência do Brasil às margens do rio Ipiranga?",
+    "resposta_correta": "Dom Pedro I",
+    "alternativas_erradas": [
+      "Dom Pedro II",
+      "Dom João VI",
+      "Tiradentes"
+    ]
+  },
+  {
+    "id": 431,
+    "categoria": "História",
+    "dificuldade": "facil",
+    "pergunta": "Quem liderou a Revolução Russa de 1917?",
+    "resposta_correta": "Lenin",
+    "alternativas_erradas": [
+      "Josef Stálin",
+      "Leon Trótski",
+      "Karl Marx"
+    ]
+  },
+  {
+    "id": 432,
+    "categoria": "História",
+    "dificuldade": "facil",
+    "pergunta": "Qual império foi governado por Júlio César e por Augusto?",
+    "resposta_correta": "Império Romano",
+    "alternativas_erradas": [
+      "Império Grego",
+      "Império Persa",
+      "Império Egípcio"
+    ]
+  },
+  {
+    "id": 433,
+    "categoria": "História",
+    "dificuldade": "facil",
+    "pergunta": "Qual cidade romana foi soterrada pela erupção do Vesúvio em 79 d.C.?",
+    "resposta_correta": "Pompeia",
+    "alternativas_erradas": [
+      "Cartago",
+      "Alexandria",
+      "Éfeso"
+    ]
+  },
+  {
+    "id": 434,
+    "categoria": "História",
+    "dificuldade": "facil",
+    "pergunta": "Qual lei de 1888 aboliu a escravidão no Brasil?",
+    "resposta_correta": "Lei Áurea",
+    "alternativas_erradas": [
+      "Lei do Ventre Livre",
+      "Lei Eusébio de Queirós",
+      "Lei dos Sexagenários"
+    ]
+  },
+  {
+    "id": 435,
+    "categoria": "História",
+    "dificuldade": "facil",
+    "pergunta": "Qual foi a primeira capital do Brasil?",
+    "resposta_correta": "Salvador",
+    "alternativas_erradas": [
+      "Rio de Janeiro",
+      "São Paulo",
+      "Recife"
+    ]
+  },
+  {
+    "id": 436,
+    "categoria": "Games",
+    "dificuldade": "facil",
+    "pergunta": "Qual jogo tem como objetivo encaixar peças que caem para completar linhas?",
+    "resposta_correta": "Tetris",
+    "alternativas_erradas": [
+      "Candy Crush",
+      "Bejeweled",
+      "Columns"
+    ]
+  },
+  {
+    "id": 437,
+    "categoria": "Games",
+    "dificuldade": "facil",
+    "pergunta": "Qual franquia de jogos tem Kratos como protagonista, em meio a deuses da mitologia?",
+    "resposta_correta": "God of War",
+    "alternativas_erradas": [
+      "Devil May Cry",
+      "Dark Souls",
+      "Castlevania"
+    ]
+  },
+  {
+    "id": 438,
+    "categoria": "Games",
+    "dificuldade": "facil",
+    "pergunta": "Qual empresa japonesa criou o console PlayStation?",
+    "resposta_correta": "Sony",
+    "alternativas_erradas": [
+      "Nintendo",
+      "Sega",
+      "Panasonic"
+    ]
+  },
+  {
+    "id": 439,
+    "categoria": "Games",
+    "dificuldade": "facil",
+    "pergunta": "Qual princesa Mario costuma resgatar nos jogos da Nintendo?",
+    "resposta_correta": "Princesa Peach",
+    "alternativas_erradas": [
+      "Princesa Zelda",
+      "Princesa Daisy",
+      "Rosalina"
+    ]
+  },
+  {
+    "id": 440,
+    "categoria": "Games",
+    "dificuldade": "facil",
+    "pergunta": "Qual jogo de celular ficou famoso por capturar monstros no mundo real usando o GPS?",
+    "resposta_correta": "Pokémon GO",
+    "alternativas_erradas": [
+      "Ingress",
+      "Angry Birds",
+      "Candy Crush"
+    ]
+  },
+  {
+    "id": 441,
+    "categoria": "Games",
+    "dificuldade": "facil",
+    "pergunta": "Qual console da Nintendo funciona ligado na TV e também como portátil?",
+    "resposta_correta": "Nintendo Switch",
+    "alternativas_erradas": [
+      "Wii U",
+      "Game Boy",
+      "Nintendo 64"
+    ]
+  },
+  {
+    "id": 442,
+    "categoria": "Games",
+    "dificuldade": "facil",
+    "pergunta": "Qual é o nome do irmão de Mario, sempre vestido de verde?",
+    "resposta_correta": "Luigi",
+    "alternativas_erradas": [
+      "Wario",
+      "Yoshi",
+      "Toad"
+    ]
+  },
+  {
+    "id": 443,
+    "categoria": "Games",
+    "dificuldade": "facil",
+    "pergunta": "Qual jogo de corrida da Nintendo coloca Mario e seus amigos em karts?",
+    "resposta_correta": "Mario Kart",
+    "alternativas_erradas": [
+      "Gran Turismo",
+      "Forza Horizon",
+      "Crash Team Racing"
+    ]
+  },
+  {
+    "id": 444,
+    "categoria": "Música",
+    "dificuldade": "facil",
+    "pergunta": "Qual banda britânica teve John Lennon e Paul McCartney entre seus integrantes?",
+    "resposta_correta": "The Beatles",
+    "alternativas_erradas": [
+      "Rolling Stones",
+      "Queen",
+      "Pink Floyd"
+    ]
+  },
+  {
+    "id": 445,
+    "categoria": "Música",
+    "dificuldade": "facil",
+    "pergunta": "Qual instrumento de sopro Louis Armstrong tocava?",
+    "resposta_correta": "Trompete",
+    "alternativas_erradas": [
+      "Saxofone",
+      "Clarinete",
+      "Trombone"
+    ]
+  },
+  {
+    "id": 446,
+    "categoria": "Música",
+    "dificuldade": "facil",
+    "pergunta": "Quantas cordas tem um violão comum?",
+    "resposta_correta": "6",
+    "alternativas_erradas": [
+      "4",
+      "7",
+      "12"
+    ]
+  },
+  {
+    "id": 447,
+    "categoria": "Música",
+    "dificuldade": "facil",
+    "pergunta": "Qual instrumento é formado por tambores e pratos tocados com baquetas?",
+    "resposta_correta": "Bateria",
+    "alternativas_erradas": [
+      "Piano",
+      "Contrabaixo",
+      "Acordeão"
+    ]
+  },
+  {
+    "id": 448,
+    "categoria": "Música",
+    "dificuldade": "facil",
+    "pergunta": "Quantas notas musicais formam a escala que vai de dó a si?",
+    "resposta_correta": "7",
+    "alternativas_erradas": [
+      "5",
+      "8",
+      "12"
+    ]
+  },
+  {
+    "id": 449,
+    "categoria": "Música",
+    "dificuldade": "facil",
+    "pergunta": "Qual banda britânica lançou o álbum The Dark Side of the Moon?",
+    "resposta_correta": "Pink Floyd",
+    "alternativas_erradas": [
+      "The Rolling Stones",
+      "Led Zeppelin",
+      "The Who"
+    ]
+  },
+  {
+    "id": 450,
+    "categoria": "Música",
+    "dificuldade": "facil",
+    "pergunta": "Garota de Ipanema foi composta por Tom Jobim em parceria com qual poeta?",
+    "resposta_correta": "Vinícius de Moraes",
+    "alternativas_erradas": [
+      "João Gilberto",
+      "Chico Buarque",
+      "Caetano Veloso"
+    ]
+  },
+  {
+    "id": 451,
+    "categoria": "Música",
+    "dificuldade": "facil",
+    "pergunta": "Qual ritmo nordestino tem Luiz Gonzaga como seu maior nome?",
+    "resposta_correta": "Baião",
+    "alternativas_erradas": [
+      "Frevo",
+      "Maracatu",
+      "Carimbó"
+    ]
+  },
+  {
+    "id": 452,
+    "categoria": "Esportes",
+    "dificuldade": "facil",
+    "pergunta": "Qual estilo de natação é nadado de barriga para cima?",
+    "resposta_correta": "Costas",
+    "alternativas_erradas": [
+      "Crawl",
+      "Peito",
+      "Borboleta"
+    ]
+  },
+  {
+    "id": 453,
+    "categoria": "Esportes",
+    "dificuldade": "facil",
+    "pergunta": "Em qual esporte se usa raquete e uma peteca com penas?",
+    "resposta_correta": "Badminton",
+    "alternativas_erradas": [
+      "Tênis",
+      "Squash",
+      "Tênis de mesa"
+    ]
+  },
+  {
+    "id": 454,
+    "categoria": "Esportes",
+    "dificuldade": "facil",
+    "pergunta": "Quantos buracos tem um campo de golfe oficial?",
+    "resposta_correta": "18",
+    "alternativas_erradas": [
+      "9",
+      "12",
+      "24"
+    ]
+  },
+  {
+    "id": 455,
+    "categoria": "Esportes",
+    "dificuldade": "facil",
+    "pergunta": "Qual jogador brasileiro é conhecido como o Rei do Futebol?",
+    "resposta_correta": "Pelé",
+    "alternativas_erradas": [
+      "Garrincha",
+      "Zico",
+      "Romário"
+    ]
+  },
+  {
+    "id": 456,
+    "categoria": "Esportes",
+    "dificuldade": "facil",
+    "pergunta": "Em qual esporte se usa uma bola oval e se marca touchdown?",
+    "resposta_correta": "Futebol americano",
+    "alternativas_erradas": [
+      "Rugby",
+      "Beisebol",
+      "Críquete"
+    ]
+  },
+  {
+    "id": 457,
+    "categoria": "Esportes",
+    "dificuldade": "facil",
+    "pergunta": "Qual é a única seleção que disputou todas as Copas do Mundo de futebol?",
+    "resposta_correta": "Brasil",
+    "alternativas_erradas": [
+      "Alemanha",
+      "Itália",
+      "Argentina"
+    ]
+  },
+  {
+    "id": 458,
+    "categoria": "Esportes",
+    "dificuldade": "facil",
+    "pergunta": "Em qual esporte Michael Jordan se tornou uma lenda?",
+    "resposta_correta": "Basquete",
+    "alternativas_erradas": [
+      "Beisebol",
+      "Futebol americano",
+      "Golfe"
+    ]
+  },
+  {
+    "id": 459,
+    "categoria": "Geografia",
+    "dificuldade": "facil",
+    "pergunta": "Qual oceano banha toda a costa do Brasil?",
+    "resposta_correta": "Oceano Atlântico",
+    "alternativas_erradas": [
+      "Oceano Pacífico",
+      "Oceano Índico",
+      "Oceano Ártico"
+    ]
+  },
+  {
+    "id": 460,
+    "categoria": "Geografia",
+    "dificuldade": "facil",
+    "pergunta": "Qual é o país mais populoso da África?",
+    "resposta_correta": "Nigéria",
+    "alternativas_erradas": [
+      "Egito",
+      "África do Sul",
+      "Etiópia"
+    ]
+  },
+  {
+    "id": 461,
+    "categoria": "Geografia",
+    "dificuldade": "facil",
+    "pergunta": "Qual é o maior continente do mundo em área?",
+    "resposta_correta": "Ásia",
+    "alternativas_erradas": [
+      "África",
+      "América",
+      "Europa"
+    ]
+  },
+  {
+    "id": 462,
+    "categoria": "Geografia",
+    "dificuldade": "facil",
+    "pergunta": "Qual floresta tropical ocupa boa parte do norte do Brasil?",
+    "resposta_correta": "Floresta Amazônica",
+    "alternativas_erradas": [
+      "Mata Atlântica",
+      "Floresta do Congo",
+      "Floresta de Bornéu"
+    ]
+  },
+  {
+    "id": 463,
+    "categoria": "Geografia",
+    "dificuldade": "facil",
+    "pergunta": "Em qual continente fica a Austrália?",
+    "resposta_correta": "Oceania",
+    "alternativas_erradas": [
+      "Ásia",
+      "África",
+      "América"
+    ]
+  },
+  {
+    "id": 464,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "facil",
+    "pergunta": "Qual é a fórmula química da água?",
+    "resposta_correta": "H2O",
+    "alternativas_erradas": [
+      "CO2",
+      "O2",
+      "NaCl"
+    ]
+  },
+  {
+    "id": 465,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "facil",
+    "pergunta": "Qual gás as plantas absorvem do ar para fazer fotossíntese?",
+    "resposta_correta": "Gás carbônico",
+    "alternativas_erradas": [
+      "Oxigênio",
+      "Nitrogênio",
+      "Hidrogênio"
+    ]
+  },
+  {
+    "id": 466,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "facil",
+    "pergunta": "Quais são os dois órgãos responsáveis pela troca de gases na respiração?",
+    "resposta_correta": "Pulmões",
+    "alternativas_erradas": [
+      "Rins",
+      "Fígado e baço",
+      "Intestinos"
+    ]
+  },
+  {
+    "id": 467,
+    "categoria": "Ciência e Natureza",
+    "dificuldade": "facil",
+    "pergunta": "Quantas patas tem uma aranha?",
+    "resposta_correta": "8",
+    "alternativas_erradas": [
+      "6",
+      "10",
+      "4"
+    ]
+  },
+  {
+    "id": 468,
+    "categoria": "Cinema e TV",
+    "dificuldade": "facil",
+    "pergunta": "De qual saga de filmes é a frase 'Que a Força esteja com você'?",
+    "resposta_correta": "Star Wars",
+    "alternativas_erradas": [
+      "Jornada nas Estrelas",
+      "De Volta para o Futuro",
+      "Matrix"
+    ]
+  },
+  {
+    "id": 469,
+    "categoria": "Cinema e TV",
+    "dificuldade": "facil",
+    "pergunta": "Qual estúdio de animação criou o Mickey Mouse?",
+    "resposta_correta": "Disney",
+    "alternativas_erradas": [
+      "Warner Bros.",
+      "Pixar",
+      "Universal"
+    ]
+  },
+  {
+    "id": 470,
+    "categoria": "Cinema e TV",
+    "dificuldade": "facil",
+    "pergunta": "Qual filme de 1997 com Leonardo DiCaprio mostra o naufrágio de um transatlântico?",
+    "resposta_correta": "Titanic",
+    "alternativas_erradas": [
+      "Poseidon",
+      "Náufrago",
+      "Pearl Harbor"
+    ]
   }
 ]
