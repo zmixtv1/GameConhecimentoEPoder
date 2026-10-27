@@ -6,10 +6,7 @@ const telaEscolhaAlvo = document.getElementById("tela-escolha-alvo");
 const telaAnimacaoPoderes = document.getElementById("tela-animacao-poderes");
 const telaPergunta = document.getElementById("tela-pergunta");
 const telaResultado = document.getElementById("tela-resultado");
-const telaLinking = document.getElementById("tela-linking");
-const telaResultadoLinking = document.getElementById("tela-resultado-linking");
-const telaSorting = document.getElementById("tela-sorting");
-const telaResultadoSorting = document.getElementById("tela-resultado-sorting");
+const telaDesafio = document.getElementById("tela-desafio");
 const telaLargada = document.getElementById("tela-largada");
 const telaPiramide = document.getElementById("tela-piramide");
 const telaFim = document.getElementById("tela-fim");
@@ -18,7 +15,7 @@ const TODAS_AS_TELAS = [
   telaLobby, telaEscolhaPorta, telaPortaEscolhida,
   telaEscolhaPoder, telaEscolhaAlvo, telaAnimacaoPoderes,
   telaPergunta, telaResultado,
-  telaLinking, telaResultadoLinking, telaSorting, telaResultadoSorting,
+  telaDesafio,
   telaLargada, telaPiramide,
   telaFim,
 ];
@@ -28,6 +25,7 @@ const TODAS_AS_TELAS = [
 const MODULO_DA_TELA = new Map([
   [telaAnimacaoPoderes, TelaPoderes],
   [telaResultado, TelaPontuacao],
+  [telaDesafio, TelaDesafio],
   [telaLargada, TelaLargada],
   [telaPiramide, TelaCorrida],
   [telaFim, TelaPodio],
@@ -62,32 +60,13 @@ const alvoTempoEl = document.getElementById("alvo-tempo");
 const poderesBannerEl = document.getElementById("poderes-banner");
 const poderesDockEl = document.getElementById("poderes-dock");
 
-const linkingTemaEl = document.getElementById("linking-tema");
-const linkingTempoEl = document.getElementById("linking-tempo");
-const linkingProgressoEl = document.getElementById("linking-progresso");
-const linkingGabaritoEl = document.getElementById("linking-gabarito");
-const placarLinkingEl = document.getElementById("placar-linking");
-const progressoContinuarLinkingEl = document.getElementById("progresso-continuar-linking");
-
-const sortingCategoriasEl = document.getElementById("sorting-categorias");
-const sortingTempoEl = document.getElementById("sorting-tempo");
-const sortingProgressoEl = document.getElementById("sorting-progresso");
-const sortingGabaritoEl = document.getElementById("sorting-gabarito");
-const placarSortingEl = document.getElementById("placar-sorting");
-const progressoContinuarSortingEl = document.getElementById("progresso-continuar-sorting");
-
 let intervaloTempo = null;
 let intervaloLeitura = null;
 let intervaloPoder = null;
 let intervaloAlvo = null;
-let intervaloLinking = null;
-let intervaloSorting = null;
 let portasAtuais = [];
 let alternativasAtuais = [];
 const CIRCUNFERENCIA_TIMER = 326.7;
-let sortingCategoriaANome = "";
-let sortingCategoriaBNome = "";
-let progressoContinuarAtivoEl = null;
 let jogadoresAtuais = []; // na ordem de entrada na sala
 let telaAtual = telaLobby;
 
@@ -153,20 +132,26 @@ function travarPodDoJogador(jogadorId) {
   }
 }
 
-// Placar da Ligação e da Classificação: todos os jogadores (a lista já chega
-// ordenada do maior pro menor), com a posição na frente. Empate = mesma posição.
-function renderizarPlacar(lista, ol) {
-  ol.innerHTML = "";
-  for (const jogador of lista) {
-    const posicao = lista.filter((j) => j.pontos > jogador.pontos).length + 1;
-    const li = document.createElement("li");
-    li.append(
-      criarEl("span", "placar-posicao", `${posicao}º`),
-      criarEl("span", "placar-nome", jogador.nome),
-      criarEl("span", "placar-pontos", `${jogador.pontos} pts`)
+// Linha embaixo do nome no placar do desafio: "5 de 5 pares", verde se fez tudo
+function acertosDoDesafio(unidade) {
+  return (jogador) => {
+    if (jogador.acertos === undefined) return null;
+    const completo = jogador.acertos >= jogador.total;
+    return criarEl(
+      "span",
+      `acertos-desafio${completo ? " completo" : ""}`,
+      `${completo ? "✓ " : ""}${jogador.acertos} de ${jogador.total} ${unidade}`
     );
-    ol.appendChild(li);
-  }
+  };
+}
+
+// "4 de 6 ligaram tudo" / "Só Ana acertou todos!"
+function resumoDoDesafio(placar, singular, plural) {
+  const completos = placar.filter((j) => j.acertos !== undefined && j.acertos >= j.total);
+  if (completos.length === 0) return "Ninguém fez tudo dessa vez!";
+  if (completos.length === placar.length) return `Todo mundo ${singular}! 🎉`;
+  if (completos.length === 1) return `Só ${completos[0].nome} ${singular}!`;
+  return `${completos.length} de ${placar.length} ${plural}`;
 }
 
 function iniciarContador(intervaloAntigo, elemento, tempoLimiteMs, guardarIntervalo) {
@@ -217,8 +202,7 @@ function tratarMensagem(msg) {
     }
     case "voltouAoLobby": {
       // volta pra tela do código/QR, pronta pra outra partida
-      for (const i of [intervaloTempo, intervaloLeitura, intervaloPoder, intervaloAlvo,
-                       intervaloLinking, intervaloSorting]) {
+      for (const i of [intervaloTempo, intervaloLeitura, intervaloPoder, intervaloAlvo]) {
         clearInterval(i);
       }
       renderizarJogadores(msg.jogadores);
@@ -233,6 +217,7 @@ function tratarMensagem(msg) {
         if (pod) pod.classList.toggle("desconectado", jogador.conectado === false);
       }
       if (telaAtual === telaPiramide) TelaCorrida.marcarConexao(msg.jogadores);
+      if (telaAtual === telaDesafio) TelaDesafio.marcarConexao(msg.jogadores);
       break;
     }
     case "escolhaPorta": {
@@ -360,77 +345,49 @@ function tratarMensagem(msg) {
       // alternativas vem junto com o resultado)
       if (msg.alternativas) alternativasAtuais = msg.alternativas;
       TelaPontuacao.montar(msg, { alternativas: alternativasAtuais, jogadores: jogadoresAtuais });
-      progressoContinuarAtivoEl = null; // o rodapé dessa tela é do módulo
       break;
     }
 
+    // ---- desafio do tema: durante, no molde da pergunta ----
     case "iniciarLinking": {
-      mostrarTela(telaLinking);
-      linkingTemaEl.textContent = msg.tema;
-      linkingProgressoEl.innerHTML = "";
-      iniciarContador(intervaloLinking, linkingTempoEl, msg.tempoLimiteMs, (i) => (intervaloLinking = i));
+      mostrarTela(telaDesafio);
+      TelaDesafio.montarLigacao(msg, { jogadores: jogadoresAtuais, criarPod });
       break;
     }
-    case "progressoLinking": {
-      linkingProgressoEl.innerHTML = "";
-      for (const jogador of msg.jogadores) {
-        const li = document.createElement("li");
-        li.append(criarEl("span", "", jogador.nome), criarEl("span", "", `${jogador.corretos} pares${jogador.completou ? " ✅" : ""}`));
-        if (jogador.completou) li.classList.add("completou");
-        linkingProgressoEl.appendChild(li);
-      }
+    case "iniciarSorting": {
+      mostrarTela(telaDesafio);
+      TelaDesafio.montarClassificacao(msg, { jogadores: jogadoresAtuais, criarPod });
       break;
     }
-    case "resultadoLinking": {
-      clearInterval(intervaloLinking);
-      mostrarTela(telaResultadoLinking);
-      linkingGabaritoEl.innerHTML = "";
-      for (const par of msg.pares) {
-        const li = document.createElement("li");
-        li.textContent = `${par.esquerda} → ${par.direita}`;
-        linkingGabaritoEl.appendChild(li);
-      }
-      renderizarPlacar(msg.placar, placarLinkingEl);
-      progressoContinuarLinkingEl.textContent = "Aguardando jogadores confirmarem...";
-      progressoContinuarAtivoEl = progressoContinuarLinkingEl;
+    case "progressoLinking":
+    case "progressoSorting": {
+      TelaDesafio.atualizar(msg.jogadores);
       break;
     }
 
-    case "iniciarSorting": {
-      mostrarTela(telaSorting);
-      sortingCategoriaANome = msg.categoriaA;
-      sortingCategoriaBNome = msg.categoriaB;
-      sortingCategoriasEl.textContent = `${msg.categoriaA} ou ${msg.categoriaB}`;
-      sortingProgressoEl.innerHTML = "";
-      iniciarContador(intervaloSorting, sortingTempoEl, msg.tempoLimiteMs, (i) => (intervaloSorting = i));
-      break;
-    }
-    case "progressoSorting": {
-      sortingProgressoEl.innerHTML = "";
-      for (const jogador of msg.jogadores) {
-        const li = document.createElement("li");
-        const completou = jogador.respondidos >= jogador.total;
-        li.append(criarEl("span", "", jogador.nome), criarEl("span", "", `${jogador.respondidos} de ${jogador.total}${completou ? " ✅" : ""}`));
-        if (completou) li.classList.add("completou");
-        sortingProgressoEl.appendChild(li);
-      }
+    // ---- e o resultado, na tela de placar da pergunta ----
+    case "resultadoLinking": {
+      mostrarTela(telaResultado);
+      TelaPontuacao.montarDesafio({
+        rotulo: "Resultado da Ligação",
+        titulo: msg.tema || "Ligação",
+        subtitulo: resumoDoDesafio(msg.placar, "ligou tudo", "ligaram tudo"),
+        gabarito: TelaDesafio.gabaritoLigacao(msg.pares),
+        placar: msg.placar,
+        detalhe: acertosDoDesafio("pares"),
+      });
       break;
     }
     case "resultadoSorting": {
-      clearInterval(intervaloSorting);
-      mostrarTela(telaResultadoSorting);
-      if (msg.categoriaA) sortingCategoriaANome = msg.categoriaA;
-      if (msg.categoriaB) sortingCategoriaBNome = msg.categoriaB;
-      sortingGabaritoEl.innerHTML = "";
-      for (const item of msg.gabarito) {
-        const li = document.createElement("li");
-        const nomeCategoria = item.categoria === "A" ? sortingCategoriaANome : sortingCategoriaBNome;
-        li.textContent = `${item.nome} — ${nomeCategoria}`;
-        sortingGabaritoEl.appendChild(li);
-      }
-      renderizarPlacar(msg.placar, placarSortingEl);
-      progressoContinuarSortingEl.textContent = "Aguardando jogadores confirmarem...";
-      progressoContinuarAtivoEl = progressoContinuarSortingEl;
+      mostrarTela(telaResultado);
+      TelaPontuacao.montarDesafio({
+        rotulo: "Resultado da Classificação",
+        titulo: `${msg.categoriaA} ou ${msg.categoriaB}`,
+        subtitulo: resumoDoDesafio(msg.placar, "acertou todos", "acertaram todos"),
+        gabarito: TelaDesafio.gabaritoClassificacao(msg.gabarito, msg.categoriaA, msg.categoriaB),
+        placar: msg.placar,
+        detalhe: acertosDoDesafio("itens"),
+      });
       break;
     }
 
@@ -455,11 +412,8 @@ function tratarMensagem(msg) {
     }
 
     case "progressoContinuar": {
-      if (telaAtual === telaResultado) {
-        TelaPontuacao.mostrarProgresso(msg.confirmados, msg.total);
-      } else if (progressoContinuarAtivoEl) {
-        progressoContinuarAtivoEl.textContent = `${msg.confirmados} de ${msg.total} confirmaram estar prontos`;
-      }
+      // toda tela com "continuar" (pergunta e desafios) é a de placar
+      if (telaAtual === telaResultado) TelaPontuacao.mostrarProgresso(msg.confirmados, msg.total);
       break;
     }
     case "fimDePartida": {

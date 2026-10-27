@@ -10,6 +10,7 @@ window.TelaPontuacao = (() => {
   const TEMPOS = {
     normal: { revelar: 1100, avatares: 1400, placar: 1900, apostas: null, ganhos: 3100, contagem: 1100, reordenar: 4500, rodape: 5600 },
     aposta: { revelar: 0, avatares: 0, placar: 900, apostas: 2000, ganhos: 2400, contagem: 1100, reordenar: 3700, rodape: 4800 },
+    desafio: { revelar: 0, avatares: 0, placar: 1200, apostas: null, ganhos: 2400, contagem: 1100, reordenar: 3800, rodape: 4900 },
   };
   const SELO_SVG =
     '<svg viewBox="0 0 24 24" width="60%" height="60%" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
@@ -138,7 +139,8 @@ window.TelaPontuacao = (() => {
     })(t0);
   }
 
-  function renderizarPlacar(r, msg, apostas, T) {
+  // detalhe(jogador): uma linha opcional embaixo do nome (no desafio, os acertos)
+  function renderizarPlacar(r, msg, apostas, T, detalhe = null) {
     const lista = (msg.placar || []).map((j) => ({ ...j, anterior: j.pontos - (j.ganho || 0) }));
     const antes = ranquear(lista, "anterior");
     const agora = ranquear(lista, "pontos");
@@ -167,6 +169,8 @@ window.TelaPontuacao = (() => {
       info.append(el("span", "nome", j.nome));
       const aposta = criarAposta(j, apostas);
       if (aposta) info.append(aposta.el);
+      const linhaDetalhe = detalhe ? detalhe(j) : null;
+      if (linhaDetalhe) info.append(linhaDetalhe);
       const mudanca = el("span", "mudanca");
       const ganho = el("span", "ganho " + (j.ganho > 0 ? "positivo" : "zero"), j.ganho > 0 ? `+${j.ganho}` : "+0");
       const pontos = el("span", "pontos");
@@ -237,20 +241,29 @@ window.TelaPontuacao = (() => {
 
   // msg: a mensagem resultadoPergunta. alternativas: o texto delas (a TV que
   // reconectou não viu a pergunta, então vem junto). jogadores: com avatar.
-  function montar(msg, { alternativas, jogadores }) {
-    parar();
-    const r = {
+  function elementos() {
+    return {
       tela: document.getElementById("tela-resultado"),
       rotulo: document.getElementById("res-rotulo"),
       titulo: document.getElementById("res-titulo"),
       subtitulo: document.getElementById("res-subtitulo"),
       festa: document.getElementById("res-festa"),
+      tituloEsquerda: document.getElementById("res-titulo-esquerda"),
       alternativas: document.getElementById("res-alternativas"),
       semResposta: document.getElementById("res-sem-resposta"),
       placar: document.getElementById("res-placar"),
       placarInfo: document.getElementById("res-placar-info"),
       rodape: document.getElementById("progresso-proximo"),
     };
+  }
+
+  function montar(msg, { alternativas, jogadores }) {
+    parar();
+    const r = elementos();
+    r.tela.classList.remove("modo-desafio");
+    r.titulo.classList.remove("longo");
+    r.rotulo.textContent = "Resultado da pergunta";
+    r.tituloEsquerda.textContent = "Respostas";
 
     // o alvo da aposta vem só com id e nome: o animal sai da lista de jogadores
     const porId = new Map(jogadores.map((j) => [j.id, j]));
@@ -268,6 +281,37 @@ window.TelaPontuacao = (() => {
     depois(T.rodape, () => r.rodape.classList.add("visivel"));
   }
 
+  // Resultado de um desafio (Ligação ou Classificação): a mesma tela do
+  // resultado da pergunta, com o gabarito no lugar das alternativas e os
+  // acertos de cada um embaixo do nome no placar.
+  // dados: { rotulo, titulo, subtitulo, gabarito: Element, placar, detalhe(jogador) }
+  function montarDesafio(dados) {
+    parar();
+    const r = elementos();
+    const T = TEMPOS.desafio;
+    r.tela.classList.remove("modo-aposta");
+    r.tela.classList.add("modo-desafio");
+
+    r.rodape.classList.remove("visivel");
+    r.rodape.replaceChildren(el("span", "pontinhos", "Aguardando jogadores confirmarem"));
+    reiniciarAnimacoesDoCabecalho(r);
+    r.rotulo.textContent = dados.rotulo;
+    r.titulo.textContent = dados.titulo;
+    // "Personagem de Harry Potter ou Personagem de O Senhor dos Anéis" não cabe
+    // no tamanho normal: encolhe para ficar numa linha e não empurrar o placar
+    r.titulo.classList.toggle("longo", dados.titulo.length > 28);
+    r.subtitulo.textContent = dados.subtitulo || "";
+    r.festa.classList.add("oculto");
+
+    r.tituloEsquerda.textContent = "Gabarito";
+    r.alternativas.replaceChildren(dados.gabarito);
+    r.semResposta.classList.remove("visivel");
+    r.semResposta.replaceChildren();
+
+    renderizarPlacar(r, { placar: dados.placar }, [], T, dados.detalhe);
+    depois(T.rodape, () => r.rodape.classList.add("visivel"));
+  }
+
   function mostrarProgresso(confirmados, total) {
     const rodape = document.getElementById("progresso-proximo");
     rodape.replaceChildren(el("span", "", `${confirmados} de ${total} confirmaram estar prontos`));
@@ -279,5 +323,5 @@ window.TelaPontuacao = (() => {
     timers = [];
   }
 
-  return { montar, mostrarProgresso, parar };
+  return { montar, montarDesafio, mostrarProgresso, parar };
 })();

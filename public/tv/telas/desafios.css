@@ -1,0 +1,258 @@
+/* Desafios do tema na TV: Ligação e Classificação.
+   Durante: o mesmo molde da tela da pergunta (pílula do tema + timer redondo
+   em cima, cartão de vidro no meio, os bichos embaixo), com o progresso de
+   cada jogador no próprio bicho.
+   Resultado: usa a tela de placar da pergunta (#tela-resultado); aqui fica só
+   o gabarito, que entra no lugar das alternativas. */
+
+/* ---------- durante: tela cheia, como a da pergunta ---------- */
+#tela-desafio {
+  position: fixed;
+  inset: 0;
+  width: 100vw; width: 100dvw;
+  height: 100vh; height: 100dvh;
+  z-index: 5;
+  max-width: none;
+  background: var(--bg);
+  background-image: radial-gradient(#cbd5e1 2px, transparent 2px);
+  background-size: 40px 40px;
+  background-position: center;
+  overflow: hidden;
+}
+
+#tela-desafio .desafio-card {
+  padding: clamp(28px, 4.5vh, 56px) clamp(36px, 4vw, 80px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(14px, 2.4vh, 28px);
+}
+#tela-desafio .desafio-tema {
+  margin: 0;
+  font-size: clamp(18px, 2.2vh, 26px);
+  font-weight: 900;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--violet);
+}
+#tela-desafio .desafio-titulo { font-size: clamp(40px, 5.6vh, 64px); }
+#tela-desafio .desafio-dica {
+  margin: 0;
+  font-size: clamp(16px, 2vh, 24px);
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+/* Ligação: os itens da esquerda, iguais em todos os celulares */
+#tela-desafio .desafio-itens {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(10px, 1.4vh, 18px);
+  max-width: 1200px;
+}
+#tela-desafio .desafio-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: clamp(10px, 1.6vh, 18px) clamp(20px, 2vw, 32px);
+  border-radius: 100px;
+  font-size: clamp(22px, 3vh, 34px);
+  font-weight: 900;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.85);
+  border: 2px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  opacity: 0;
+  animation: desafioEntrar 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+#tela-desafio .desafio-item .elo {
+  font-size: 0.8em;
+  color: var(--ink-soft);
+  opacity: 0.7;
+}
+@keyframes desafioEntrar {
+  from { opacity: 0; transform: translateY(14px) scale(0.9); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Classificação: as duas categorias, frente a frente */
+#tela-desafio .desafio-categorias {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(18px, 2.4vw, 44px);
+  width: 100%;
+}
+#tela-desafio .desafio-categoria {
+  flex: 1;
+  max-width: 520px;
+  min-height: clamp(110px, 16vh, 180px);
+  display: grid;
+  place-items: center;
+  padding: 16px 28px;
+  border-radius: 32px;
+  font-size: clamp(30px, 4.6vh, 54px);
+  font-weight: 900;
+  line-height: 1.1;
+  text-align: center;
+  color: var(--ink);
+  opacity: 0;
+  animation: desafioEntrar 0.55s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+#tela-desafio .desafio-categoria.a {
+  background: linear-gradient(180deg, rgba(30, 144, 255, 0.16), rgba(255, 255, 255, 0.75));
+  border: 3px solid rgba(30, 144, 255, 0.55);
+  box-shadow: 0 18px 40px rgba(30, 144, 255, 0.18);
+}
+#tela-desafio .desafio-categoria.b {
+  background: linear-gradient(180deg, rgba(255, 71, 87, 0.14), rgba(255, 255, 255, 0.75));
+  border: 3px solid rgba(255, 71, 87, 0.5);
+  box-shadow: 0 18px 40px rgba(255, 71, 87, 0.16);
+  animation-delay: 0.12s;
+}
+#tela-desafio .desafio-ou {
+  flex: none;
+  font-size: clamp(22px, 3vh, 34px);
+  font-weight: 900;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+/* ---------- os bichos: progresso de cada um ---------- */
+#tela-desafio .desafio-dock .player-pod {
+  height: 156px;
+  justify-content: flex-start;
+  padding-top: 18px;
+}
+/* quantos já fez, em cima do bicho (o selo de pronto fica no canto direito) */
+.pod-contagem {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 3px 12px;
+  border-radius: 100px;
+  background: #fff;
+  border: 2px solid var(--glass-border);
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.1);
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+.pod-barra {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 14px;
+  height: 8px;
+  border-radius: 100px;
+  background: rgba(15, 23, 42, 0.08);
+  overflow: hidden;
+}
+.pod-barra i {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: var(--cor-jogador, var(--gold));
+  transition: width 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+/* andou: o bicho dá um pulinho */
+.player-pod.avancou { animation: podAvancou 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
+@keyframes podAvancou { 40% { transform: translateY(-10px) scale(1.06); } }
+/* terminou: acende na cor do jogador (o .locked é o mesmo da pergunta) */
+.player-pod.locked .pod-contagem { background: var(--cor-jogador, var(--gold)); border-color: #fff; color: #fff; }
+
+/* ---------- resultado: o gabarito, no lugar das alternativas ---------- */
+
+#tela-resultado.modo-desafio .res-titulo.longo {
+  font-size: clamp(26px, 2.4vw, 44px);
+  text-wrap: balance;
+}
+
+/* Ligação: um par por linha */
+#tela-resultado .res-par {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+  min-height: clamp(60px, 8vh, 86px);
+  padding: 10px 22px;
+  border-radius: 22px;
+  font-size: clamp(20px, 1.8vw, 30px);
+  font-weight: 800;
+  color: var(--ink);
+  opacity: 0;
+  transform-origin: left center;
+  animation: resVirar 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+#tela-resultado .res-par .esquerda { text-align: right; overflow-wrap: anywhere; }
+#tela-resultado .res-par .direita { color: var(--verde-escuro); font-weight: 900; overflow-wrap: anywhere; }
+#tela-resultado .res-par .elo {
+  width: clamp(34px, 2.6vw, 44px);
+  height: clamp(34px, 2.6vw, 44px);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--verde);
+  color: #fff;
+  font-size: clamp(16px, 1.3vw, 22px);
+  box-shadow: 0 6px 16px rgba(46, 213, 115, 0.35);
+}
+
+/* Classificação: as duas categorias lado a lado, cada uma com seus itens */
+#tela-resultado .res-grupos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(12px, 1.4vw, 22px);
+}
+#tela-resultado .res-grupo {
+  padding: clamp(12px, 1.6vh, 20px);
+  border-radius: 26px;
+  opacity: 0;
+  animation: resVirar 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+#tela-resultado .res-grupo.a { border-color: rgba(30, 144, 255, 0.5); background: linear-gradient(180deg, rgba(30, 144, 255, 0.12), var(--glass-bg)); }
+#tela-resultado .res-grupo.b { border-color: rgba(255, 71, 87, 0.45); background: linear-gradient(180deg, rgba(255, 71, 87, 0.1), var(--glass-bg)); animation-delay: 0.12s; }
+#tela-resultado .res-grupo h3 {
+  margin: 0 0 clamp(8px, 1.2vh, 14px);
+  font-size: clamp(22px, 2vw, 32px);
+  font-weight: 900;
+  text-align: center;
+  color: var(--ink);
+}
+#tela-resultado .res-grupo ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(6px, 0.9vh, 10px);
+}
+#tela-resultado .res-grupo li {
+  padding: clamp(8px, 1.1vh, 12px) 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid var(--glass-border);
+  font-size: clamp(18px, 1.6vw, 26px);
+  font-weight: 800;
+  color: var(--ink);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+/* em cada linha do placar: quantos acertos a pessoa teve no desafio */
+#tela-resultado .acertos-desafio {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: clamp(13px, 1.05vw, 17px);
+  font-weight: 800;
+  color: var(--ink-soft);
+}
+#tela-resultado .acertos-desafio.completo { color: var(--verde-escuro); }

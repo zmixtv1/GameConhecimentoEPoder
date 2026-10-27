@@ -102,6 +102,7 @@ const anelLinkingEl = document.getElementById("anel-linking");
 const numeroLinkingEl = document.getElementById("numero-linking");
 const linkingListaEl = document.getElementById("linking-lista");
 const linkingProgressoEl = document.getElementById("linking-progresso");
+const linkingResultadoTituloEl = document.getElementById("linking-resultado-titulo");
 const linkingPontosEl = document.getElementById("linking-pontos");
 const linkingGabaritoEl = document.getElementById("linking-gabarito");
 const posicaoLinkingEls = elementosDePosicao("-linking");
@@ -113,6 +114,7 @@ const numeroSortingEl = document.getElementById("numero-sorting");
 const sortingCategoriasEl = document.getElementById("sorting-categorias");
 const sortingItensEl = document.getElementById("sorting-itens");
 const sortingProgressoEl = document.getElementById("sorting-progresso");
+const sortingResultadoTituloEl = document.getElementById("sorting-resultado-titulo");
 const sortingPontosEl = document.getElementById("sorting-pontos");
 const sortingGabaritoEl = document.getElementById("sorting-gabarito");
 const posicaoSortingEls = elementosDePosicao("-sorting");
@@ -152,6 +154,7 @@ let linkingEsquerdaTextos = [];
 let linkingDireitaTextos = [];
 let linkingCorretosSet = new Set();
 let linkingDireitaUsada = new Set();
+let linkingParesFeitos = new Map(); // esquerdaIndex -> texto da direita que ele ligou
 let linkingTotalPares = 0;
 let intervaloLinking = null;
 
@@ -633,6 +636,7 @@ function tratarMensagem(msg) {
       // (ao voltar de uma queda, o servidor manda os pares que já estavam ligados)
       linkingCorretosSet = new Set(msg.corretos || []);
       linkingDireitaUsada = new Set(msg.direitaUsada || []);
+      linkingParesFeitos = new Map();
       linkingTotalPares = msg.esquerda.length;
       linkingProgressoEl.textContent = `${linkingCorretosSet.size} de ${linkingTotalPares} pares`;
       renderizarListaEsquerda();
@@ -649,6 +653,7 @@ function tratarMensagem(msg) {
       if (msg.correto) {
         linkingCorretosSet.add(msg.esquerdaIndex);
         linkingDireitaUsada.add(msg.direitaIndex);
+        linkingParesFeitos.set(msg.esquerdaIndex, linkingDireitaTextos[msg.direitaIndex]);
         linkingProgressoEl.textContent = msg.completou
           ? `${linkingCorretosSet.size} de ${linkingTotalPares} pares — você terminou! Aguardando os outros...`
           : `${linkingCorretosSet.size} de ${linkingTotalPares} pares`;
@@ -671,13 +676,26 @@ function tratarMensagem(msg) {
     case "resultadoLinking": {
       clearInterval(intervaloLinking);
       mostrarTela(telaResultadoLinking);
-      linkingPontosEl.textContent = `+${msg.pontosGanhos} pontos (${msg.paresCorretos} de ${msg.totalPares} pares)`;
-      linkingGabaritoEl.innerHTML = "";
-      for (const par of msg.pares) {
-        const li = document.createElement("li");
-        li.textContent = `${par.esquerda} → ${par.direita}`;
-        linkingGabaritoEl.appendChild(li);
-      }
+      linkingResultadoTituloEl.textContent = msg.paresCorretos >= msg.totalPares
+        ? "Você ligou tudo! 🎉"
+        : `Você ligou ${msg.paresCorretos} de ${msg.totalPares}`;
+      linkingPontosEl.textContent = `+${msg.pontosGanhos} pontos`;
+      // o servidor diz quais pares ele ligou (vale mesmo se reconectou agora)
+      const ligados = new Set(msg.corretos || linkingCorretosSet);
+      linkingGabaritoEl.replaceChildren(
+        ...msg.pares.map((par, i) => {
+          const acertou = ligados.has(i);
+          const li = criarEl("li", acertou ? "acertou" : "");
+          li.style.animationDelay = `${i * 60}ms`;
+          li.append(
+            criarEl("span", "selo-gabarito", acertou ? "✓" : "–"),
+            criarEl("span", "esquerda", par.esquerda),
+            document.createTextNode("→"),
+            criarEl("span", "direita", par.direita)
+          );
+          return li;
+        })
+      );
       renderizarMinhaPosicao(msg.placar, posicaoLinkingEls);
       prepararTelaResultado(botaoContinuarLinking, statusContinuarLinkingEl, msg.jaConfirmou);
       break;
@@ -731,14 +749,11 @@ function tratarMensagem(msg) {
       if (msg.categoriaA) sortingCategoriaANome = msg.categoriaA;
       if (msg.categoriaB) sortingCategoriaBNome = msg.categoriaB;
       mostrarTela(telaResultadoSorting);
-      sortingPontosEl.textContent = `+${msg.pontosGanhos} pontos (${msg.corretos} de ${msg.totalItens})`;
-      sortingGabaritoEl.innerHTML = "";
-      for (const item of msg.gabarito) {
-        const li = document.createElement("li");
-        const nomeCategoria = item.categoria === "A" ? sortingCategoriaANome : sortingCategoriaBNome;
-        li.textContent = `${item.nome} — ${nomeCategoria}`;
-        sortingGabaritoEl.appendChild(li);
-      }
+      sortingResultadoTituloEl.textContent = msg.corretos >= msg.totalItens
+        ? "Você acertou todos! 🎉"
+        : `Você acertou ${msg.corretos} de ${msg.totalItens}`;
+      sortingPontosEl.textContent = `+${msg.pontosGanhos} pontos`;
+      renderizarGabaritoClassificacao(msg);
       renderizarMinhaPosicao(msg.placar, posicaoSortingEls);
       prepararTelaResultado(botaoContinuarSorting, statusContinuarSortingEl, msg.jaConfirmou);
       break;
@@ -1045,7 +1060,9 @@ function renderizarListaEsquerda() {
     const btn = document.createElement("button");
     btn.className = "linking-item-full";
     if (linkingCorretosSet.has(i)) {
-      btn.textContent = `✅ ${texto}`;
+      // o par inteiro, pra ele ver o que já ligou (ao reconectar, só o item)
+      const direita = linkingParesFeitos.get(i);
+      btn.textContent = direita ? `✓ ${texto} → ${direita}` : `✓ ${texto}`;
       btn.classList.add("correto");
       btn.disabled = true;
     } else {
@@ -1121,6 +1138,30 @@ function renderizarSorting(itens, categoriaA, categoriaB) {
     card.appendChild(botoes);
     sortingItensEl.appendChild(card);
   });
+}
+
+// O gabarito da Classificação dividido nos dois lados, e em cada item o que
+// ESTE jogador fez: ✓ pôs do lado certo, ✗ pôs do outro lado, – não respondeu.
+// O item aparece sempre no lado certo; a marca é que diz como ele foi.
+function renderizarGabaritoClassificacao(msg) {
+  const minhas = new Map((msg.minhasRespostas || []).map((r) => [r.nome, r]));
+  const grupos = [["A", msg.categoriaA], ["B", msg.categoriaB]].map(([chave, nome]) => {
+    const grupo = criarEl("div", `gabarito-grupo ${chave.toLowerCase()}`);
+    const lista = criarEl("ul");
+    for (const item of msg.gabarito.filter((x) => x.categoria === chave)) {
+      const minha = minhas.get(item.nome);
+      const estado = !minha || minha.escolhida === null ? "pulou" : minha.correto ? "acertou" : "errou";
+      const li = criarEl("li", estado);
+      li.append(
+        criarEl("span", "selo-gabarito", estado === "acertou" ? "✓" : estado === "errou" ? "✗" : "–"),
+        document.createTextNode(item.nome)
+      );
+      lista.append(li);
+    }
+    grupo.append(criarEl("h4", "", nome), lista);
+    return grupo;
+  });
+  sortingGabaritoEl.replaceChildren(...grupos);
 }
 
 function avancarLoteSorting() {

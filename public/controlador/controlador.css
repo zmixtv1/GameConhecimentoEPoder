@@ -660,7 +660,6 @@ input:focus { outline: 2px solid var(--cor-jogador); }
   gap: 6px 8px;
 }
 .lista-cartoes.lista-1col { grid-template-columns: 1fr; }
-.lista-cartoes.lista-gabarito { gap: 6px; }
 .lista-cartoes li {
   display: flex;
   justify-content: space-between;
@@ -674,7 +673,6 @@ input:focus { outline: 2px solid var(--cor-jogador); }
   text-align: left;
 }
 .lista-cartoes li span:first-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70%; }
-#linking-gabarito li, #sorting-gabarito li { display: block; white-space: normal; font-weight: 600; font-size: clamp(11px, 3vh, 14px); }
 
 /* ---------- Em pé: o mesmo layout, em uma coluna ---------- */
 @media (orientation: portrait) {

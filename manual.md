@@ -237,6 +237,12 @@ Depois das 3 perguntas, vem um desafio de **30 segundos**:
 Os dois se alternam: Ligação no primeiro tema, Classificação no segundo, e assim por
 diante.
 
+Cada um joga no próprio celular, e a ordem das coisas muda de um celular para outro — não
+adianta olhar o do vizinho. Enquanto isso, a TV mostra o desafio e os bichos de todo mundo,
+cada um com o quanto já fez; quem termina acende na sua cor. No fim, a TV mostra o gabarito
+e o placar, e o celular mostra o que **você** acertou: os pares que você ligou, ou onde você
+pôs cada item.
+
 ## Como a pontuação funciona
 
 | Situação | Pontos |

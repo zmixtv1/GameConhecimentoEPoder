@@ -244,7 +244,7 @@ function enviarEstadoATv(sala) {
 
     case "linking": {
       enviar("iniciarLinking", {
-        tema: sala.linkingAtual.tema,
+        ...sala._payloadLinkingTv,
         tempoLimiteMs: restante(sala, cfg.tempoLimiteLinkingMs, sala.linkingAtual.iniciadaEm),
       });
       enviar("progressoLinking", { jogadores: sala._progressoLinkingParaTv() });
@@ -253,8 +253,7 @@ function enviarEstadoATv(sala) {
 
     case "sorting": {
       enviar("iniciarSorting", {
-        categoriaA: sala.sortingAtual.categoriaA,
-        categoriaB: sala.sortingAtual.categoriaB,
+        ...sala._payloadSortingTv,
         tempoLimiteMs: restante(sala, cfg.tempoLimiteSortingMs, sala.sortingAtual.iniciadaEm),
       });
       enviar("progressoSorting", { jogadores: sala._progressoSortingParaTv() });

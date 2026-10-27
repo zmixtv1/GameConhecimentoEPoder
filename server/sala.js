@@ -1418,10 +1418,20 @@ class Sala {
         tempoLimiteMs: this.cfg.tempoLimiteLinkingMs,
       });
     }
-    this._enviarParaTv("iniciarLinking", {
+    // A TV mostra os itens da esquerda (são iguais pra todo mundo; só a
+    // direita é embaralhada por celular), quanto vale cada par e o tema da
+    // partida em que o desafio está.
+    this._payloadLinkingTv = {
       tema: conjunto.tema,
+      esquerda: conjunto.pares.map((p) => p.esquerda),
+      totalPares: conjunto.pares.length,
+      pontosPorPar: this.cfg.pontosPorParLinking,
+      bonusMax: this.cfg.bonusVelocidadeLinkingMax,
+      rodadaAtual: this.rodadaAtual,
+      totalRodadas: this.cfg.totalRodadas,
       tempoLimiteMs: this.cfg.tempoLimiteLinkingMs,
-    });
+    };
+    this._enviarParaTv("iniciarLinking", this._payloadLinkingTv);
 
     this._timeoutLinking = setTimeout(() => {
       if (this.estado === "linking") this._revelarLinking();
@@ -1431,7 +1441,15 @@ class Sala {
   _progressoLinkingParaTv() {
     return [...this.jogadores.values()].map((j) => {
       const p = this.linkingAtual.progresso.get(j.id);
-      return { nome: j.nome, corretos: p.corretos.size, completou: p.completoEmMs !== null };
+      return {
+        id: j.id,
+        nome: j.nome,
+        avatar: j.avatar,
+        conectado: j.conectado,
+        corretos: p.corretos.size,
+        total: this.linkingAtual.pares.length,
+        completou: p.completoEmMs !== null,
+      };
     });
   }
 
@@ -1464,15 +1482,25 @@ class Sala {
     for (const id of this.jogadores.keys()) {
       this._enviarResultado(id, "resultadoLinking", {
         ...ganhos.get(id),
+        // quais pares (índices da esquerda) esse jogador ligou: o gabarito do
+        // celular marca os dele, mesmo se ele reconectar já no resultado
+        corretos: [...this.linkingAtual.progresso.get(id).corretos],
         totalPares,
         pares: this.linkingAtual.pares,
         placar: placarFinal,
       });
     }
 
+    // a TV mostra, em cada linha do placar, quantos pares a pessoa ligou
     this._enviarResultadoTv("resultadoLinking", {
+      tema: this.linkingAtual.tema,
       pares: this.linkingAtual.pares,
-      placar: placarFinal.map((j) => ({ ...j, ganho: ganhos.get(j.id).pontosGanhos })),
+      placar: placarFinal.map((j) => ({
+        ...j,
+        ganho: ganhos.get(j.id).pontosGanhos,
+        acertos: ganhos.get(j.id).paresCorretos,
+        total: totalPares,
+      })),
     });
 
     this._faseRevelacaoAtual = "linking";
@@ -1507,11 +1535,16 @@ class Sala {
         tempoLimiteMs: this.cfg.tempoLimiteSortingMs,
       });
     }
-    this._enviarParaTv("iniciarSorting", {
+    this._payloadSortingTv = {
       categoriaA: conjunto.categoriaA,
       categoriaB: conjunto.categoriaB,
+      totalItens: conjunto.itens.length,
+      pontosPorItem: this.cfg.pontosPorItemSorting,
+      rodadaAtual: this.rodadaAtual,
+      totalRodadas: this.cfg.totalRodadas,
       tempoLimiteMs: this.cfg.tempoLimiteSortingMs,
-    });
+    };
+    this._enviarParaTv("iniciarSorting", this._payloadSortingTv);
 
     this._timeoutSorting = setTimeout(() => {
       if (this.estado === "sorting") this._revelarSorting();
@@ -1521,7 +1554,14 @@ class Sala {
   _progressoSortingParaTv() {
     return [...this.jogadores.values()].map((j) => {
       const p = this.sortingAtual.progresso.get(j.id);
-      return { nome: j.nome, respondidos: p.respondidos.size, total: p.itens.length };
+      return {
+        id: j.id,
+        nome: j.nome,
+        avatar: j.avatar,
+        conectado: j.conectado,
+        respondidos: p.respondidos.size,
+        total: p.itens.length,
+      };
     });
   }
 
@@ -1552,12 +1592,20 @@ class Sala {
 
     const placarFinal = this._placar();
     for (const id of this.jogadores.keys()) {
+      // o que esse jogador escolheu em cada item, pelo nome (a ordem dos itens
+      // era só dele): o celular mostra o gabarito com os acertos e erros dele
+      const p = this.sortingAtual.progresso.get(id);
+      const minhasRespostas = p.itens.map((nome, i) => {
+        const escolhida = p.respondidos.get(i) ?? null;
+        return { nome, escolhida, correto: escolhida === p.gabarito[i] };
+      });
       this._enviarResultado(id, "resultadoSorting", {
         categoriaA: this.sortingAtual.categoriaA,
         categoriaB: this.sortingAtual.categoriaB,
         ...ganhos.get(id),
         totalItens,
         gabarito: gabaritoCompleto,
+        minhasRespostas,
         placar: placarFinal,
       });
     }
@@ -1566,7 +1614,13 @@ class Sala {
       categoriaA: this.sortingAtual.categoriaA,
       categoriaB: this.sortingAtual.categoriaB,
       gabarito: gabaritoCompleto,
-      placar: placarFinal.map((j) => ({ ...j, ganho: ganhos.get(j.id).pontosGanhos })),
+      // a TV mostra, em cada linha do placar, quantos itens a pessoa acertou
+      placar: placarFinal.map((j) => ({
+        ...j,
+        ganho: ganhos.get(j.id).pontosGanhos,
+        acertos: ganhos.get(j.id).corretos,
+        total: totalItens,
+      })),
     });
 
     this._faseRevelacaoAtual = "sorting";

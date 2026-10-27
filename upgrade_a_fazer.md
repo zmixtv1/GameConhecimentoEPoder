@@ -14,15 +14,6 @@ em `public/` saber com o que se parecer.
 
 ---
 
-## Telas que faltam desenhar
-
-- [ ] **Ligação e Classificação no visual novo.** As telas desses dois desafios, na TV e
-      no celular, continuam as de antes. Só saiu o corte do placar em 5 nomes: a TV agora
-      lista todo mundo. As referências novas vão ser feitas em `teste/`, e depois as telas
-      são portadas para `public/` como as outras.
-
----
-
 ## Banco de perguntas
 
 Hoje são **470 perguntas**: 28 fáceis e 12 difíceis em cada um dos 8 temas, mais as

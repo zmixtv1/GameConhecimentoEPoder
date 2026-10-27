@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="telas/largada.css" />
   <link rel="stylesheet" href="telas/corrida.css" />
   <link rel="stylesheet" href="telas/podio.css" />
+  <link rel="stylesheet" href="telas/desafios.css" />
 </head>
 <body>
   <div class="ambient-light light-1"></div>
@@ -113,7 +114,7 @@
     </header>
     <div class="res-conteudo">
       <section class="res-respostas">
-        <div class="res-secao-titulo"><span>Respostas</span></div>
+        <div class="res-secao-titulo"><span id="res-titulo-esquerda">Respostas</span></div>
         <div class="res-alternativas" id="res-alternativas"></div>
         <div class="sem-resposta" id="res-sem-resposta"></div>
       </section>
@@ -125,34 +126,36 @@
     <p class="res-rodape" id="progresso-proximo"></p>
   </div>
 
-  <div id="tela-linking" class="tela oculto">
-    <p class="categoria" id="linking-tema"></p>
-    <h2>Desafio de Associação</h2>
-    <p class="rotulo" id="linking-tempo"></p>
-    <ul class="progresso-jogadores" id="linking-progresso"></ul>
-  </div>
+  <!-- desafio do tema (Ligação ou Classificação), no molde da pergunta;
+       o resultado dele usa a #tela-resultado, com o gabarito no lugar das alternativas -->
+  <div id="tela-desafio" class="tela oculto">
+    <div class="tv-screen">
+      <div class="header-bar">
+        <div class="info-pill glass-panel">
+          <span class="round-text" id="desafio-rodada"></span>
+          <div class="divider"></div>
+          <span class="category-text" id="desafio-nome"></span>
+        </div>
+        <div class="timer-module glass-panel" id="desafio-timer">
+          <svg class="timer-svg" viewBox="0 0 150 150">
+            <circle class="timer-bg" cx="75" cy="75" r="65"></circle>
+            <circle class="timer-ring" id="desafio-anel" cx="75" cy="75" r="65"></circle>
+          </svg>
+          <span class="timer-value" id="desafio-numero"></span>
+        </div>
+      </div>
 
-  <div id="tela-resultado-linking" class="tela oculto">
-    <h2>Resultado da Associação</h2>
-    <ol class="gabarito-lista" id="linking-gabarito"></ol>
-    <h3>Placar</h3>
-    <ol id="placar-linking"></ol>
-    <p class="progresso" id="progresso-continuar-linking"></p>
-  </div>
+      <div class="question-stage">
+        <div class="question-card glass-panel desafio-card">
+          <p class="desafio-tema" id="desafio-tema"></p>
+          <h1 class="question-text desafio-titulo" id="desafio-titulo"></h1>
+          <div class="desafio-conteudo" id="desafio-conteudo"></div>
+          <p class="desafio-dica" id="desafio-dica"></p>
+        </div>
+      </div>
 
-  <div id="tela-sorting" class="tela oculto">
-    <p class="categoria" id="sorting-categorias"></p>
-    <h2>Desafio de Classificação</h2>
-    <p class="rotulo" id="sorting-tempo"></p>
-    <ul class="progresso-jogadores" id="sorting-progresso"></ul>
-  </div>
-
-  <div id="tela-resultado-sorting" class="tela oculto">
-    <h2>Resultado da Classificação</h2>
-    <ol class="gabarito-lista" id="sorting-gabarito"></ol>
-    <h3>Placar</h3>
-    <ol id="placar-sorting"></ol>
-    <p class="progresso" id="progresso-continuar-sorting"></p>
+      <div class="players-dock desafio-dock" id="desafio-dock"></div>
+    </div>
   </div>
 
   <!-- a pontuação virando andar de largada, antes da corrida -->
@@ -217,6 +220,7 @@
   <script src="telas/largada.js"></script>
   <script src="telas/corrida.js"></script>
   <script src="telas/podio.js"></script>
+  <script src="telas/desafios.js"></script>
   <script src="tv.js"></script>
 </body>
 </html>

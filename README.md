@@ -257,9 +257,9 @@ server/            servidor Node (HTTP + WebSocket) e todo o motor do jogo
   sala.js          o jogo: estados, rodadas, pontuação, poderes
   tests/           testes automatizados
 public/tv/         tela da TV (o que todos olham)
-  telas/           as telas animadas: poderes, pontuação, largada, corrida, pódio
+  telas/           as telas animadas: poderes, pontuação, desafios, largada, corrida, pódio
 public/controlador/ tela do celular (o controle de cada jogador)
-  telas/           escolha de poder e de alvo, gelo e névoa, fim de jogo
+  telas/           escolha de poder e de alvo, gelo e névoa, resultado dos desafios, fim de jogo
 data/              banco de conteúdo: perguntas, ligações, classificações
 docs/              documentação da mecânica original do jogo
 raspberry-pi/      instalador e atalhos para rodar o jogo no Pi

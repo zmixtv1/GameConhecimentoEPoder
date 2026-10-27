@@ -4,870 +4,1982 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>TV - Ligação</title>
+    <title>TV - Ligação (como está hoje)</title>
 
     <!--
-      PROPOSTA NOVA das duas telas da TV no desafio de Ligação ("linking").
+      RETRATO DO QUE EXISTE HOJE, não uma proposta.
 
-      1. DURANTE (`tela-linking`): tema grande, timer redondo e uma "pista" por
-         jogador com uma corrente de elos que acende a cada par certo. Quem
-         completa ganha selo verde com a ordem de chegada (1º a completar…).
-         A TV continua SEM mostrar os pares (cada celular tem a ordem dele).
-      2. RESULTADO (`tela-resultado-linking`): gabarito com os pares ligados por
-         uma linha que se desenha, placar com animal, "+ganho" deste desafio e
-         total, e as bolinhas de quem já apertou "continuar".
+      As duas telas da TV no desafio de Ligação (no código, "linking"):
 
-      Usa só o que o servidor já manda, com dois detalhes:
-        - `progressoLinking` não traz o animal: a TV já conhece os jogadores do
-          lobby (aqui: mapa AVATARES por nome).
-        - o total de pares não vem em `iniciarLinking`. Aqui o servidor de
-          mentira manda `totalPares`; sem ele a tela assume 5.
-          Sugestão: incluir `totalPares` no iniciarLinking do server/sala.js.
+      1. Durante (`tela-desafio`, 30 s): o mesmo molde da tela da pergunta.
+         Em cima, a pílula "Tema 1 de 5 · Ligação" e o timer redondo; no meio,
+         o cartão de vidro com o tema e os itens da esquerda (iguais em todos
+         os celulares — só a coluna da direita é embaralhada em cada um); embaixo,
+         os bichos, cada um com "3/5" e a barrinha. Quem liga tudo acende na cor
+         do jogador, igual a quem trava a resposta na pergunta.
+      2. Resultado (`tela-resultado`): a MESMA tela de placar do resultado da
+         pergunta — os pontos contam para cima e as linhas trocam de lugar —,
+         com o gabarito dos pares no lugar das alternativas e, embaixo do nome
+         de cada um, quantos pares ele ligou.
 
-      Barra do protótipo: Durante · Resultado · Repetir. ?limpo esconde.
+      O desafio acaba antes dos 30 s se todo mundo ligar tudo.
+      PONTOS: 40 por par certo, e até +100 para quem liga tudo (proporcional ao
+      tempo que sobrou). Errar não tira ponto: a opção pisca vermelho e tenta
+      de novo.
+
+      O QUE A TV RECEBE DO SERVIDOR:
+        iniciarLinking   { tema, esquerda: [texto], totalPares, pontosPorPar, bonusMax,
+                           rodadaAtual, totalRodadas, tempoLimiteMs }
+        progressoLinking { jogadores: [{ id, nome, avatar, conectado, corretos, total, completou }] }
+        resultadoLinking { tema, pares: [{ esquerda, direita }],
+                           placar: [{ id, nome, avatar, pontos, ganho, acertos, total }] }
+        progressoContinuar { confirmados, total }
+
+      A marcação sai de public/tv/index.html; o estilo é tv.css + telas/pontuacao.css
+      + telas/desafios.css, copiados inteiros; telas/pontuacao.js e telas/desafios.js
+      também vêm inteiros. O tratarMensagem() reproduz o trecho de public/tv/tv.js,
+      e um "servidor de mentira" manda as mesmas mensagens que o server/sala.js,
+      com 6 jogadores ligando pares.
+
+      Barra no rodapé: Durante · Resultado · Repetir. ?limpo esconde a barra.
     -->
 
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap">
 
     <style>
-        :root {
-            color-scheme: light;
-            --bg: #f8fafc;
-            --ink: #0f172a;
-            --ink-soft: #475569;
-            --violet: #9b59b6;
-            --verde: #2ed573;
-            --verde-escuro: #15a356;
-            --vermelho: #ff4757;
-            --glass-bg: rgba(255, 255, 255, 0.68);
-            --glass-border: rgba(255, 255, 255, 0.9);
-            --glass-shadow: 0 14px 30px rgba(0, 0, 0, 0.07);
-            font-family: "Outfit", system-ui, sans-serif;
-        }
+/* ===================================================================
+   cópia integral de public/tv/tv.css
+   =================================================================== */
+:root {
+  color-scheme: light;
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --ink: #0f172a;
+  --ink-soft: #475569;
+  --gold: #1e90ff;
+  --violet: #9b59b6;
+  --verde: #2ed573;
+  --vermelho: #ff4757;
+  --borda: rgba(15, 23, 42, 0.1);
+  --glass-bg: rgba(255, 255, 255, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.9);
+  --glass-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+  font-family: "Outfit", system-ui, sans-serif;
+}
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+* { box-sizing: border-box; }
 
-        body {
-            height: 100vh;
-            height: 100dvh;
-            overflow: hidden;
-            background-color: var(--bg);
-            background-image: radial-gradient(#cbd5e1 2px, transparent 2px);
-            background-size: 40px 40px;
-            background-position: center;
-            color: var(--ink);
-            position: relative;
-        }
+/* cartões em lista (placar, jogadores, log de poderes etc.) ganham uma
+   borda sutil - no tema claro a diferença de luminosidade entre --bg e
+   --surface sozinha não dá contraste suficiente como dava no tema escuro */
+li { border: 1px solid var(--borda); }
 
-        .ambient-light {
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(100px);
-            z-index: 0;
-            pointer-events: none;
-            animation: fluidMotion 20s infinite alternate ease-in-out;
-        }
-        .light-1 { top: -10%; left: -10%; width: 60vw; height: 60vw; background: rgba(226, 232, 240, 0.8); }
-        .light-2 { bottom: -20%; right: -10%; width: 50vw; height: 50vw; background: rgba(186, 230, 253, 0.4); animation-delay: -5s; }
-        .light-3 { top: 30%; left: 30%; width: 40vw; height: 40vw; background: rgba(233, 213, 255, 0.45); animation-delay: -10s; }
-        @keyframes fluidMotion {
-            0% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(5vw, 10vh) scale(1.1); }
-            66% { transform: translate(-5vw, 5vh) scale(0.9); }
-            100% { transform: translate(10vw, -5vh) scale(1.05); }
-        }
+body {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background-color: var(--bg);
+  /* grade pontilhada tech/gamer por trás de tudo */
+  background-image: radial-gradient(#cbd5e1 2px, transparent 2px);
+  background-size: 40px 40px;
+  background-position: center;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  position: relative;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
 
-        .glass-panel {
-            background: var(--glass-bg);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border: 2px solid var(--glass-border);
-            box-shadow: var(--glass-shadow);
-        }
+/* luzes ambiente atrás de tudo, fixas na tela inteira (não rolam nem
+   dependem de qual tela está ativa) */
+.ambient-light {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(100px);
+  z-index: 0;
+  pointer-events: none;
+  animation: fluidMotion 20s infinite alternate ease-in-out;
+}
+.light-1 { top: -10%; left: -10%; width: 60vw; height: 60vw; background: rgba(226, 232, 240, 0.8); }
+.light-2 { bottom: -20%; right: -10%; width: 50vw; height: 50vw; background: rgba(186, 230, 253, 0.4); animation-delay: -5s; }
+.light-3 { top: 30%; left: 30%; width: 40vw; height: 40vw; background: rgba(255, 255, 255, 0.9); animation-delay: -10s; }
+.light-4 { top: -20%; right: 10%; width: 45vw; height: 45vw; background: rgba(148, 163, 184, 0.25); animation-delay: -7s; }
+@keyframes fluidMotion {
+  0% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(5vw, 10vh) scale(1.1); }
+  66% { transform: translate(-5vw, 5vh) scale(0.9); }
+  100% { transform: translate(10vw, -5vh) scale(1.05); }
+}
 
-        .oculto { display: none !important; }
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 2px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
 
-        .tela {
-            position: relative;
-            z-index: 1;
-            height: 100%;
-            width: 100%;
-            max-width: 1760px;
-            margin: 0 auto;
-            padding: clamp(14px, 3vh, 40px) clamp(18px, 3vw, 60px);
-            display: grid;
-            gap: clamp(10px, 2.2vh, 28px);
-        }
+.oculto { display: none !important; }
 
-        /* ===================== CABEÇALHO (comum) ===================== */
-        .cabecalho {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-            align-items: center;
-            gap: 16px;
-        }
-        .pill {
-            justify-self: start;
-            display: flex;
-            align-items: center;
-            gap: clamp(8px, 1vw, 16px);
-            padding: clamp(8px, 1.2vh, 14px) clamp(16px, 1.8vw, 30px);
-            border-radius: 100px;
-            font-size: clamp(13px, 1.9vh, 22px);
-            font-weight: 800;
-            letter-spacing: .14em;
-            text-transform: uppercase;
-            color: var(--ink-soft);
-            white-space: nowrap;
-        }
-        .pill .icone { font-size: 1.3em; letter-spacing: 0; }
+.tela {
+  width: 100%;
+  max-width: 1000px;
+  text-align: center;
+  /* sem isso, as luzes ambiente (fixas, z-index:0) pintavam POR CIMA do
+     conteúdo estático das telas simples (sem glass-panel próprio),
+     deixando o texto meio apagado/perdido no fundo */
+  position: relative;
+  z-index: 1;
+}
 
-        .tema-bloco { text-align: center; }
-        .tema-rotulo {
-            font-size: clamp(12px, 1.8vh, 20px);
-            font-weight: 800;
-            letter-spacing: .16em;
-            text-transform: uppercase;
-            color: var(--violet);
-        }
-        .tema {
-            font-size: clamp(30px, 6.2vh, 76px);
-            font-weight: 900;
-            line-height: 1.05;
-            letter-spacing: -1px;
-        }
-        .tema-sub {
-            margin-top: 2px;
-            font-size: clamp(14px, 2.2vh, 26px);
-            font-weight: 700;
-            color: var(--ink-soft);
-        }
+h1, h2, h3 { font-family: "Outfit", system-ui, sans-serif; font-weight: 700; }
+h1 { font-size: 3.2rem; margin: 0 0 20px; color: var(--gold); }
+h2 { font-size: 2rem; margin: 30px 0 16px; }
 
-        /* Timer redondo (igual ao da pergunta) */
-        .timer {
-            justify-self: end;
-            position: relative;
-            width: clamp(78px, 12vh, 130px);
-            height: clamp(78px, 12vh, 130px);
-            border-radius: 50%;
-            display: grid;
-            place-items: center;
-        }
-        .timer svg { position: absolute; inset: -8%; width: 116%; height: 116%; transform: rotate(-90deg); }
-        .anel-fundo { fill: none; stroke: rgba(255, 255, 255, .8); stroke-width: 10; }
-        .anel { fill: none; stroke: var(--ink); stroke-width: 10; stroke-linecap: round; stroke-dasharray: 408; transition: stroke-dashoffset .2s linear, stroke .3s ease; }
-        .timer-valor { font-size: clamp(30px, 5.2vh, 56px); font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums; }
-        .timer.urgente { animation: pulso 1s ease-in-out infinite; }
-        .timer.urgente .anel { stroke: var(--vermelho); }
-        .timer.urgente .timer-valor { color: var(--vermelho); }
-        @keyframes pulso { 50% { transform: scale(1.08); } }
+.rotulo {
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--ink-soft);
+  margin-bottom: 6px;
+}
 
-        /* ===================== DURANTE ===================== */
-        #tela-linking { grid-template-rows: auto minmax(0, 1fr) auto; }
+.codigo {
+  font-size: 5rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--gold);
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 20px 40px;
+  display: inline-block;
+}
 
-        .pistas {
-            min-height: 0;
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            grid-auto-rows: minmax(0, 19vh);
-            gap: clamp(8px, 1.8vh, 24px) clamp(12px, 1.6vw, 28px);
-            align-content: center;
-        }
-        .pistas.uma-coluna { grid-template-columns: minmax(0, 1fr); max-width: 1100px; width: 100%; margin: 0 auto; }
+/* ---------- Lobby ---------- */
+#tela-lobby { position: relative; }
+#tela-lobby .fundo-vivo { position: fixed; inset: 0; overflow: hidden; pointer-events: none; }
+#tela-lobby .orbe { position: absolute; border-radius: 50%; filter: blur(70px); }
+#tela-lobby .orbe-1 {
+  width: 640px; height: 640px; top: -260px; left: -160px;
+  background: radial-gradient(closest-side, oklch(58% 0.15 75 / 0.16), transparent 70%);
+  animation: pq-deriva-a 22s ease-in-out infinite;
+}
+#tela-lobby .orbe-2 {
+  width: 560px; height: 560px; top: -220px; right: -180px;
+  background: radial-gradient(closest-side, oklch(55% 0.18 300 / 0.12), transparent 70%);
+  animation: pq-deriva-b 26s ease-in-out infinite;
+}
+#tela-lobby .orbe-3 {
+  width: 480px; height: 480px; bottom: -260px; left: 34%;
+  background: radial-gradient(closest-side, oklch(58% 0.15 75 / 0.10), transparent 70%);
+  opacity: 0.35;
+  animation: pq-deriva-a 30s ease-in-out infinite reverse;
+}
+#tela-lobby .feixe {
+  position: absolute;
+  inset: -20% -60%;
+  background: linear-gradient(100deg, transparent 42%, oklch(58% 0.15 75 / 0.07) 50%, transparent 58%);
+  animation: pq-varre 9s linear infinite;
+}
 
-        .pista {
-            --cor: #94a3b8;
-            min-height: 0;
-            max-height: 19vh;
-            display: grid;
-            grid-template-columns: auto minmax(0, 1fr) auto;
-            align-items: center;
-            gap: clamp(10px, 1.2vw, 22px);
-            padding: clamp(8px, 1.4vh, 18px) clamp(14px, 1.4vw, 26px);
-            border-radius: clamp(18px, 2.6vh, 30px);
-            transition: border-color .4s ease, box-shadow .4s ease, background .4s ease;
-            animation: entrar .45s cubic-bezier(.34, 1.56, .64, 1) backwards;
-        }
-        @keyframes entrar { from { opacity: 0; transform: translateY(14px) scale(.96); } }
+.conteudo-lobby { position: relative; z-index: 2; }
 
-        .pista .avatar {
-            width: clamp(46px, 8vh, 92px);
-            height: clamp(46px, 8vh, 92px);
-            border-radius: 50%;
-            display: grid;
-            place-items: center;
-            font-size: clamp(26px, 4.8vh, 56px);
-            line-height: 1;
-            background: color-mix(in srgb, var(--cor) 22%, white);
-            border: 3px solid color-mix(in srgb, var(--cor) 55%, white);
-        }
+#tela-lobby h1 {
+  font-size: 4rem;
+  text-shadow: 0 0 50px oklch(58% 0.15 75 / 0.35);
+}
 
-        .pista .meio { min-width: 0; display: flex; flex-direction: column; gap: clamp(4px, .8vh, 10px); }
-        .pista .nome {
-            font-size: clamp(18px, 3vh, 36px);
-            font-weight: 900;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+.cartao-entrada {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  margin: 28px 0;
+}
 
-        /* Corrente de elos: um por par */
-        .corrente { display: flex; align-items: center; }
-        .elo {
-            position: relative;
-            flex: none;
-            width: clamp(22px, 3.6vh, 42px);
-            height: clamp(22px, 3.6vh, 42px);
-            border-radius: 50%;
-            border: 3px solid rgba(15, 23, 42, .14);
-            background: rgba(255, 255, 255, .7);
-            transition: background .25s ease, border-color .25s ease, box-shadow .25s ease;
-        }
-        .ligacao {
-            flex: 1;
-            min-width: 8px;
-            max-width: clamp(16px, 3vw, 60px);
-            height: clamp(4px, .7vh, 8px);
-            border-radius: 4px;
-            background: rgba(15, 23, 42, .1);
-            transition: background .25s ease;
-        }
-        .elo.ligado {
-            border-color: var(--cor);
-            background: var(--cor);
-            box-shadow: 0 0 0 4px color-mix(in srgb, var(--cor) 22%, transparent), 0 4px 10px color-mix(in srgb, var(--cor) 40%, transparent);
-            animation: ligar .45s cubic-bezier(.34, 1.8, .64, 1);
-        }
-        .elo.ligado::after {
-            content: '✓';
-            position: absolute;
-            inset: 0;
-            display: grid;
-            place-items: center;
-            color: #fff;
-            font-weight: 900;
-            font-size: .62em;
-        }
-        .ligacao.ligado { background: var(--cor); }
-        @keyframes ligar { 0% { transform: scale(.4); } 60% { transform: scale(1.25); } }
+.entrada-codigo, .entrada-qrcode {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 
-        .pista .contagem {
-            text-align: right;
-            font-variant-numeric: tabular-nums;
-            line-height: 1;
-            white-space: nowrap;
-        }
-        .pista .contagem b { font-size: clamp(26px, 4.6vh, 56px); font-weight: 900; }
-        .pista .contagem small { font-size: clamp(14px, 2.2vh, 26px); font-weight: 800; color: var(--ink-soft); }
+.entrada-divisor {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-soft);
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  align-self: stretch;
+}
+.entrada-divisor span {
+  writing-mode: vertical-rl;
+  padding: 10px 0;
+  border-left: 1px solid var(--borda);
+  border-right: 1px solid var(--borda);
+}
 
-        /* Completou */
-        .pista.completou {
-            border-color: var(--verde);
-            background: color-mix(in srgb, var(--verde) 14%, var(--glass-bg));
-            box-shadow: 0 14px 32px rgba(46, 213, 115, .25);
-        }
-        .pista.completou .contagem b { color: var(--verde-escuro); }
-        .selo {
-            display: none;
-            padding: 4px 12px;
-            border-radius: 100px;
-            background: var(--verde-escuro);
-            color: #fff;
-            font-size: clamp(12px, 1.8vh, 20px);
-            font-weight: 900;
-            white-space: nowrap;
-        }
-        .pista.completou .selo { display: inline-block; animation: ligar .5s cubic-bezier(.34, 1.8, .64, 1); }
-        .pista .linha-nome { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.qrcode-moldura {
+  width: 200px;
+  height: 200px;
+  padding: 14px;
+  margin-bottom: 10px;
+  background: #fff;
+  border: 2px solid var(--gold);
+  border-radius: 16px;
+  box-shadow: 0 0 0 6px oklch(58% 0.15 75 / 0.12), 0 8px 24px oklch(20% 0.01 260 / 0.08);
+}
 
-        .rodape-dica {
-            text-align: center;
-            font-size: clamp(14px, 2.1vh, 24px);
-            font-weight: 700;
-            color: var(--ink-soft);
-        }
-        .rodape-dica b { color: var(--ink); }
+.qrcode-imagem {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 4px;
+}
 
-        .aguardando {
-            align-self: center;
-            justify-self: center;
-            text-align: center;
-            font-size: clamp(18px, 3vh, 34px);
-            font-weight: 800;
-            color: var(--ink-soft);
-        }
-        .aguardando .icone-grande { display: block; font-size: clamp(50px, 10vh, 120px); margin-bottom: 8px; animation: balancar 2.4s ease-in-out infinite; }
-        @keyframes balancar { 50% { transform: rotate(-8deg) scale(1.05); } }
+.instrucao {
+  color: var(--ink-soft);
+  max-width: 60ch;
+  margin: 20px auto;
+}
 
-        /* ===================== RESULTADO ===================== */
-        #tela-resultado-linking { grid-template-rows: auto minmax(0, 1fr) auto; }
+/* no lobby os jogadores aparecem como os mesmos pods da pergunta */
+.lobby-dock { margin: 10px auto 0; padding: 18px 0 8px; }
+.player-pod.sem-animal { opacity: 0.6; }
+.player-pod.sem-animal .player-avatar { filter: grayscale(1); }
+.player-pod.anfitriao::after {
+  content: "👑";
+  position: absolute;
+  top: -14px;
+  left: -10px;
+  font-size: 28px;
+  transform: rotate(-18deg);
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
+}
 
-        .resultado-corpo {
-            min-height: 0;
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-            gap: clamp(14px, 2.4vw, 44px);
-        }
-        .secao-titulo {
-            margin-bottom: clamp(6px, 1vh, 12px);
-            font-size: clamp(12px, 1.7vh, 20px);
-            font-weight: 800;
-            letter-spacing: .12em;
-            text-transform: uppercase;
-            color: var(--ink-soft);
-        }
-        .coluna { min-height: 0; display: flex; flex-direction: column; }
+.categoria {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--violet);
+  font-weight: 600;
+}
 
-        /* Gabarito: [esquerda] ——— [direita] */
-        .gabarito { list-style: none; flex: 1; min-height: 0; display: flex; flex-direction: column; gap: clamp(6px, 1.2vh, 14px); }
-        .par {
-            flex: 1 1 0;
-            min-height: 0;
-            max-height: 11vh;
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) clamp(40px, 6vw, 120px) minmax(0, 1fr);
-            align-items: center;
-        }
-        .par .lado {
-            height: 100%;
-            min-height: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 clamp(8px, 1vw, 18px);
-            border-radius: clamp(14px, 2vh, 22px);
-            font-size: clamp(16px, 2.8vh, 34px);
-            font-weight: 900;
-            text-align: center;
-            overflow-wrap: anywhere;
-            opacity: 0;
-            transform: translateX(-16px);
-            transition: opacity .35s ease, transform .35s ease;
-        }
-        .par .lado.dir { transform: translateX(16px); }
-        .par.visivel .lado { opacity: 1; transform: none; }
-        .par .lado.dir { color: var(--verde-escuro); }
+.portas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 30px;
+}
 
-        .par .fio { position: relative; height: 100%; }
-        .par .fio::before {
-            content: '';
-            position: absolute;
-            left: -6px;
-            right: -6px;
-            top: 50%;
-            height: clamp(4px, .7vh, 7px);
-            margin-top: calc(clamp(4px, .7vh, 7px) / -2);
-            border-radius: 4px;
-            background: var(--verde);
-            transform: scaleX(0);
-            transform-origin: left;
-            transition: transform .45s cubic-bezier(.6, 0, .3, 1) .2s;
-        }
-        .par .fio::after {
-            content: '';
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            width: clamp(12px, 2vh, 20px);
-            height: clamp(12px, 2vh, 20px);
-            margin: calc(clamp(12px, 2vh, 20px) / -2);
-            border-radius: 50%;
-            background: var(--verde);
-            box-shadow: 0 0 0 4px rgba(46, 213, 115, .25);
-            transform: scale(0);
-            transition: transform .3s cubic-bezier(.34, 1.8, .64, 1) .6s;
-        }
-        .par.visivel .fio::before { transform: scaleX(1); }
-        .par.visivel .fio::after { transform: scale(1); }
+.porta {
+  background: var(--surface);
+  border: 1px solid var(--borda);
+  padding: 30px;
+  border-radius: 14px;
+  font-size: 1.6rem;
+  position: relative;
+}
 
-        /* Placar */
-        .placar { list-style: none; flex: 1; min-height: 0; display: flex; flex-direction: column; gap: clamp(5px, 1vh, 12px); }
-        .placar li {
-            --cor: #94a3b8;
-            flex: 1 1 0;
-            min-height: 0;
-            max-height: 10vh;
-            display: grid;
-            grid-template-columns: 2.1em 2.4em minmax(0, 1fr) auto 4.6em;
-            align-items: center;
-            column-gap: clamp(8px, .8vw, 14px);
-            padding: 0 clamp(10px, 1vw, 18px);
-            border-radius: clamp(14px, 2vh, 22px);
-            font-size: clamp(16px, 2.6vh, 31px);
-            opacity: 0;
-            transform: translateX(20px);
-            transition: opacity .4s ease, transform .4s ease;
-        }
-        .placar li.visivel { opacity: 1; transform: none; }
-        .placar .pos { font-weight: 900; color: var(--ink-soft); text-align: center; }
-        .placar .pos.p1 { color: #e0a000; }
-        .placar .av {
-            width: 2.2em;
-            height: 2.2em;
-            border-radius: 50%;
-            display: grid;
-            place-items: center;
-            background: color-mix(in srgb, var(--cor) 22%, white);
-            border: 2px solid color-mix(in srgb, var(--cor) 50%, white);
-            font-size: .9em;
-        }
-        .placar .av span { font-size: 1.3em; line-height: 1; }
-        .placar .nome { font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .placar .ganho {
-            padding: 3px 10px;
-            border-radius: 100px;
-            font-size: .72em;
-            font-weight: 900;
-            font-variant-numeric: tabular-nums;
-            white-space: nowrap;
-            transform: scale(0);
-            transition: transform .4s cubic-bezier(.34, 1.8, .64, 1) .3s;
-        }
-        .placar li.visivel .ganho { transform: scale(1); }
-        .placar .ganho.positivo { background: rgba(46, 213, 115, .18); color: var(--verde-escuro); }
-        .placar .ganho.zero { background: rgba(15, 23, 42, .06); color: rgba(71, 85, 105, .6); }
-        .placar .pontos { text-align: right; font-weight: 900; font-variant-numeric: tabular-nums; white-space: nowrap; }
-        .placar .pontos small { font-size: .55em; color: var(--ink-soft); margin-left: 2px; }
+.porta .contagem {
+  display: block;
+  margin-top: 10px;
+  font-size: 1rem;
+  color: var(--gold);
+  letter-spacing: 0.05em;
+}
 
-        /* Quem já apertou "continuar" */
-        .continuar {
-            justify-self: center;
-            display: flex;
-            align-items: center;
-            gap: clamp(10px, 1.2vw, 20px);
-            padding: clamp(8px, 1.2vh, 14px) clamp(16px, 1.8vw, 30px);
-            border-radius: 100px;
-            font-size: clamp(14px, 2.1vh, 24px);
-            font-weight: 800;
-            color: var(--ink-soft);
-        }
-        .bolinhas { display: flex; gap: clamp(6px, .6vw, 10px); }
-        .bolinha {
-            --cor: var(--verde);
-            color: transparent;
-            font-weight: 900;
-            width: clamp(28px, 4.2vh, 46px);
-            height: clamp(28px, 4.2vh, 46px);
-            border-radius: 50%;
-            display: grid;
-            place-items: center;
-            font-size: clamp(15px, 2.4vh, 26px);
-            background: rgba(15, 23, 42, .06);
-            filter: grayscale(1);
-            opacity: .45;
-            transition: all .35s cubic-bezier(.34, 1.56, .64, 1);
-        }
-        .bolinha.pronto {
-            filter: none;
-            opacity: 1;
-            color: #fff;
-            background: var(--cor);
-            box-shadow: 0 4px 12px rgba(46, 213, 115, .4);
-            transform: scale(1.1);
-        }
+#categoria-escolhida {
+  color: var(--gold);
+  font-size: 4rem;
+}
 
-        @media (max-width: 900px) {
-            .pistas { grid-template-columns: minmax(0, 1fr); }
-            .resultado-corpo { grid-template-columns: minmax(0, 1fr); }
-        }
+.progresso { color: var(--ink-soft); font-size: 1.2rem; }
 
-        @media (prefers-reduced-motion: reduce) {
-            *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
-        }
+.fase-leitura {
+  color: var(--gold);
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin: 20px 0;
+}
 
-        /* ===== só deste protótipo, não existe no jogo ===== */
-        .barra-prototipo {
-            position: fixed; bottom: 10px; right: 10px; z-index: 500;
-            display: flex; align-items: center; gap: 8px;
-            padding: 6px 10px; border-radius: 10px;
-            background: rgba(15, 23, 42, 0.88); color: #fff;
-            font-size: 12px; font-weight: 700;
-        }
-        .barra-prototipo button {
-            padding: 4px 10px; border: 0; border-radius: 6px;
-            background: #fff; color: #0f172a; font-weight: 800;
-            font-family: inherit; font-size: 12px; cursor: pointer;
-        }
+/* ---------- Tela da Pergunta e Resultado: vidro/gamer ---------- */
+#tela-pergunta {
+  position: fixed;
+  inset: 0;
+  width: 100vw; width: 100dvw;
+  height: 100vh; height: 100dvh;
+  z-index: 5;
+  max-width: none;
+  background: var(--bg);
+  background-image: radial-gradient(#cbd5e1 2px, transparent 2px);
+  background-size: 40px 40px;
+  background-position: center;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+#tela-pergunta.oculto { display: none; }
+
+.tv-screen {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100%;
+  padding: 40px 60px 50px;
+}
+
+.header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 1600px;
+  margin-bottom: 20px;
+}
+
+.info-pill {
+  padding: 15px 35px;
+  border-radius: 100px;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  animation: slideDown 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.round-text {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.divider { width: 3px; height: 25px; background: var(--borda); border-radius: 5px; }
+.category-text {
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--violet);
+  text-transform: uppercase;
+  letter-spacing: 3px;
+}
+
+.timer-module {
+  position: relative;
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: opacity 0.3s ease, transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  animation: slideDown 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.1s backwards;
+}
+.timer-module.oculto { opacity: 0; transform: scale(0.7); pointer-events: none; display: flex !important; }
+.timer-module.urgente { animation: pulsoUrgente 1s ease-in-out infinite; }
+@keyframes pulsoUrgente { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+.timer-svg {
+  position: absolute;
+  top: -10px; left: -10px; right: -10px; bottom: -10px;
+  width: 150px; height: 150px;
+  transform: rotate(-90deg);
+}
+.timer-bg { fill: none; stroke: rgba(255,255,255,0.8); stroke-width: 10; }
+.timer-ring {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 10;
+  stroke-linecap: round;
+  stroke-dasharray: 408;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 0.2s linear, stroke 0.3s ease;
+}
+.timer-module.urgente .timer-ring { stroke: var(--vermelho); }
+.timer-value {
+  font-size: 55px;
+  font-weight: 900;
+  color: var(--ink);
+  line-height: 1;
+  text-shadow: 0 4px 15px rgba(255,255,255,0.8);
+  transition: color 0.3s ease;
+}
+.timer-module.urgente .timer-value { color: var(--vermelho); }
+
+.question-stage {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 1400px;
+}
+.question-card {
+  padding: 60px 80px;
+  border-radius: 40px;
+  text-align: center;
+  width: 100%;
+  animation: zoomIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.2s backwards,
+             floating 6s ease-in-out infinite alternate;
+}
+.question-text {
+  font-size: 65px;
+  font-weight: 900;
+  color: var(--ink);
+  line-height: 1.2;
+  letter-spacing: -1px;
+  text-wrap: balance;
+  margin: 0;
+}
+
+@keyframes slideDown { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes zoomIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes floating { 0% { transform: translateY(0px); } 100% { transform: translateY(-15px); } }
+
+.fase-leitura { color: var(--gold); font-size: 1.4rem; font-weight: 600; margin: 20px 0 0; }
+
+/* pódio dos jogadores, embaixo (igual ao teste.html): squircle com o animal
+   grande e o nome embaixo - cada um "pensando" (pulso) até travar a resposta,
+   quando acende com a cor do próprio animal */
+.players-dock {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  width: 100%;
+  max-width: 1600px;
+  transition: opacity 0.3s ease;
+}
+.players-dock.oculto { opacity: 0; pointer-events: none; display: flex !important; }
+
+.player-pod {
+  width: 130px;
+  height: 140px;
+  border-radius: 28px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px;
+  position: relative;
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  cursor: default;
+}
+.player-pod.thinking { animation: pulseWait 2s infinite ease-in-out; }
+@keyframes pulseWait { 0% { transform: scale(1); } 50% { transform: scale(0.97); } 100% { transform: scale(1); } }
+
+.player-avatar {
+  font-size: 55px;
+  line-height: 1;
+  filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.15));
+  transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+.player-name {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--ink-soft);
+  transition: color 0.3s;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ready-stamp {
+  position: absolute;
+  top: -15px;
+  right: -15px;
+  width: 45px;
+  height: 45px;
+  background: var(--ink);
+  color: #fff;
+  border-radius: 50%;
+  display: flex; justify-content: center; align-items: center;
+  font-size: 24px; font-weight: 900;
+  border: 4px solid #fff;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  transform: scale(0) rotate(-45deg);
+  transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.1s;
+}
+
+/* jogador que caiu no meio da partida: apagado, esperando voltar */
+.player-pod.desconectado { opacity: 0.45; filter: grayscale(1); animation: none; }
+.player-pod.desconectado::before {
+  content: "reconectando…";
+  position: absolute;
+  bottom: -24px;
+  left: 0;
+  right: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.player-pod.locked {
+  animation: none;
+  transform: translateY(-20px) scale(1.1);
+  border-width: 3px;
+  border-color: var(--cor-jogador, var(--gold));
+  background: color-mix(in srgb, var(--cor-jogador, var(--gold)) 15%, transparent);
+  box-shadow: 0 15px 35px color-mix(in srgb, var(--cor-jogador, var(--gold)) 30%, transparent);
+}
+.player-pod.locked .player-avatar { transform: scale(1.15) rotate(5deg); }
+.player-pod.locked .ready-stamp { opacity: 1; transform: scale(1) rotate(0deg); background: var(--cor-jogador, var(--gold)); }
+.player-pod.locked .player-name { color: var(--ink); }
+
+/* ===================================================================
+   cópia integral de public/tv/telas/pontuacao.css
+   =================================================================== */
+/* Resultado da pergunta: o placar entra na ordem anterior, os pontos contam e
+   as linhas deslizam para a posição nova. Duas formas:
+   - normal: alternativas à esquerda, placar à direita
+   - com aposta: só o placar, maior, com a linha de quem apostou
+   Referências: teste/teste-pontuação.html e teste/teste-pontuacao-aposta.html */
+
+#tela-resultado {
+  --ouro: #f5b301;
+  --prata: #a3afbf;
+  --bronze: #d9894a;
+  --verde-escuro: #15a356;
+  --linha-h: clamp(48px, 6.2vh, 68px);
+  --linha-gap: clamp(7px, 1vh, 11px);
+
+  max-width: 1680px;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(16px, 3vh, 34px);
+  text-align: left;
+}
+#tela-resultado.modo-aposta {
+  max-width: 1240px;
+  --linha-h: clamp(42px, 6.8vh, 82px);
+  --linha-gap: clamp(5px, 1vh, 12px);
+  gap: clamp(12px, 2.4vh, 30px);
+}
+
+#tela-resultado .res-cabecalho { text-align: center; }
+
+#tela-resultado .res-rotulo {
+  display: inline-block;
+  padding: 6px 18px;
+  border-radius: 100px;
+  font-size: clamp(14px, 1.3vw, 20px);
+  font-weight: 800;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  opacity: 0;
+  animation: resSubir 0.5s ease forwards;
+}
+
+#tela-resultado .res-titulo {
+  margin: 10px 0 0;
+  font-size: clamp(34px, 4.2vw, 72px);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: -1px;
+  color: var(--ink);
+  opacity: 0;
+  animation: resSubir 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.2) 0.1s forwards;
+}
+#tela-resultado.modo-aposta .res-titulo { font-size: clamp(30px, min(5vw, 8.2vh), 88px); }
+#tela-resultado .res-titulo .resposta { color: var(--verde-escuro); }
+
+#tela-resultado .res-subtitulo {
+  margin-top: 8px;
+  font-size: clamp(16px, 1.5vw, 24px);
+  font-weight: 700;
+  color: var(--ink-soft);
+  opacity: 0;
+  animation: resSubir 0.5s ease 0.25s forwards;
+}
+
+/* Festa de Pontos: o selo no cabeçalho explica por que os pontos dobraram */
+#tela-resultado .res-festa {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 6px 18px;
+  border-radius: 100px;
+  background: rgba(255, 159, 67, 0.16);
+  border: 2px solid #ff9f43;
+  color: #c2410c;
+  font-size: clamp(14px, 1.3vw, 20px);
+  font-weight: 900;
+  opacity: 0;
+  animation: resSubir 0.5s ease 0.4s forwards;
+}
+
+@keyframes resSubir {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+#tela-resultado .res-conteudo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  gap: clamp(20px, 2.6vw, 48px);
+  align-items: start;
+}
+#tela-resultado.modo-aposta .res-conteudo { grid-template-columns: 1fr; }
+#tela-resultado.modo-aposta .res-respostas { display: none; }
+
+#tela-resultado .res-secao-titulo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-size: clamp(15px, 1.25vw, 20px);
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+/* ---------- alternativas ---------- */
+
+#tela-resultado .res-alternativas {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(10px, 1.4vh, 16px);
+}
+
+#tela-resultado .res-alternativa {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: clamp(66px, 9vh, 96px);
+  padding: 12px 22px;
+  border-radius: 22px;
+  font-size: clamp(20px, 1.9vw, 32px);
+  font-weight: 800;
+  color: var(--ink);
+  opacity: 0;
+  transform-origin: left center;
+  animation: resVirar 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  transition: opacity 0.5s ease, filter 0.5s ease, background 0.5s ease, border-color 0.5s ease, transform 0.5s ease;
+}
+@keyframes resVirar {
+  from { opacity: 0; transform: perspective(900px) rotateY(-90deg); }
+  to { opacity: 1; transform: perspective(900px) rotateY(0deg); }
+}
+#tela-resultado .res-alternativa .texto { flex: 1; min-width: 0; }
+#tela-resultado .res-alternativa.revelada.correta {
+  background: rgba(46, 213, 115, 0.18);
+  border-color: var(--verde);
+  box-shadow: 0 16px 40px rgba(46, 213, 115, 0.25);
+  transform: scale(1.02);
+}
+#tela-resultado .res-alternativa.revelada.errada {
+  opacity: 0.55 !important;
+  filter: grayscale(0.6);
+}
+
+#tela-resultado .selo-certo {
+  flex: none;
+  width: clamp(30px, 2.4vw, 40px);
+  height: clamp(30px, 2.4vw, 40px);
+  border-radius: 50%;
+  background: var(--verde);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  transform: scale(0);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+#tela-resultado .res-alternativa.revelada .selo-certo { transform: scale(1); }
+
+#tela-resultado .avatares { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; max-width: 55%; }
+
+#tela-resultado .avatar {
+  flex: none;
+  width: clamp(36px, 2.9vw, 50px);
+  height: clamp(36px, 2.9vw, 50px);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: clamp(20px, 1.6vw, 28px);
+  border: 2px solid var(--glass-border);
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+}
+#tela-resultado .avatares .avatar { opacity: 0; transform: translateY(-24px) scale(0.6); }
+#tela-resultado .avatares .avatar.caiu { animation: resCair 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+@keyframes resCair { to { opacity: 1; transform: translateY(0) scale(1); } }
+
+#tela-resultado .sem-resposta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+  font-size: clamp(14px, 1.15vw, 19px);
+  font-weight: 700;
+  color: var(--ink-soft);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+#tela-resultado .sem-resposta.visivel { opacity: 1; }
+#tela-resultado .sem-resposta .avatar { width: 34px; height: 34px; font-size: 19px; filter: grayscale(0.4); }
+
+/* ---------- placar ---------- */
+
+#tela-resultado .res-placar {
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  /* altura = n linhas, definida pelo JS */
+}
+
+#tela-resultado .linha {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: var(--linha-h);
+  display: flex;
+  align-items: center;
+  gap: clamp(10px, 1vw, 16px);
+  padding: 0 clamp(12px, 1.2vw, 20px) 0 clamp(8px, 0.8vw, 12px);
+  border-radius: 16px;
+  opacity: 0;
+  transform: translate(40px, var(--y, 0px));
+  transition: transform 0.9s cubic-bezier(0.65, 0, 0.35, 1), opacity 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease;
+}
+#tela-resultado .linha.entrou { opacity: 1; transform: translate(0, var(--y, 0px)); }
+#tela-resultado .linha.lider {
+  border-color: rgba(245, 179, 1, 0.7);
+  box-shadow: 0 14px 34px rgba(245, 179, 1, 0.25);
+}
+
+#tela-resultado .posicao {
+  flex: none;
+  width: clamp(34px, 2.6vw, 44px);
+  height: clamp(34px, 2.6vw, 44px);
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-size: clamp(16px, 1.35vw, 22px);
+  font-weight: 900;
+  color: var(--ink-soft);
+  background: rgba(15, 23, 42, 0.06);
+  transition: background 0.4s ease, color 0.4s ease;
+}
+#tela-resultado.modo-aposta .posicao {
+  width: clamp(40px, 3.2vw, 58px);
+  height: clamp(40px, 3.2vw, 58px);
+  border-radius: 14px;
+  font-size: clamp(18px, 1.6vw, 28px);
+}
+#tela-resultado .posicao.p1 { background: var(--ouro); color: #fff; }
+#tela-resultado .posicao.p2 { background: var(--prata); color: #fff; }
+#tela-resultado .posicao.p3 { background: var(--bronze); color: #fff; }
+
+#tela-resultado .linha .avatar { position: relative; }
+#tela-resultado.modo-aposta .linha .avatar {
+  width: clamp(44px, 3.6vw, 64px);
+  height: clamp(44px, 3.6vw, 64px);
+  font-size: clamp(24px, 2vw, 36px);
+}
+
+#tela-resultado .coroa {
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  font-size: 18px;
+  transform: translateX(-50%) scale(0) rotate(-20deg);
+  transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+#tela-resultado .linha.lider .coroa { transform: translateX(-50%) scale(1) rotate(-12deg); }
+
+#tela-resultado .info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1px;
+}
+
+#tela-resultado .nome {
+  min-width: 0;
+  font-size: clamp(18px, 1.6vw, 27px);
+  font-weight: 800;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#tela-resultado.modo-aposta .nome { font-size: clamp(22px, 2.1vw, 36px); }
+
+/* Aposta: linha extra só para quem apostou */
+#tela-resultado .aposta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  max-height: 0;
+  overflow: hidden;
+  font-size: clamp(14px, 1.2vw, 21px);
+  font-weight: 800;
+  white-space: nowrap;
+  opacity: 0;
+  transition: max-height 0.35s ease, opacity 0.35s ease;
+}
+#tela-resultado .aposta.visivel { max-height: 1.6em; opacity: 1; }
+#tela-resultado .aposta.ganhou { color: var(--verde-escuro); }
+#tela-resultado .aposta.perdeu { color: rgba(71, 85, 105, 0.75); }
+#tela-resultado .aposta .texto-aposta { overflow: hidden; text-overflow: ellipsis; }
+#tela-resultado .aposta .dado { display: inline-block; }
+#tela-resultado .aposta.visivel .dado { animation: resRolarDado 0.7s cubic-bezier(0.3, 1.4, 0.5, 1); }
+@keyframes resRolarDado {
+  from { transform: rotate(-540deg) scale(0.4); }
+  to { transform: rotate(0) scale(1); }
+}
+#tela-resultado .linha.aposta-ganhou { animation: resBrilhoAposta 1.2s ease; }
+@keyframes resBrilhoAposta {
+  0%, 100% { box-shadow: var(--glass-shadow); }
+  35% { box-shadow: 0 0 0 3px rgba(46, 213, 115, 0.55), 0 14px 34px rgba(46, 213, 115, 0.3); }
+}
+
+#tela-resultado .mudanca {
+  flex: none;
+  width: 3.2em;
+  font-size: clamp(13px, 1.05vw, 17px);
+  font-weight: 900;
+  text-align: center;
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+#tela-resultado.modo-aposta .mudanca { font-size: clamp(16px, 1.35vw, 23px); }
+#tela-resultado .mudanca.visivel { opacity: 1; transform: scale(1); }
+#tela-resultado .mudanca.subiu { color: var(--verde-escuro); }
+#tela-resultado .mudanca.caiu { color: var(--vermelho); }
+#tela-resultado .mudanca.igual { color: rgba(71, 85, 105, 0.5); }
+
+#tela-resultado .ganho {
+  flex: none;
+  min-width: 4.4em;
+  padding: 4px 10px;
+  border-radius: 100px;
+  font-size: clamp(14px, 1.15vw, 19px);
+  font-weight: 900;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  opacity: 0;
+  transform: translateY(8px) scale(0.7);
+  transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+#tela-resultado .ganho.visivel { opacity: 1; transform: translateY(0) scale(1); }
+#tela-resultado .ganho.positivo { background: rgba(46, 213, 115, 0.18); color: var(--verde-escuro); }
+#tela-resultado .ganho.zero { background: rgba(15, 23, 42, 0.06); color: rgba(71, 85, 105, 0.6); }
+
+#tela-resultado .pontos {
+  flex: none;
+  min-width: 4.2em;
+  text-align: right;
+  font-size: clamp(20px, 1.75vw, 30px);
+  font-weight: 900;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+#tela-resultado .pontos small { font-size: 0.55em; font-weight: 800; color: var(--ink-soft); margin-left: 3px; }
+#tela-resultado .pontos.contando { color: var(--verde-escuro); }
+
+#tela-resultado .res-rodape {
+  text-align: center;
+  font-size: clamp(15px, 1.25vw, 21px);
+  font-weight: 700;
+  color: var(--ink-soft);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+#tela-resultado .res-rodape.visivel { opacity: 1; }
+#tela-resultado .pontinhos::after {
+  content: "";
+  animation: resPontinhos 1.4s steps(4) infinite;
+}
+@keyframes resPontinhos {
+  0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75% { content: "..."; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #tela-resultado *, #tela-resultado *::before, #tela-resultado *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ===================================================================
+   cópia integral de public/tv/telas/desafios.css
+   =================================================================== */
+/* Desafios do tema na TV: Ligação e Classificação.
+   Durante: o mesmo molde da tela da pergunta (pílula do tema + timer redondo
+   em cima, cartão de vidro no meio, os bichos embaixo), com o progresso de
+   cada jogador no próprio bicho.
+   Resultado: usa a tela de placar da pergunta (#tela-resultado); aqui fica só
+   o gabarito, que entra no lugar das alternativas. */
+
+/* ---------- durante: tela cheia, como a da pergunta ---------- */
+#tela-desafio {
+  position: fixed;
+  inset: 0;
+  width: 100vw; width: 100dvw;
+  height: 100vh; height: 100dvh;
+  z-index: 5;
+  max-width: none;
+  background: var(--bg);
+  background-image: radial-gradient(#cbd5e1 2px, transparent 2px);
+  background-size: 40px 40px;
+  background-position: center;
+  overflow: hidden;
+}
+
+#tela-desafio .desafio-card {
+  padding: clamp(28px, 4.5vh, 56px) clamp(36px, 4vw, 80px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(14px, 2.4vh, 28px);
+}
+#tela-desafio .desafio-tema {
+  margin: 0;
+  font-size: clamp(18px, 2.2vh, 26px);
+  font-weight: 900;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--violet);
+}
+#tela-desafio .desafio-titulo { font-size: clamp(40px, 5.6vh, 64px); }
+#tela-desafio .desafio-dica {
+  margin: 0;
+  font-size: clamp(16px, 2vh, 24px);
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+/* Ligação: os itens da esquerda, iguais em todos os celulares */
+#tela-desafio .desafio-itens {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(10px, 1.4vh, 18px);
+  max-width: 1200px;
+}
+#tela-desafio .desafio-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: clamp(10px, 1.6vh, 18px) clamp(20px, 2vw, 32px);
+  border-radius: 100px;
+  font-size: clamp(22px, 3vh, 34px);
+  font-weight: 900;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.85);
+  border: 2px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  opacity: 0;
+  animation: desafioEntrar 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+#tela-desafio .desafio-item .elo {
+  font-size: 0.8em;
+  color: var(--ink-soft);
+  opacity: 0.7;
+}
+@keyframes desafioEntrar {
+  from { opacity: 0; transform: translateY(14px) scale(0.9); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Classificação: as duas categorias, frente a frente */
+#tela-desafio .desafio-categorias {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(18px, 2.4vw, 44px);
+  width: 100%;
+}
+#tela-desafio .desafio-categoria {
+  flex: 1;
+  max-width: 520px;
+  min-height: clamp(110px, 16vh, 180px);
+  display: grid;
+  place-items: center;
+  padding: 16px 28px;
+  border-radius: 32px;
+  font-size: clamp(30px, 4.6vh, 54px);
+  font-weight: 900;
+  line-height: 1.1;
+  text-align: center;
+  color: var(--ink);
+  opacity: 0;
+  animation: desafioEntrar 0.55s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+#tela-desafio .desafio-categoria.a {
+  background: linear-gradient(180deg, rgba(30, 144, 255, 0.16), rgba(255, 255, 255, 0.75));
+  border: 3px solid rgba(30, 144, 255, 0.55);
+  box-shadow: 0 18px 40px rgba(30, 144, 255, 0.18);
+}
+#tela-desafio .desafio-categoria.b {
+  background: linear-gradient(180deg, rgba(255, 71, 87, 0.14), rgba(255, 255, 255, 0.75));
+  border: 3px solid rgba(255, 71, 87, 0.5);
+  box-shadow: 0 18px 40px rgba(255, 71, 87, 0.16);
+  animation-delay: 0.12s;
+}
+#tela-desafio .desafio-ou {
+  flex: none;
+  font-size: clamp(22px, 3vh, 34px);
+  font-weight: 900;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+/* ---------- os bichos: progresso de cada um ---------- */
+#tela-desafio .desafio-dock .player-pod {
+  height: 156px;
+  justify-content: flex-start;
+  padding-top: 18px;
+}
+/* quantos já fez, em cima do bicho (o selo de pronto fica no canto direito) */
+.pod-contagem {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 3px 12px;
+  border-radius: 100px;
+  background: #fff;
+  border: 2px solid var(--glass-border);
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.1);
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+.pod-barra {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 14px;
+  height: 8px;
+  border-radius: 100px;
+  background: rgba(15, 23, 42, 0.08);
+  overflow: hidden;
+}
+.pod-barra i {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: var(--cor-jogador, var(--gold));
+  transition: width 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+/* andou: o bicho dá um pulinho */
+.player-pod.avancou { animation: podAvancou 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
+@keyframes podAvancou { 40% { transform: translateY(-10px) scale(1.06); } }
+/* terminou: acende na cor do jogador (o .locked é o mesmo da pergunta) */
+.player-pod.locked .pod-contagem { background: var(--cor-jogador, var(--gold)); border-color: #fff; color: #fff; }
+
+/* ---------- resultado: o gabarito, no lugar das alternativas ---------- */
+
+#tela-resultado.modo-desafio .res-titulo.longo {
+  font-size: clamp(26px, 2.4vw, 44px);
+  text-wrap: balance;
+}
+
+/* Ligação: um par por linha */
+#tela-resultado .res-par {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+  min-height: clamp(60px, 8vh, 86px);
+  padding: 10px 22px;
+  border-radius: 22px;
+  font-size: clamp(20px, 1.8vw, 30px);
+  font-weight: 800;
+  color: var(--ink);
+  opacity: 0;
+  transform-origin: left center;
+  animation: resVirar 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+#tela-resultado .res-par .esquerda { text-align: right; overflow-wrap: anywhere; }
+#tela-resultado .res-par .direita { color: var(--verde-escuro); font-weight: 900; overflow-wrap: anywhere; }
+#tela-resultado .res-par .elo {
+  width: clamp(34px, 2.6vw, 44px);
+  height: clamp(34px, 2.6vw, 44px);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--verde);
+  color: #fff;
+  font-size: clamp(16px, 1.3vw, 22px);
+  box-shadow: 0 6px 16px rgba(46, 213, 115, 0.35);
+}
+
+/* Classificação: as duas categorias lado a lado, cada uma com seus itens */
+#tela-resultado .res-grupos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(12px, 1.4vw, 22px);
+}
+#tela-resultado .res-grupo {
+  padding: clamp(12px, 1.6vh, 20px);
+  border-radius: 26px;
+  opacity: 0;
+  animation: resVirar 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+#tela-resultado .res-grupo.a { border-color: rgba(30, 144, 255, 0.5); background: linear-gradient(180deg, rgba(30, 144, 255, 0.12), var(--glass-bg)); }
+#tela-resultado .res-grupo.b { border-color: rgba(255, 71, 87, 0.45); background: linear-gradient(180deg, rgba(255, 71, 87, 0.1), var(--glass-bg)); animation-delay: 0.12s; }
+#tela-resultado .res-grupo h3 {
+  margin: 0 0 clamp(8px, 1.2vh, 14px);
+  font-size: clamp(22px, 2vw, 32px);
+  font-weight: 900;
+  text-align: center;
+  color: var(--ink);
+}
+#tela-resultado .res-grupo ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(6px, 0.9vh, 10px);
+}
+#tela-resultado .res-grupo li {
+  padding: clamp(8px, 1.1vh, 12px) 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid var(--glass-border);
+  font-size: clamp(18px, 1.6vw, 26px);
+  font-weight: 800;
+  color: var(--ink);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+/* em cada linha do placar: quantos acertos a pessoa teve no desafio */
+#tela-resultado .acertos-desafio {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: clamp(13px, 1.05vw, 17px);
+  font-weight: 800;
+  color: var(--ink-soft);
+}
+#tela-resultado .acertos-desafio.completo { color: var(--verde-escuro); }
+
+    /* ===== só deste arquivo, não existe no jogo ===== */
+    .barra-prototipo {
+      position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%);
+      z-index: 500; display: flex; align-items: center; gap: 10px;
+      padding: 8px 14px; border-radius: 12px;
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+      font-size: 0.8rem; font-weight: 700; color: var(--ink-soft);
+      font-family: "Outfit", system-ui, sans-serif;
+    }
+    .barra-prototipo button {
+      padding: 6px 12px; border: 0; border-radius: 8px;
+      background: #0f172a; color: white; font-weight: 800;
+      font-family: inherit; cursor: pointer;
+    }
     </style>
 </head>
 
 <body>
-    <div class="ambient-light light-1"></div>
-    <div class="ambient-light light-2"></div>
-    <div class="ambient-light light-3"></div>
+  <div class="ambient-light light-1"></div>
+  <div class="ambient-light light-2"></div>
+  <div class="ambient-light light-3"></div>
+  <div class="ambient-light light-4"></div>
 
-    <!-- ===================== DURANTE ===================== -->
-    <div id="tela-linking" class="tela oculto">
-        <header class="cabecalho">
-            <div class="pill glass-panel"><span class="icone">🔗</span>Desafio de Ligação</div>
-            <div class="tema-bloco">
-                <p class="tema-rotulo">Ligue os pares</p>
-                <h1 class="tema" id="linking-tema"></h1>
-                <p class="tema-sub">Cada um liga no próprio celular</p>
-            </div>
-            <div class="timer glass-panel" id="linking-timer">
-                <svg viewBox="0 0 150 150">
-                    <circle class="anel-fundo" cx="75" cy="75" r="65"></circle>
-                    <circle class="anel" id="linking-anel" cx="75" cy="75" r="65"></circle>
-                </svg>
-                <span class="timer-valor" id="linking-tempo"></span>
-            </div>
-        </header>
-
-        <div class="pistas" id="linking-progresso"></div>
-
-        <p class="rodape-dica"><b>40 pts</b> por par certo · completou tudo? bônus de até <b>100</b> pela velocidade · errar não tira ponto</p>
-    </div>
-
-    <!-- ===================== RESULTADO ===================== -->
-    <div id="tela-resultado-linking" class="tela oculto">
-        <header class="cabecalho">
-            <div class="pill glass-panel"><span class="icone">🔗</span>Resultado da Ligação</div>
-            <div class="tema-bloco">
-                <p class="tema-rotulo">Gabarito</p>
-                <h1 class="tema" id="resultado-tema"></h1>
-            </div>
-            <div></div>
-        </header>
-
-        <div class="resultado-corpo">
-            <section class="coluna">
-                <div class="secao-titulo">Os pares certos</div>
-                <ol class="gabarito" id="linking-gabarito"></ol>
-            </section>
-            <section class="coluna">
-                <div class="secao-titulo">Placar</div>
-                <ol class="placar" id="placar-linking"></ol>
-            </section>
+  <div id="tela-desafio" class="tela oculto">
+    <div class="tv-screen">
+      <div class="header-bar">
+        <div class="info-pill glass-panel">
+          <span class="round-text" id="desafio-rodada"></span>
+          <div class="divider"></div>
+          <span class="category-text" id="desafio-nome"></span>
         </div>
-
-        <div class="continuar glass-panel">
-            <span id="progresso-continuar-linking">Aguardando jogadores confirmarem…</span>
-            <span class="bolinhas" id="bolinhas-continuar"></span>
+        <div class="timer-module glass-panel" id="desafio-timer">
+          <svg class="timer-svg" viewBox="0 0 150 150">
+            <circle class="timer-bg" cx="75" cy="75" r="65"></circle>
+            <circle class="timer-ring" id="desafio-anel" cx="75" cy="75" r="65"></circle>
+          </svg>
+          <span class="timer-value" id="desafio-numero"></span>
         </div>
+      </div>
+
+      <div class="question-stage">
+        <div class="question-card glass-panel desafio-card">
+          <p class="desafio-tema" id="desafio-tema"></p>
+          <h1 class="question-text desafio-titulo" id="desafio-titulo"></h1>
+          <div class="desafio-conteudo" id="desafio-conteudo"></div>
+          <p class="desafio-dica" id="desafio-dica"></p>
+        </div>
+      </div>
+
+      <div class="players-dock desafio-dock" id="desafio-dock"></div>
     </div>
+  </div>
 
-    <div class="barra-prototipo" id="barra-prototipo">
-        <span>Protótipo:</span>
-        <button id="botao-durante" type="button">Durante</button>
-        <button id="botao-resultado" type="button">Resultado</button>
-        <button id="botao-repetir" type="button">Repetir</button>
+  <div id="tela-resultado" class="tela oculto">
+    <header class="res-cabecalho">
+      <span class="res-rotulo glass-panel" id="res-rotulo">Resultado da pergunta</span>
+      <h1 class="res-titulo" id="res-titulo"></h1>
+      <p class="res-subtitulo" id="res-subtitulo"></p>
+      <span class="res-festa oculto" id="res-festa">🎉 Festa de Pontos: acerto valendo o dobro</span>
+    </header>
+    <div class="res-conteudo">
+      <section class="res-respostas">
+        <div class="res-secao-titulo"><span id="res-titulo-esquerda">Respostas</span></div>
+        <div class="res-alternativas" id="res-alternativas"></div>
+        <div class="sem-resposta" id="res-sem-resposta"></div>
+      </section>
+      <section>
+        <div class="res-secao-titulo"><span>Placar</span><span id="res-placar-info"></span></div>
+        <ol class="res-placar" id="res-placar"></ol>
+      </section>
     </div>
+    <p class="res-rodape" id="progresso-proximo"></p>
+  </div>
 
-    <script>
-    (() => {
-        'use strict';
+  <div class="barra-prototipo" id="barra-prototipo">
+    <span>tela atual da TV</span>
+    <button id="botao-durante" type="button">Durante</button>
+    <button id="botao-resultado" type="button">Resultado</button>
+    <button id="botao-repetir" type="button">Repetir</button>
+  </div>
 
-        // ======== TV (substitui o trecho do public/tv/tv.js) ========
-        const telaLinking = document.getElementById('tela-linking');
-        const telaResultadoLinking = document.getElementById('tela-resultado-linking');
-        const TODAS_AS_TELAS = [telaLinking, telaResultadoLinking];
+  <script>
+// ===================================================================
+  // cópia integral de public/tv/telas/pontuacao.js
+  // ===================================================================
+// Resultado da pergunta na TV. O placar entra na ordem anterior, o "+pontos"
+// de cada um aparece e o total conta para cima, e só então as linhas deslizam
+// para a posição nova - com seta de quem subiu ou caiu e coroa para o líder.
+//
+// Com Aposta na pergunta, a tela vira o placar sozinho e maior, com a linha
+// de quem apostou; sem Aposta, mostra também as alternativas.
+// Referências: teste/teste-pontuação.html e teste/teste-pontuacao-aposta.html.
+window.TelaPontuacao = (() => {
+  // linha do tempo (ms) de cada forma da tela
+  const TEMPOS = {
+    normal: { revelar: 1100, avatares: 1400, placar: 1900, apostas: null, ganhos: 3100, contagem: 1100, reordenar: 4500, rodape: 5600 },
+    aposta: { revelar: 0, avatares: 0, placar: 900, apostas: 2000, ganhos: 2400, contagem: 1100, reordenar: 3700, rodape: 4800 },
+    desafio: { revelar: 0, avatares: 0, placar: 1200, apostas: null, ganhos: 2400, contagem: 1100, reordenar: 3800, rodape: 4900 },
+  };
+  const SELO_SVG =
+    '<svg viewBox="0 0 24 24" width="60%" height="60%" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
 
-        const $ = id => document.getElementById(id);
-        const CIRCUNFERENCIA = 2 * Math.PI * 65;
+  let timers = [];
+  const depois = (ms, fn) => timers.push(setTimeout(fn, ms));
 
-        // A TV já conhece os jogadores pelo lobby; aqui um mapa nome → animal.
-        const AVATARES = {};
+  function el(tag, classe, texto) {
+    const e = document.createElement(tag);
+    if (classe) e.className = classe;
+    if (texto !== undefined) e.textContent = texto;
+    return e;
+  }
 
-        let intervaloLinking = null;
-        let progressoContinuarAtivoEl = null;
-        let totalPares = 5;
-        let ordemConclusao = [];   // nomes na ordem em que completaram
-        let pistas = new Map();    // nome → { el, elos, ligacoes, contagem, selo, corretos }
-        let ultimoPlacar = [];
-        let timersTela = [];
+  function avatarEl(jogador) {
+    const a = el("span", "avatar", jogador && jogador.avatar ? jogador.avatar.emoji : "❔");
+    a.style.background = jogador && jogador.avatar
+      ? `color-mix(in srgb, ${jogador.avatar.cor} 22%, white)`
+      : "var(--surface)";
+    return a;
+  }
 
-        function mostrarTela(tela) {
-            for (const t of TODAS_AS_TELAS) t.classList.toggle('oculto', t !== tela);
+  // ordena e calcula a posição com empate (1, 2, 3, 3, 5...)
+  function ranquear(lista, campo) {
+    const ordenado = [...lista].sort((a, b) => b[campo] - a[campo] || a.nome.localeCompare(b.nome));
+    return ordenado.map((j) => ({ jogador: j, posicao: lista.filter((o) => o[campo] > j[campo]).length + 1 }));
+  }
+
+  function medirVariavel(tela, nome) {
+    const sonda = el("div");
+    sonda.style.cssText = `position:absolute;visibility:hidden;height:var(${nome})`;
+    tela.append(sonda);
+    const h = sonda.getBoundingClientRect().height;
+    sonda.remove();
+    return h;
+  }
+
+  // ---------- cabeçalho ----------
+
+  function renderizarCabecalho(r, msg, alternativas) {
+    r.titulo.replaceChildren("Resposta certa: ", el("span", "resposta", alternativas[msg.respostaCorretaIndex] ?? ""));
+    const total = (msg.respostasPorJogador || []).length;
+    const acertos = (msg.respostasPorJogador || []).filter((x) => x.alternativaIndex === msg.respostaCorretaIndex).length;
+    r.subtitulo.textContent =
+      acertos === 0 ? "Ninguém acertou dessa vez!"
+        : acertos === total ? "Todo mundo acertou! 🎉"
+          : `${acertos} de ${total} acertaram`;
+    r.festa.classList.toggle("oculto", !msg.festaAtiva);
+  }
+
+  // ---------- alternativas (só na forma normal) ----------
+
+  function renderizarAlternativas(r, msg, alternativas, jogadores, T) {
+    const porId = new Map(jogadores.map((j) => [j.id, j]));
+    const porAlternativa = alternativas.map(() => []);
+    const semResposta = [];
+    for (const resp of msg.respostasPorJogador || []) {
+      const jogador = porId.get(resp.id) || resp;
+      if (resp.alternativaIndex !== null && porAlternativa[resp.alternativaIndex]) porAlternativa[resp.alternativaIndex].push(jogador);
+      else semResposta.push(jogador);
+    }
+
+    const certa = msg.respostaCorretaIndex;
+    const cards = alternativas.map((texto, i) => {
+      const card = el("div", "res-alternativa glass-panel " + (i === certa ? "correta" : "errada"));
+      card.style.animationDelay = `${i * 0.09}s`;
+      card.append(el("span", "texto", texto));
+      const avs = el("div", "avatares");
+      porAlternativa[i].forEach((j) => avs.append(avatarEl(j)));
+      card.append(avs);
+      if (i === certa) {
+        const selo = el("span", "selo-certo");
+        selo.innerHTML = SELO_SVG;
+        card.append(selo);
+      }
+      return card;
+    });
+    r.alternativas.replaceChildren(...cards);
+
+    r.semResposta.classList.remove("visivel");
+    r.semResposta.replaceChildren();
+    if (semResposta.length) {
+      r.semResposta.append(el("span", "", "Não responderam:"));
+      semResposta.forEach((j) => r.semResposta.append(avatarEl(j)));
+    }
+
+    depois(T.revelar, () => cards.forEach((c) => c.classList.add("revelada")));
+    depois(T.avatares, () => {
+      let atraso = 0;
+      [cards[certa], ...cards.filter((_, i) => i !== certa)].filter(Boolean).forEach((c) => {
+        c.querySelectorAll(".avatar").forEach((a) => {
+          a.style.animationDelay = `${atraso}ms`;
+          a.classList.add("caiu");
+          atraso += 90;
+        });
+      });
+      depois(atraso + 200, () => r.semResposta.classList.add("visivel"));
+    });
+  }
+
+  // ---------- placar ----------
+
+  function criarAposta(jogador, apostas) {
+    const ap = apostas.find((a) => a.apostadorId === jogador.id);
+    if (!ap) return null;
+    const linha = el("span", "aposta " + (ap.ganhou ? "ganhou" : "perdeu"));
+    const emoji = ap.alvo && ap.alvo.avatar ? `${ap.alvo.avatar.emoji} ` : "";
+    linha.append(
+      el("span", "dado", "🎲"),
+      el("span", "texto-aposta", ap.ganhou
+        ? `Apostou em ${emoji}${ap.alvoNome}, que acertou: +${ap.premio}`
+        : `Apostou em ${emoji}${ap.alvoNome}, que errou`)
+    );
+    return { el: linha, ganhou: ap.ganhou };
+  }
+
+  function contar(linha, de, ate, duracao) {
+    const t0 = performance.now();
+    linha.pontos.classList.add("contando");
+    (function passo(agora) {
+      const t = Math.min(1, (agora - t0) / duracao);
+      const e = 1 - Math.pow(1 - t, 3);
+      linha.numero.textContent = String(Math.round(de + (ate - de) * e));
+      if (t < 1) requestAnimationFrame(passo);
+      else depois(400, () => linha.pontos.classList.remove("contando"));
+    })(t0);
+  }
+
+  // detalhe(jogador): uma linha opcional embaixo do nome (no desafio, os acertos)
+  function renderizarPlacar(r, msg, apostas, T, detalhe = null) {
+    const lista = (msg.placar || []).map((j) => ({ ...j, anterior: j.pontos - (j.ganho || 0) }));
+    const antes = ranquear(lista, "anterior");
+    const agora = ranquear(lista, "pontos");
+    const indiceAntes = new Map(antes.map((x, i) => [x.jogador.id, i]));
+    const indiceAgora = new Map(agora.map((x, i) => [x.jogador.id, i]));
+    const posAntes = new Map(antes.map((x) => [x.jogador.id, x.posicao]));
+    const posAgora = new Map(agora.map((x) => [x.jogador.id, x.posicao]));
+
+    const passo = medirVariavel(r.tela, "--linha-h") + medirVariavel(r.tela, "--linha-gap");
+    r.placar.style.height = `${Math.max(0, lista.length * passo - medirVariavel(r.tela, "--linha-gap"))}px`;
+    r.placarInfo.textContent = `${lista.length} jogadores`;
+
+    function colocar(linha, indice, pos) {
+      linha.li.style.setProperty("--y", `${indice * passo}px`);
+      linha.li.style.zIndex = String(100 - indice);
+      linha.posicao.textContent = `${pos}º`;
+      linha.posicao.className = "posicao" + (pos <= 3 ? ` p${pos}` : "");
+    }
+
+    const linhas = lista.map((j) => {
+      const li = el("li", "linha glass-panel");
+      const posicao = el("span", "posicao");
+      const av = avatarEl(j);
+      av.append(el("span", "coroa", "👑"));
+      const info = el("div", "info");
+      info.append(el("span", "nome", j.nome));
+      const aposta = criarAposta(j, apostas);
+      if (aposta) info.append(aposta.el);
+      const linhaDetalhe = detalhe ? detalhe(j) : null;
+      if (linhaDetalhe) info.append(linhaDetalhe);
+      const mudanca = el("span", "mudanca");
+      const ganho = el("span", "ganho " + (j.ganho > 0 ? "positivo" : "zero"), j.ganho > 0 ? `+${j.ganho}` : "+0");
+      const pontos = el("span", "pontos");
+      const numero = el("span", "", String(j.anterior));
+      pontos.append(numero, el("small", "", "pts"));
+      li.append(posicao, av, info, mudanca, ganho, pontos);
+      const linha = { j, li, posicao, mudanca, ganho, pontos, numero, aposta };
+      colocar(linha, indiceAntes.get(j.id), posAntes.get(j.id));
+      return linha;
+    });
+    r.placar.replaceChildren(...linhas.map((l) => l.li));
+
+    // 1) entra na ordem anterior, uma linha de cada vez
+    depois(T.placar, () => {
+      linhas
+        .slice()
+        .sort((a, b) => indiceAntes.get(a.j.id) - indiceAntes.get(b.j.id))
+        .forEach((l, i) => depois(i * 70, () => l.li.classList.add("entrou")));
+    });
+
+    // 2) a linha da aposta aparece pra quem apostou, e o dado rola
+    if (T.apostas !== null) {
+      depois(T.apostas, () => {
+        linhas.filter((l) => l.aposta).forEach((l, i) => depois(i * 150, () => {
+          l.aposta.el.classList.add("visivel");
+          if (l.aposta.ganhou) l.li.classList.add("aposta-ganhou");
+        }));
+      });
+    }
+
+    // 3) o +pontos aparece e o total conta para cima
+    depois(T.ganhos, () => {
+      linhas.forEach((l, i) => depois(i * 60, () => {
+        l.ganho.classList.add("visivel");
+        if (l.j.ganho > 0) contar(l, l.j.anterior, l.j.pontos, T.contagem);
+      }));
+    });
+
+    // 4) desliza para a posição nova, com setas e a coroa do líder
+    depois(T.reordenar, () => {
+      linhas.forEach((l) => {
+        const id = l.j.id;
+        const iAntes = indiceAntes.get(id);
+        const iAgora = indiceAgora.get(id);
+        colocar(l, iAgora, posAgora.get(id));
+        if (iAgora < iAntes) l.li.style.zIndex = "300"; // quem sobe passa por cima
+        const delta = posAntes.get(id) - posAgora.get(id);
+        l.mudanca.textContent = delta > 0 ? `▲${delta}` : delta < 0 ? `▼${-delta}` : "•";
+        l.mudanca.className = "mudanca " + (delta > 0 ? "subiu" : delta < 0 ? "caiu" : "igual");
+        depois(700, () => {
+          l.mudanca.classList.add("visivel");
+          l.li.style.zIndex = String(100 - iAgora);
+        });
+        l.li.classList.toggle("lider", posAgora.get(id) === 1);
+      });
+    });
+  }
+
+  function reiniciarAnimacoesDoCabecalho(r) {
+    for (const e of [r.rotulo, r.titulo, r.subtitulo, r.festa]) {
+      e.style.animation = "none";
+      void e.offsetWidth;
+      e.style.animation = "";
+    }
+  }
+
+  // ---------- entrada ----------
+
+  // msg: a mensagem resultadoPergunta. alternativas: o texto delas (a TV que
+  // reconectou não viu a pergunta, então vem junto). jogadores: com avatar.
+  function elementos() {
+    return {
+      tela: document.getElementById("tela-resultado"),
+      rotulo: document.getElementById("res-rotulo"),
+      titulo: document.getElementById("res-titulo"),
+      subtitulo: document.getElementById("res-subtitulo"),
+      festa: document.getElementById("res-festa"),
+      tituloEsquerda: document.getElementById("res-titulo-esquerda"),
+      alternativas: document.getElementById("res-alternativas"),
+      semResposta: document.getElementById("res-sem-resposta"),
+      placar: document.getElementById("res-placar"),
+      placarInfo: document.getElementById("res-placar-info"),
+      rodape: document.getElementById("progresso-proximo"),
+    };
+  }
+
+  function montar(msg, { alternativas, jogadores }) {
+    parar();
+    const r = elementos();
+    r.tela.classList.remove("modo-desafio");
+    r.titulo.classList.remove("longo");
+    r.rotulo.textContent = "Resultado da pergunta";
+    r.tituloEsquerda.textContent = "Respostas";
+
+    // o alvo da aposta vem só com id e nome: o animal sai da lista de jogadores
+    const porId = new Map(jogadores.map((j) => [j.id, j]));
+    const apostas = (msg.apostas || []).map((a) => ({ ...a, alvo: porId.get(a.alvoId) }));
+    const modo = apostas.length > 0 ? "aposta" : "normal";
+    const T = TEMPOS[modo];
+    r.tela.classList.toggle("modo-aposta", modo === "aposta");
+
+    r.rodape.classList.remove("visivel");
+    r.rodape.replaceChildren(el("span", "pontinhos", "Aguardando jogadores confirmarem"));
+    reiniciarAnimacoesDoCabecalho(r);
+    renderizarCabecalho(r, msg, alternativas);
+    if (modo === "normal") renderizarAlternativas(r, msg, alternativas, jogadores, T);
+    renderizarPlacar(r, msg, apostas, T);
+    depois(T.rodape, () => r.rodape.classList.add("visivel"));
+  }
+
+  // Resultado de um desafio (Ligação ou Classificação): a mesma tela do
+  // resultado da pergunta, com o gabarito no lugar das alternativas e os
+  // acertos de cada um embaixo do nome no placar.
+  // dados: { rotulo, titulo, subtitulo, gabarito: Element, placar, detalhe(jogador) }
+  function montarDesafio(dados) {
+    parar();
+    const r = elementos();
+    const T = TEMPOS.desafio;
+    r.tela.classList.remove("modo-aposta");
+    r.tela.classList.add("modo-desafio");
+
+    r.rodape.classList.remove("visivel");
+    r.rodape.replaceChildren(el("span", "pontinhos", "Aguardando jogadores confirmarem"));
+    reiniciarAnimacoesDoCabecalho(r);
+    r.rotulo.textContent = dados.rotulo;
+    r.titulo.textContent = dados.titulo;
+    // "Personagem de Harry Potter ou Personagem de O Senhor dos Anéis" não cabe
+    // no tamanho normal: encolhe para ficar numa linha e não empurrar o placar
+    r.titulo.classList.toggle("longo", dados.titulo.length > 28);
+    r.subtitulo.textContent = dados.subtitulo || "";
+    r.festa.classList.add("oculto");
+
+    r.tituloEsquerda.textContent = "Gabarito";
+    r.alternativas.replaceChildren(dados.gabarito);
+    r.semResposta.classList.remove("visivel");
+    r.semResposta.replaceChildren();
+
+    renderizarPlacar(r, { placar: dados.placar }, [], T, dados.detalhe);
+    depois(T.rodape, () => r.rodape.classList.add("visivel"));
+  }
+
+  function mostrarProgresso(confirmados, total) {
+    const rodape = document.getElementById("progresso-proximo");
+    rodape.replaceChildren(el("span", "", `${confirmados} de ${total} confirmaram estar prontos`));
+    rodape.classList.add("visivel");
+  }
+
+  function parar() {
+    timers.forEach(clearTimeout);
+    timers = [];
+  }
+
+  return { montar, montarDesafio, mostrarProgresso, parar };
+})();
+  </script>
+  <script>
+// ===================================================================
+  // cópia integral de public/tv/telas/desafios.js
+  // ===================================================================
+// Desafios do tema na TV: Ligação e Classificação.
+//
+// Durante, as duas usam a mesma tela (#tela-desafio), no molde da pergunta:
+// pílula do tema e timer redondo em cima, cartão de vidro no meio e os
+// bichos embaixo, cada um com o próprio progresso. Quem termina acende na
+// cor do jogador, igual a quem trava a resposta na pergunta.
+//
+// O resultado usa a tela de placar da pergunta (TelaPontuacao.montarDesafio);
+// daqui saem só os gabaritos que entram no lugar das alternativas.
+window.TelaDesafio = (() => {
+  const CIRCUNFERENCIA = 408; // stroke-dasharray do .timer-ring
+
+  let intervalo = null;
+  let pods = new Map(); // jogadorId -> { pod, barra, contagem, feitos }
+
+  const $ = (id) => document.getElementById(id);
+  function el(tag, classe, texto) {
+    const e = document.createElement(tag);
+    if (classe) e.className = classe;
+    if (texto !== undefined) e.textContent = texto;
+    return e;
+  }
+
+  function iniciarTimer(tempoLimiteMs) {
+    clearInterval(intervalo);
+    const modulo = $("desafio-timer");
+    const anel = $("desafio-anel");
+    const numero = $("desafio-numero");
+    modulo.classList.remove("urgente");
+    const inicio = Date.now();
+    const atualizar = () => {
+      const decorrido = Date.now() - inicio;
+      const restanteMs = Math.max(0, tempoLimiteMs - decorrido);
+      const restanteS = Math.ceil(restanteMs / 1000);
+      anel.style.strokeDashoffset = String(CIRCUNFERENCIA * Math.min(1, decorrido / tempoLimiteMs));
+      numero.textContent = String(restanteS);
+      modulo.classList.toggle("urgente", restanteS <= 5 && restanteS > 0);
+      if (restanteMs <= 0) clearInterval(intervalo);
+    };
+    atualizar();
+    intervalo = setInterval(atualizar, 100);
+  }
+
+  // jogadores: a lista da sala, na ordem de entrada, com o animal de cada um
+  function montarDock(jogadores, total, criarPod) {
+    const dock = $("desafio-dock");
+    dock.replaceChildren();
+    pods = new Map();
+    for (const j of jogadores) {
+      const pod = criarPod(j, "thinking");
+      const contagem = el("span", "pod-contagem", `0/${total}`);
+      const barra = el("div", "pod-barra");
+      barra.append(el("i"));
+      pod.append(contagem, barra);
+      dock.append(pod);
+      pods.set(j.id, { pod, barra: barra.firstChild, contagem, feitos: 0 });
+    }
+  }
+
+  function cabecalho(msg, nomeDoDesafio) {
+    $("desafio-rodada").textContent = msg.rodadaAtual ? `Tema ${msg.rodadaAtual} de ${msg.totalRodadas}` : "Desafio";
+    $("desafio-nome").textContent = nomeDoDesafio;
+  }
+
+  // iniciarLinking { tema, esquerda, totalPares, pontosPorPar, bonusMax, rodadaAtual, totalRodadas, tempoLimiteMs }
+  function montarLigacao(msg, { jogadores, criarPod }) {
+    cabecalho(msg, "Ligação");
+    $("desafio-tema").textContent = msg.tema;
+    $("desafio-titulo").textContent = "Ligue cada item ao seu par!";
+
+    const itens = el("div", "desafio-itens");
+    (msg.esquerda || []).forEach((texto, i) => {
+      const chip = el("span", "desafio-item");
+      chip.style.animationDelay = `${0.15 + i * 0.07}s`;
+      chip.append(document.createTextNode(texto), el("span", "elo", "🔗"));
+      itens.append(chip);
+    });
+    $("desafio-conteudo").replaceChildren(itens);
+
+    const total = msg.totalPares || (msg.esquerda || []).length;
+    $("desafio-dica").textContent = msg.pontosPorPar
+      ? `${total} pares · ${msg.pontosPorPar} pontos cada · até +${msg.bonusMax} para quem ligar tudo`
+      : `${total} pares para ligar`;
+
+    montarDock(jogadores, total, criarPod);
+    iniciarTimer(msg.tempoLimiteMs);
+  }
+
+  // iniciarSorting { categoriaA, categoriaB, totalItens, pontosPorItem, rodadaAtual, totalRodadas, tempoLimiteMs }
+  function montarClassificacao(msg, { jogadores, criarPod }) {
+    cabecalho(msg, "Classificação");
+    $("desafio-tema").textContent = "Cada item vai para um dos dois lados";
+    $("desafio-titulo").textContent = "Separe em dois grupos!";
+
+    const categorias = el("div", "desafio-categorias");
+    categorias.append(
+      el("div", "desafio-categoria a", msg.categoriaA),
+      el("span", "desafio-ou", "ou"),
+      el("div", "desafio-categoria b", msg.categoriaB)
+    );
+    $("desafio-conteudo").replaceChildren(categorias);
+
+    const total = msg.totalItens || 8;
+    $("desafio-dica").textContent = msg.pontosPorItem
+      ? `${total} itens · ${msg.pontosPorItem} pontos por item certo`
+      : `${total} itens para classificar`;
+
+    montarDock(jogadores, total, criarPod);
+    iniciarTimer(msg.tempoLimiteMs);
+  }
+
+  // progressoLinking / progressoSorting { jogadores: [{ id, corretos | respondidos, total, completou?, conectado }] }
+  function atualizar(jogadores) {
+    for (const j of jogadores) {
+      const p = pods.get(j.id);
+      if (!p) continue;
+      const feitos = j.corretos ?? j.respondidos ?? 0;
+      const total = j.total || 1;
+      const terminou = j.completou ?? feitos >= total;
+
+      p.barra.style.width = `${Math.round((100 * feitos) / total)}%`;
+      p.contagem.textContent = `${feitos}/${total}`;
+      if (feitos > p.feitos && !terminou) {
+        p.pod.classList.remove("avancou");
+        void p.pod.offsetWidth; // reinicia a animação do pulinho
+        p.pod.classList.add("avancou");
+      }
+      p.feitos = feitos;
+      p.pod.classList.toggle("locked", terminou);
+      p.pod.classList.toggle("thinking", !terminou);
+      if (j.conectado !== undefined) p.pod.classList.toggle("desconectado", j.conectado === false);
+    }
+  }
+
+  // jogadoresAtualizados: quem caiu fica apagado até voltar
+  function marcarConexao(jogadores) {
+    for (const j of jogadores) {
+      const p = pods.get(j.id);
+      if (p) p.pod.classList.toggle("desconectado", j.conectado === false);
+    }
+  }
+
+  // ---------- gabaritos para a tela de resultado ----------
+
+  function gabaritoLigacao(pares) {
+    const lista = el("div", "res-alternativas");
+    pares.forEach((par, i) => {
+      const linha = el("div", "res-par glass-panel");
+      linha.style.animationDelay = `${i * 0.09}s`;
+      linha.append(el("span", "esquerda", par.esquerda), el("span", "elo", "➜"), el("span", "direita", par.direita));
+      lista.append(linha);
+    });
+    return lista;
+  }
+
+  function gabaritoClassificacao(gabarito, categoriaA, categoriaB) {
+    const grupos = el("div", "res-grupos");
+    for (const [chave, nome] of [["A", categoriaA], ["B", categoriaB]]) {
+      const grupo = el("div", `res-grupo glass-panel ${chave.toLowerCase()}`);
+      const lista = el("ul");
+      for (const item of gabarito.filter((g) => g.categoria === chave)) lista.append(el("li", "", item.nome));
+      grupo.append(el("h3", "", nome), lista);
+      grupos.append(grupo);
+    }
+    return grupos;
+  }
+
+  function parar() {
+    clearInterval(intervalo);
+  }
+
+  return { montarLigacao, montarClassificacao, atualizar, marcarConexao, gabaritoLigacao, gabaritoClassificacao, parar };
+})();
+  </script>
+  <script>
+  (() => {
+    'use strict';
+
+    // ======== igual ao public/tv/tv.js ========
+    const telaResultado = document.getElementById("tela-resultado");
+    const telaDesafio = document.getElementById("tela-desafio");
+    const TODAS_AS_TELAS = [telaDesafio, telaResultado];
+    const MODULO_DA_TELA = new Map([
+      [telaResultado, TelaPontuacao],
+      [telaDesafio, TelaDesafio],
+    ]);
+    let jogadoresAtuais = []; // na ordem de entrada na sala
+    let telaAtual = null;
+
+    function mostrarTela(tela) {
+      if (telaAtual !== tela) {
+        const modulo = MODULO_DA_TELA.get(telaAtual);
+        if (modulo) modulo.parar();
+      }
+      telaAtual = tela;
+      for (const t of TODAS_AS_TELAS) t.classList.toggle("oculto", t !== tela);
+    }
+
+    function criarEl(tag, classe, texto) {
+      const el = document.createElement(tag);
+      if (classe) el.className = classe;
+      if (texto !== undefined) el.textContent = texto;
+      return el;
+    }
+
+    // monta um pod (squircle do teste.html): selo de pronto, animal e nome
+    function criarPod(jogador, classesExtras) {
+      const pod = criarEl("div", `player-pod glass-panel ${classesExtras || ""}`.trim());
+      if (jogador.conectado === false) pod.classList.add("desconectado");
+      pod.dataset.jogadorId = jogador.id;
+      if (jogador.avatar) pod.style.setProperty("--cor-jogador", jogador.avatar.cor);
+      pod.appendChild(criarEl("div", "ready-stamp", "✓"));
+      pod.appendChild(criarEl("div", "player-avatar", jogador.avatar ? jogador.avatar.emoji : "❔"));
+      pod.appendChild(criarEl("div", "player-name", jogador.nome));
+      return pod;
+    }
+
+    // Linha embaixo do nome no placar do desafio: "5 de 5 pares", verde se fez tudo
+    function acertosDoDesafio(unidade) {
+      return (jogador) => {
+        if (jogador.acertos === undefined) return null;
+        const completo = jogador.acertos >= jogador.total;
+        return criarEl(
+          "span",
+          `acertos-desafio${completo ? " completo" : ""}`,
+          `${completo ? "✓ " : ""}${jogador.acertos} de ${jogador.total} ${unidade}`
+        );
+      };
+    }
+
+    // "4 de 6 ligaram tudo" / "Só Ana acertou todos!"
+    function resumoDoDesafio(placar, singular, plural) {
+      const completos = placar.filter((j) => j.acertos !== undefined && j.acertos >= j.total);
+      if (completos.length === 0) return "Ninguém fez tudo dessa vez!";
+      if (completos.length === placar.length) return `Todo mundo ${singular}! 🎉`;
+      if (completos.length === 1) return `Só ${completos[0].nome} ${singular}!`;
+      return `${completos.length} de ${placar.length} ${plural}`;
+    }
+
+    function tratarMensagem(msg) {
+      switch (msg.type) {
+        case "iniciarLinking": {
+          mostrarTela(telaDesafio);
+          TelaDesafio.montarLigacao(msg, { jogadores: jogadoresAtuais, criarPod });
+          break;
         }
-
-        function criarEl(tag, classe, texto) {
-            const el = document.createElement(tag);
-            if (classe) el.className = classe;
-            if (texto !== undefined) el.textContent = texto;
-            return el;
+        case "progressoLinking": {
+          TelaDesafio.atualizar(msg.jogadores);
+          break;
         }
-
-        function avatarDe(nome, avatar) {
-            return avatar || AVATARES[nome] || { emoji: '🙂', cor: '#94a3b8' };
+        case "resultadoLinking": {
+          mostrarTela(telaResultado);
+          TelaPontuacao.montarDesafio({
+            rotulo: "Resultado da Ligação",
+            titulo: msg.tema || "Ligação",
+            subtitulo: resumoDoDesafio(msg.placar, "ligou tudo", "ligaram tudo"),
+            gabarito: TelaDesafio.gabaritoLigacao(msg.pares),
+            placar: msg.placar,
+            detalhe: acertosDoDesafio("pares"),
+          });
+          break;
         }
-
-        function iniciarTimer(tempoLimiteMs) {
-            clearInterval(intervaloLinking);
-            const anel = $('linking-anel'), valor = $('linking-tempo'), modulo = $('linking-timer');
-            anel.style.strokeDasharray = String(CIRCUNFERENCIA);
-            const inicio = Date.now();
-            const atualizar = () => {
-                const decorrido = Date.now() - inicio;
-                const resta = Math.max(0, tempoLimiteMs - decorrido);
-                anel.style.strokeDashoffset = String(CIRCUNFERENCIA * Math.min(1, decorrido / tempoLimiteMs));
-                const s = Math.ceil(resta / 1000);
-                valor.textContent = String(s);
-                modulo.classList.toggle('urgente', s <= 5 && s > 0);
-                if (resta <= 0) clearInterval(intervaloLinking);
-            };
-            atualizar();
-            intervaloLinking = setInterval(atualizar, 200);
+        case "progressoContinuar": {
+          if (telaAtual === telaResultado) TelaPontuacao.mostrarProgresso(msg.confirmados, msg.total);
+          break;
         }
+      }
+    }
 
-        // ---------- Durante ----------
-        function mostrarAguardando() {
-            const cont = $('linking-progresso');
-            const aviso = criarEl('div', 'aguardando');
-            aviso.append(criarEl('span', 'icone-grande', '🔗'), 'Peguem o celular e liguem os pares!');
-            cont.replaceChildren(aviso);
-        }
+    // ======== servidor de mentira (as mesmas mensagens do server/sala.js) ========
+    const TEMPO_LIMITE_MS = 30000;      // tempoLimiteLinkingMs
+    const PONTOS_POR_PAR = 40;          // pontosPorParLinking
+    const BONUS_COMPLETAR_MAX = 100;    // bonusVelocidadeLinkingMax
 
-        function criarPista(jogador) {
-            const av = avatarDe(jogador.nome);
-            const el = criarEl('div', 'pista glass-panel');
-            el.style.setProperty('--cor', av.cor);
-            el.style.animationDelay = `${pistas.size * 60}ms`;
+    const CONJUNTO = {                  // data/associacoes.json, id 1
+      tema: 'Capitais e Países',
+      pares: [
+        { esquerda: 'Brasil', direita: 'Brasília' },
+        { esquerda: 'França', direita: 'Paris' },
+        { esquerda: 'Japão', direita: 'Tóquio' },
+        { esquerda: 'Egito', direita: 'Cairo' },
+        { esquerda: 'Austrália', direita: 'Camberra' }
+      ]
+    };
 
-            const avatar = criarEl('div', 'avatar', av.emoji);
-            const meio = criarEl('div', 'meio');
-            const linhaNome = criarEl('div', 'linha-nome');
-            const selo = criarEl('span', 'selo', '');
-            linhaNome.append(criarEl('span', 'nome', jogador.nome), selo);
+    // na ordem em que entraram na sala; pontos de antes do desafio.
+    // ritmo = ms entre uma tentativa e outra; erro = chance de errar o par
+    const JOGADORES = [
+      { id: '1', nome: 'Ana',     pontos: 1480, avatar: { emoji: '🦊', cor: '#ff4757' }, ritmo: 2600, erro: 0.15 },
+      { id: '2', nome: 'Rodrigo', pontos: 1355, avatar: { emoji: '🐼', cor: '#1e90ff' }, ritmo: 2100, erro: 0.20 },
+      { id: '3', nome: 'Carla',   pontos: 1290, avatar: { emoji: '🐸', cor: '#2ed573' }, ritmo: 3400, erro: 0.30 },
+      { id: '4', nome: 'Duda',    pontos: 1105, avatar: { emoji: '🦁', cor: '#ffa502' }, ritmo: 4200, erro: 0.25 },
+      { id: '5', nome: 'Edu',     pontos:  980, avatar: { emoji: '🦄', cor: '#9b59b6' }, ritmo: 5200, erro: 0.40 },
+      { id: '6', nome: 'Bruno',   pontos:  845, avatar: { emoji: '🐧', cor: '#00d2d3' }, ritmo: 3000, erro: 0.20 }
+    ];
+    jogadoresAtuais = JOGADORES.map((j) => ({ ...j, conectado: true }));
 
-            const corrente = criarEl('div', 'corrente');
-            const elos = [], ligacoes = [];
-            for (let i = 0; i < totalPares; i++) {
-                if (i > 0) { const l = criarEl('span', 'ligacao'); ligacoes.push(l); corrente.append(l); }
-                const e = criarEl('span', 'elo'); elos.push(e); corrente.append(e);
-            }
-            meio.append(linhaNome, corrente);
+    let timers = [];
+    const depois = (ms, fn) => timers.push(setTimeout(fn, ms));
+    function pararTudo() {
+      timers.forEach(clearTimeout);
+      timers = [];
+    }
 
-            const contagem = criarEl('div', 'contagem');
-            const b = criarEl('b', '', '0');
-            contagem.append(b, criarEl('small', '', `/${totalPares}`));
+    let estado = null;
 
-            el.append(avatar, meio, contagem);
-            return { el, elos, ligacoes, contagem: b, selo, corretos: 0, completou: false };
-        }
+    function progressoParaTv() {
+      return estado.jogadores.map((j) => ({
+        id: j.id, nome: j.nome, avatar: j.avatar, conectado: true,
+        corretos: j.corretos, total: CONJUNTO.pares.length, completou: j.completoEmMs !== null
+      }));
+    }
 
-        function atualizarPistas(jogadores) {
-            const cont = $('linking-progresso');
-            if (!pistas.size) cont.replaceChildren();
-            cont.classList.toggle('uma-coluna', jogadores.length <= 4);
+    function revelar() {
+      if (estado.revelado) return;
+      estado.revelado = true;
+      pararTudo();
+      const placar = estado.jogadores
+        .map((j) => {
+          const fracao = j.completoEmMs !== null ? Math.max(0, 1 - j.completoEmMs / TEMPO_LIMITE_MS) : 0;
+          const ganho = j.corretos * PONTOS_POR_PAR + (j.completoEmMs !== null ? Math.round(BONUS_COMPLETAR_MAX * fracao) : 0);
+          return { id: j.id, nome: j.nome, avatar: j.avatar, pontos: j.pontos + ganho, ganho, acertos: j.corretos, total: CONJUNTO.pares.length };
+        })
+        .sort((a, b) => b.pontos - a.pontos);
+      tratarMensagem({ type: 'resultadoLinking', tema: CONJUNTO.tema, pares: CONJUNTO.pares, placar });
 
-            for (const j of jogadores) {
-                let p = pistas.get(j.nome);
-                if (!p) { p = criarPista(j); pistas.set(j.nome, p); cont.append(p.el); }
+      // os celulares vão apertando "continuar"
+      let confirmados = 0;
+      const total = estado.jogadores.length;
+      const confirmar = () => {
+        confirmados++;
+        tratarMensagem({ type: 'progressoContinuar', confirmados, total });
+        if (confirmados < total) depois(700 + Math.random() * 1800, confirmar);
+      };
+      depois(5500, confirmar);
+    }
 
-                const novos = Math.min(totalPares, j.corretos);
-                for (let i = p.corretos; i < novos; i++) {
-                    p.elos[i].classList.add('ligado');
-                    if (i > 0) p.ligacoes[i - 1].classList.add('ligado');
-                }
-                p.corretos = novos;
-                p.contagem.textContent = String(novos);
+    function durante() {
+      pararTudo();
+      estado = {
+        inicio: Date.now(),
+        revelado: false,
+        jogadores: JOGADORES.map((j) => ({ ...j, corretos: 0, completoEmMs: null }))
+      };
+      tratarMensagem({
+        type: 'iniciarLinking',
+        tema: CONJUNTO.tema,
+        esquerda: CONJUNTO.pares.map((p) => p.esquerda),
+        totalPares: CONJUNTO.pares.length,
+        pontosPorPar: PONTOS_POR_PAR,
+        bonusMax: BONUS_COMPLETAR_MAX,
+        rodadaAtual: 1,
+        totalRodadas: 5,
+        tempoLimiteMs: TEMPO_LIMITE_MS
+      });
 
-                if (j.completou && !p.completou) {
-                    p.completou = true;
-                    if (!ordemConclusao.includes(j.nome)) ordemConclusao.push(j.nome);
-                    const ordem = ordemConclusao.indexOf(j.nome) + 1;
-                    p.selo.textContent = `✅ ${ordem}º a completar`;
-                    p.el.classList.add('completou');
-                }
-            }
-        }
-
-        // ---------- Resultado ----------
-        function renderizarGabarito(pares) {
-            const ol = $('linking-gabarito');
-            ol.replaceChildren();
-            pares.forEach((par, i) => {
-                const li = criarEl('li', 'par');
-                li.append(
-                    criarEl('span', 'lado esq glass-panel', par.esquerda),
-                    criarEl('span', 'fio'),
-                    criarEl('span', 'lado dir glass-panel', par.direita)
-                );
-                ol.append(li);
-                timersTela.push(setTimeout(() => li.classList.add('visivel'), 300 + i * 260));
-            });
-            return 300 + pares.length * 260;
-        }
-
-        function renderizarPlacar(lista, ol, atraso) {
-            ol.replaceChildren();
-            lista.forEach((jogador, k) => {
-                const posicao = lista.filter(j => j.pontos > jogador.pontos).length + 1;
-                const av = avatarDe(jogador.nome, jogador.avatar);
-                const li = criarEl('li', 'glass-panel');
-                li.style.setProperty('--cor', av.cor);
-                const avEl = criarEl('span', 'av');
-                avEl.append(criarEl('span', '', av.emoji));
-                const ganho = jogador.ganho ?? 0;
-                const pontos = criarEl('span', 'pontos');
-                pontos.append(document.createTextNode(String(jogador.pontos)), criarEl('small', '', 'pts'));
-                li.append(
-                    criarEl('span', 'pos' + (posicao === 1 ? ' p1' : ''), `${posicao}º`),
-                    avEl,
-                    criarEl('span', 'nome', jogador.nome),
-                    criarEl('span', 'ganho ' + (ganho > 0 ? 'positivo' : 'zero'), `+${ganho}`),
-                    pontos
-                );
-                ol.append(li);
-                timersTela.push(setTimeout(() => li.classList.add('visivel'), atraso + k * 110));
-            });
-        }
-
-        function renderizarBolinhas(placar, confirmados) {
-            const cont = $('bolinhas-continuar');
-            if (cont.children.length !== placar.length) {
-                cont.replaceChildren(...placar.map(() => criarEl('span', 'bolinha', '✓')));
-            }
-            // progressoContinuar só traz QUANTOS confirmaram (não quem), então as bolinhas
-            // são neutras. Se o servidor mandar os ids, dá para mostrar o animal de cada um.
-            [...cont.children].forEach((b, i) => b.classList.toggle('pronto', i < confirmados));
-        }
-
-        function tratarMensagem(msg) {
-            switch (msg.type) {
-                case 'iniciarLinking': {
-                    timersTela.forEach(clearTimeout); timersTela = [];
-                    mostrarTela(telaLinking);
-                    totalPares = msg.totalPares || 5;
-                    ordemConclusao = [];
-                    pistas = new Map();
-                    $('linking-tema').textContent = msg.tema;
-                    $('resultado-tema').textContent = msg.tema;
-                    mostrarAguardando();
-                    iniciarTimer(msg.tempoLimiteMs);
-                    break;
-                }
-                case 'progressoLinking': {
-                    atualizarPistas(msg.jogadores);
-                    break;
-                }
-                case 'resultadoLinking': {
-                    clearInterval(intervaloLinking);
-                    mostrarTela(telaResultadoLinking);
-                    const fimGabarito = renderizarGabarito(msg.pares);
-                    renderizarPlacar(msg.placar, $('placar-linking'), Math.min(fimGabarito, 1200));
-                    ultimoPlacar = msg.placar;
-                    renderizarBolinhas(msg.placar, 0);
-                    $('progresso-continuar-linking').textContent = 'Aguardando jogadores confirmarem…';
-                    progressoContinuarAtivoEl = $('progresso-continuar-linking');
-                    break;
-                }
-                case 'progressoContinuar': {
-                    if (progressoContinuarAtivoEl) {
-                        progressoContinuarAtivoEl.textContent = `${msg.confirmados} de ${msg.total} prontos`;
-                        renderizarBolinhas(ultimoPlacar, msg.confirmados);
-                    }
-                    break;
-                }
-            }
-        }
-
-        // ======== servidor de mentira (as mesmas mensagens do server/sala.js) ========
-        const TEMPO_LIMITE_MS = 30000;
-        const PONTOS_POR_PAR = 40;
-        const BONUS_COMPLETAR_MAX = 100;
-
-        const CONJUNTO = {
-            tema: 'Capitais e Países',
-            pares: [
-                { esquerda: 'Brasil', direita: 'Brasília' },
-                { esquerda: 'França', direita: 'Paris' },
-                { esquerda: 'Japão', direita: 'Tóquio' },
-                { esquerda: 'Egito', direita: 'Cairo' },
-                { esquerda: 'Austrália', direita: 'Camberra' }
-            ]
+      for (const j of estado.jogadores) {
+        const tentar = () => {
+          if (estado.revelado || j.completoEmMs !== null) return;
+          if (Math.random() >= j.erro) j.corretos++;
+          if (j.corretos >= CONJUNTO.pares.length) j.completoEmMs = Date.now() - estado.inicio;
+          tratarMensagem({ type: 'progressoLinking', jogadores: progressoParaTv() });
+          if (estado.jogadores.every((o) => o.completoEmMs !== null)) return revelar();
+          depois(j.ritmo * (0.6 + Math.random() * 0.8), tentar);
         };
+        depois(1500 + Math.random() * 1500, tentar);
+      }
+      depois(TEMPO_LIMITE_MS + 500, revelar);
+    }
 
-        const JOGADORES = [
-            { id: '1', nome: 'Ana',     pontos: 1480, avatar: { emoji: '🦊', cor: '#ff4757' }, ritmo: 2600, erro: 0.15 },
-            { id: '2', nome: 'Rodrigo', pontos: 1355, avatar: { emoji: '🐼', cor: '#1e90ff' }, ritmo: 2100, erro: 0.20 },
-            { id: '3', nome: 'Carla',   pontos: 1290, avatar: { emoji: '🐸', cor: '#2ed573' }, ritmo: 3400, erro: 0.30 },
-            { id: '4', nome: 'Duda',    pontos: 1105, avatar: { emoji: '🦁', cor: '#ffa502' }, ritmo: 4200, erro: 0.25 },
-            { id: '5', nome: 'Edu',     pontos:  980, avatar: { emoji: '🦄', cor: '#9b59b6' }, ritmo: 5200, erro: 0.40 },
-            { id: '6', nome: 'Bruno',   pontos:  845, avatar: { emoji: '🐧', cor: '#00d2d3' }, ritmo: 3000, erro: 0.20 }
-        ];
-        JOGADORES.forEach(j => (AVATARES[j.nome] = j.avatar));
+    function resultadoDireto() {
+      durante();
+      // pula para o fim: cada um com o que teria feito
+      for (const j of estado.jogadores) {
+        j.corretos = Math.min(CONJUNTO.pares.length, Math.max(1, Math.round(CONJUNTO.pares.length * (1 - j.erro) * (2600 / j.ritmo))));
+        if (j.corretos >= CONJUNTO.pares.length) j.completoEmMs = Math.round(j.ritmo * 6);
+      }
+      revelar();
+    }
 
-        let timers = [];
-        const depois = (ms, fn) => timers.push(setTimeout(fn, ms));
-        function pararTudo() {
-            timers.forEach(clearTimeout);
-            timers = [];
-            clearInterval(intervaloLinking);
-        }
-
-        let estado = null;
-
-        function progressoParaTv() {
-            return estado.jogadores.map(j => ({ nome: j.nome, corretos: j.corretos, completou: j.completoEmMs !== null }));
-        }
-
-        function revelar() {
-            if (estado.revelado) return;
-            estado.revelado = true;
-            pararTudo();
-            const comGanho = estado.jogadores.map(j => {
-                const fracao = j.completoEmMs !== null ? Math.max(0, 1 - j.completoEmMs / TEMPO_LIMITE_MS) : 0;
-                const ganho = j.corretos * PONTOS_POR_PAR + (j.completoEmMs !== null ? Math.round(BONUS_COMPLETAR_MAX * fracao) : 0);
-                return { id: j.id, nome: j.nome, avatar: j.avatar, pontos: j.pontos + ganho, ganho };
-            });
-            const placar = comGanho.sort((a, b) => b.pontos - a.pontos);
-            tratarMensagem({ type: 'resultadoLinking', pares: CONJUNTO.pares, placar });
-
-            let confirmados = 0;
-            const total = estado.jogadores.length;
-            const confirmar = () => {
-                confirmados++;
-                tratarMensagem({ type: 'progressoContinuar', confirmados, total });
-                if (confirmados < total) depois(700 + Math.random() * 1800, confirmar);
-            };
-            depois(3500, confirmar);
-        }
-
-        function durante() {
-            pararTudo();
-            estado = {
-                inicio: Date.now(),
-                revelado: false,
-                jogadores: JOGADORES.map(j => ({ ...j, corretos: 0, completoEmMs: null }))
-            };
-            tratarMensagem({ type: 'iniciarLinking', tema: CONJUNTO.tema, tempoLimiteMs: TEMPO_LIMITE_MS, totalPares: CONJUNTO.pares.length });
-
-            for (const j of estado.jogadores) {
-                const tentar = () => {
-                    if (estado.revelado || j.completoEmMs !== null) return;
-                    if (Math.random() >= j.erro) j.corretos++;
-                    if (j.corretos >= CONJUNTO.pares.length) j.completoEmMs = Date.now() - estado.inicio;
-                    tratarMensagem({ type: 'progressoLinking', jogadores: progressoParaTv() });
-                    if (estado.jogadores.every(o => o.completoEmMs !== null)) return revelar();
-                    depois(j.ritmo * (0.6 + Math.random() * 0.8), tentar);
-                };
-                depois(1500 + Math.random() * 1500, tentar);
-            }
-            depois(TEMPO_LIMITE_MS + 500, revelar);
-        }
-
-        function resultadoDireto() {
-            durante();
-            for (const j of estado.jogadores) {
-                j.corretos = Math.max(1, Math.round(CONJUNTO.pares.length * (1 - j.erro) * (2600 / j.ritmo)));
-                if (j.corretos >= CONJUNTO.pares.length) {
-                    j.corretos = CONJUNTO.pares.length;
-                    j.completoEmMs = Math.round(j.ritmo * 6);
-                }
-            }
-            revelar();
-        }
-
-        $('botao-durante').addEventListener('click', durante);
-        $('botao-resultado').addEventListener('click', resultadoDireto);
-        $('botao-repetir').addEventListener('click', durante);
-        const params = new URLSearchParams(location.search);
-        if (params.has('limpo')) $('barra-prototipo').classList.add('oculto');
-        if (params.get('tela') === 'resultado') resultadoDireto(); else durante();
-    })();
-    </script>
+    document.getElementById('botao-durante').addEventListener('click', durante);
+    document.getElementById('botao-resultado').addEventListener('click', resultadoDireto);
+    document.getElementById('botao-repetir').addEventListener('click', durante);
+    if (new URLSearchParams(location.search).has('limpo')) document.getElementById('barra-prototipo').classList.add('oculto');
+    durante();
+  })();
+  </script>
 </body>
 
 </html>
