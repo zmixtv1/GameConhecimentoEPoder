@@ -1,0 +1,391 @@
+/* Desafio de Classificação no celular: durante (uma carta no meio e um painel
+   de cada categoria nas laterais) e o resultado.
+   Referência: controle_classificacao.html. Tudo preso às duas telas, porque o
+   design usa nomes genéricos (.timer, .titulo, .gabarito, .seta...). */
+
+#tela-sorting,
+#tela-resultado-sorting {
+  --verde-escuro: #0a7a3c;
+  /* Mesmas cores das categorias na TV */
+  --cor-a: #6366f1;
+  --cor-b: #f59e0b;
+  --gap: clamp(6px, 2vmin, 12px);
+  --moeda: clamp(96px, 34vmin, 170px);
+  gap: var(--gap);
+  touch-action: none;
+}
+:is(#tela-sorting, #tela-resultado-sorting) * { -webkit-user-select: none; }
+
+/* o fundo desta tela puxa para as cores das duas categorias */
+body:has(#tela-sorting:not(.oculto)) .light-1,
+body:has(#tela-resultado-sorting:not(.oculto)) .light-1 { background: rgba(224, 231, 255, 0.8); }
+body:has(#tela-sorting:not(.oculto)) .light-2,
+body:has(#tela-resultado-sorting:not(.oculto)) .light-2 { background: rgba(254, 243, 199, 0.7); }
+
+/* ===================== ESTRUTURA ===================== */
+:is(#tela-sorting, #tela-resultado-sorting) .cabecalho { min-height: 0; gap: 10px; }
+:is(#tela-sorting, #tela-resultado-sorting) .cabecalho-vazio { width: clamp(44px, 13vmin, 56px); }
+
+:is(#tela-sorting, #tela-resultado-sorting) .player-identity {
+  padding: 5px 14px 5px 8px;
+  max-width: 32%;
+}
+:is(#tela-sorting, #tela-resultado-sorting) .player-avatar { font-size: clamp(20px, 6vmin, 26px); filter: none; }
+:is(#tela-sorting, #tela-resultado-sorting) .player-name { font-size: clamp(12px, 3.6vmin, 15px); max-width: none; }
+
+#tela-sorting .titulo { font-size: clamp(15px, 5vmin, 22px); font-weight: 900; line-height: 1.15; }
+#tela-sorting .bolinhas { display: inline-flex; gap: clamp(3px, 1vmin, 5px); margin-top: 3px; }
+#tela-sorting .bolinhas i {
+  width: clamp(8px, 2.4vmin, 11px);
+  height: clamp(8px, 2.4vmin, 11px);
+  border-radius: 50%;
+  background: rgba(15, 23, 42, .14);
+  transition: background .25s ease, transform .25s ease;
+}
+#tela-sorting .bolinhas i.atual { background: transparent; box-shadow: inset 0 0 0 2px var(--text-muted); }
+#tela-sorting .bolinhas i.certo { background: var(--verde); transform: scale(1.15); }
+#tela-sorting .bolinhas i.errado { background: var(--vermelho); transform: scale(1.15); }
+
+/* Timer */
+#tela-sorting .timer {
+  position: relative;
+  flex: none;
+  width: clamp(44px, 13vmin, 56px);
+  height: clamp(44px, 13vmin, 56px);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+}
+#tela-sorting .timer svg { position: absolute; inset: -4px; width: calc(100% + 8px); height: calc(100% + 8px); transform: rotate(-90deg); }
+#tela-sorting .anel-fundo { fill: none; stroke: rgba(255, 255, 255, 0.8); stroke-width: 9; }
+#tela-sorting .anel { fill: none; stroke: var(--text-main); stroke-width: 9; stroke-linecap: round; stroke-dasharray: 326.7; transition: stroke .3s ease; }
+#tela-sorting .timer-numero { font-size: clamp(17px, 5.4vmin, 22px); font-weight: 900; font-variant-numeric: tabular-nums; }
+#tela-sorting .timer.urgente { animation: classificacaoPulso 1s ease-in-out infinite; border-color: var(--vermelho); }
+#tela-sorting .timer.urgente .anel { stroke: var(--vermelho); }
+#tela-sorting .timer.urgente .timer-numero { color: var(--vermelho); }
+@keyframes classificacaoPulso { 50% { transform: scale(1.1); } }
+
+/* ===================== ARENA ===================== */
+#tela-sorting .arena {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(8px, 2vmin, 16px);
+}
+
+/* Zona de cada categoria: painel na lateral da tela */
+#tela-sorting .buraco {
+  --c: var(--cor-a);
+  position: relative;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(6px, 2vmin, 12px);
+  padding: 10px;
+  border-radius: clamp(20px, 6vmin, 32px);
+  border: 2px solid color-mix(in srgb, var(--c) 35%, white);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--c) 10%, rgba(255, 255, 255, .75)), color-mix(in srgb, var(--c) 18%, rgba(255, 255, 255, .6)));
+  box-shadow: var(--glass-shadow);
+  color: color-mix(in srgb, var(--c) 80%, #0f172a);
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform .2s cubic-bezier(.34, 1.56, .64, 1), border-color .2s ease, background .25s ease, color .25s ease, box-shadow .25s ease;
+}
+#tela-sorting .buraco.b { --c: var(--cor-b); }
+
+#tela-sorting .buraco .nome-cat {
+  max-width: 100%;
+  font-size: clamp(20px, 8vmin, 40px);
+  font-weight: 900;
+  line-height: 1.05;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+#tela-sorting .buraco .seta {
+  font-size: clamp(22px, 8vmin, 40px);
+  font-weight: 900;
+  line-height: 1;
+  opacity: .55;
+  transition: transform .25s ease, opacity .25s ease;
+}
+#tela-sorting .buraco.a .seta { animation: classificacaoChamarA 1.6s ease-in-out infinite; }
+#tela-sorting .buraco.b .seta { animation: classificacaoChamarB 1.6s ease-in-out infinite; }
+@keyframes classificacaoChamarA { 50% { transform: translateX(-6px); } }
+@keyframes classificacaoChamarB { 50% { transform: translateX(6px); } }
+
+/* Carta passando por cima: a zona enche com a cor da categoria */
+#tela-sorting .buraco.mira {
+  border-color: var(--c);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--c) 85%, white), var(--c));
+  color: #fff;
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--c) 40%, transparent);
+  transform: scale(1.02);
+}
+#tela-sorting .buraco.mira .seta { opacity: 1; }
+
+/* Resposta do servidor */
+#tela-sorting .buraco.acertou {
+  border-color: var(--verde);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--verde) 30%, white), color-mix(in srgb, var(--verde) 45%, white));
+  color: var(--verde-escuro);
+}
+#tela-sorting .buraco.errou {
+  border-color: var(--vermelho);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--vermelho) 22%, white), color-mix(in srgb, var(--vermelho) 34%, white));
+  color: #b3202f;
+  animation: classificacaoTremer .4s ease;
+}
+@keyframes classificacaoTremer {
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(3px); }
+}
+
+#tela-sorting .feedback {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  z-index: 6;
+  padding: 3px 12px;
+  border-radius: 100px;
+  font-size: clamp(14px, 4.6vmin, 22px);
+  font-weight: 900;
+  color: #fff;
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translate(-50%, 0);
+  animation: classificacaoSubirSumir .9s ease forwards;
+}
+#tela-sorting .feedback.ok { background: var(--verde-escuro); }
+#tela-sorting .feedback.nao { background: var(--vermelho); }
+@keyframes classificacaoSubirSumir {
+  0% { opacity: 0; transform: translate(-50%, 10px) scale(.7); }
+  20% { opacity: 1; transform: translate(-50%, 0) scale(1.1); }
+  70% { opacity: 1; transform: translate(-50%, -14px) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -26px) scale(1); }
+}
+
+/* Centro: carta com o item (em cima de um "monte" de cartas) */
+#tela-sorting .centro {
+  width: calc(var(--moeda) * 1.3);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(6px, 1.6vmin, 12px);
+}
+
+#tela-sorting .monte { position: relative; display: grid; place-items: center; }
+/* Cartas de trás (só decoração) */
+#tela-sorting .monte::before,
+#tela-sorting .monte::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: clamp(14px, 4vmin, 20px);
+  background: rgba(255, 255, 255, .7);
+  border: 2px solid rgba(15, 23, 42, .06);
+  z-index: 0;
+}
+#tela-sorting .monte::before { transform: translate(6px, 7px) rotate(4deg); }
+#tela-sorting .monte::after { transform: translate(-5px, 4px) rotate(-3deg); }
+#tela-sorting .monte.vazio::before,
+#tela-sorting .monte.vazio::after { display: none; }
+
+#tela-sorting .moeda {
+  position: relative;
+  z-index: 5;
+  width: calc(var(--moeda) * 1.25);
+  height: calc(var(--moeda) * .95);
+  border-radius: clamp(14px, 4vmin, 20px);
+  display: grid;
+  place-items: center;
+  padding: 10%;
+  background: #fff;
+  border: 2px solid rgba(15, 23, 42, .08);
+  box-shadow: 0 12px 26px rgba(15, 23, 42, .14);
+  color: var(--text-main);
+  text-align: center;
+  cursor: grab;
+  touch-action: none;
+  will-change: transform;
+}
+#tela-sorting .moeda:active { cursor: grabbing; }
+#tela-sorting .moeda .texto {
+  font-size: var(--fonte, calc(var(--moeda) * .15));
+  font-weight: 900;
+  line-height: 1.05;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+#tela-sorting .moeda.entrando { animation: classificacaoEntrarCarta .35s cubic-bezier(.3, 1.5, .5, 1); }
+@keyframes classificacaoEntrarCarta { from { transform: translateY(18px) scale(.85); opacity: 0; } }
+#tela-sorting .moeda.voltando { transition: transform .35s cubic-bezier(.34, 1.56, .64, 1); }
+#tela-sorting .moeda.arrastando { transition: none; box-shadow: 0 22px 36px rgba(15, 23, 42, .22); }
+
+#tela-sorting .dica {
+  font-size: clamp(11px, 3.2vmin, 14px);
+  font-weight: 800;
+  color: var(--text-muted);
+  text-align: center;
+  white-space: nowrap;
+}
+#tela-sorting .dica .ponta { display: inline-block; animation: classificacaoPiscar 1.2s ease-in-out infinite; }
+#tela-sorting .dica .ponta.dir { animation-delay: .6s; }
+@keyframes classificacaoPiscar { 50% { opacity: .25; } }
+
+/* Fim */
+#tela-sorting .terminou {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border-radius: 20px;
+  background: rgba(248, 250, 252, .82);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  text-align: center;
+  animation: classificacaoAparecer .4s ease;
+}
+@keyframes classificacaoAparecer { from { opacity: 0; } }
+#tela-sorting .terminou .grande { font-size: clamp(36px, 14vmin, 64px); line-height: 1; }
+#tela-sorting .terminou b { font-size: clamp(18px, 6vmin, 28px); font-weight: 900; color: var(--verde-escuro); }
+#tela-sorting .terminou small { font-size: clamp(12px, 3.6vmin, 15px); font-weight: 700; color: var(--text-muted); }
+
+/* ===================== RESULTADO ===================== */
+#tela-resultado-sorting .resultado-corpo {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: clamp(10px, 2.4vw, 20px);
+}
+#tela-resultado-sorting .ganho-titulo { font-size: clamp(15px, 5vmin, 22px); font-weight: 900; }
+#tela-resultado-sorting .ganho-titulo .pts { color: var(--cor-jogador); }
+#tela-resultado-sorting .ganho-sub { font-size: clamp(11px, 3.2vmin, 14px); font-weight: 700; color: var(--text-muted); }
+
+#tela-resultado-sorting .gabarito { min-height: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(6px, 1.6vmin, 10px); }
+#tela-resultado-sorting .gab-col {
+  --c: var(--cor-a);
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 2px solid color-mix(in srgb, var(--c) 45%, white);
+  background: color-mix(in srgb, var(--c) 7%, rgba(255, 255, 255, .7));
+}
+#tela-resultado-sorting .gab-col.b { --c: var(--cor-b); }
+#tela-resultado-sorting .gab-col h3 {
+  flex: none;
+  margin: 0;
+  padding: 3px 8px;
+  text-align: center;
+  font-size: clamp(12px, 3.6vmin, 16px);
+  font-weight: 900;
+  text-transform: none;
+  letter-spacing: normal;
+  color: #fff;
+  background: var(--c);
+}
+#tela-resultado-sorting .gab-col ul { list-style: none; flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; gap: 3px; padding: 5px; }
+#tela-resultado-sorting .gab-col li {
+  flex: 1 1 0;
+  min-height: 0;
+  max-height: 36px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 7px;
+  border-radius: 9px;
+  background: #fff;
+  font-size: clamp(11px, 3.3vmin, 15px);
+  font-weight: 800;
+}
+#tela-resultado-sorting .gab-col li .n { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#tela-resultado-sorting .gab-col li.certo { background: color-mix(in srgb, var(--verde) 14%, white); }
+#tela-resultado-sorting .gab-col li.errado { background: color-mix(in srgb, var(--vermelho) 12%, white); }
+
+#tela-resultado-sorting .minha-posicao {
+  min-height: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 8px;
+  border-radius: 20px;
+  text-align: center;
+}
+#tela-resultado-sorting .rotulo { font-size: clamp(9px, 2.6vmin, 11px); font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); }
+#tela-resultado-sorting .posicao-numero { font-size: clamp(40px, 16vmin, 80px); font-weight: 900; line-height: 1; color: var(--cor-jogador); text-shadow: 0 6px 20px var(--player-glow); }
+#tela-resultado-sorting .posicao-pontos { font-size: clamp(15px, 4.6vmin, 22px); font-weight: 900; }
+#tela-resultado-sorting .posicao-diferenca { margin-top: 0; font-size: clamp(11px, 3.2vmin, 14px); font-weight: 700; color: var(--text-muted); max-width: 95%; }
+
+#tela-resultado-sorting .rodape { flex: none; display: flex; align-items: center; gap: 10px; }
+#tela-resultado-sorting .btn-primario {
+  flex: 1;
+  width: auto;
+  padding: clamp(9px, 3vmin, 14px) 18px;
+  border: 0;
+  border-radius: 16px;
+  font-size: clamp(15px, 4.6vmin, 20px);
+  font-weight: 900;
+  cursor: pointer;
+}
+#tela-resultado-sorting .btn-primario:disabled { cursor: default; }
+#tela-resultado-sorting .status { flex: none; max-width: 45%; font-size: clamp(11px, 3.2vmin, 14px); font-weight: 700; color: var(--text-muted); }
+
+/* ===================== EM PÉ ===================== */
+@media (orientation: portrait) {
+  #tela-sorting,
+  #tela-resultado-sorting { --moeda: clamp(100px, 34vw, 160px); }
+  :is(#tela-sorting, #tela-resultado-sorting) .cabecalho { flex-wrap: wrap; row-gap: 6px; }
+  :is(#tela-sorting, #tela-resultado-sorting) .cabecalho-texto { order: 3; flex-basis: 100%; }
+  :is(#tela-sorting, #tela-resultado-sorting) .player-identity { max-width: 60%; }
+  :is(#tela-sorting, #tela-resultado-sorting) :is(.timer, .cabecalho-vazio) { margin-left: auto; }
+
+  /* Buracos continuam nas laterais, mais altos; moeda no meio */
+  #tela-sorting .arena { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); }
+  #tela-sorting .buraco.a { grid-column: 1; grid-row: 1; }
+  #tela-sorting .buraco.b { grid-column: 2; grid-row: 1; }
+  #tela-sorting .buraco { justify-content: flex-start; padding-top: 7vh; }
+  #tela-sorting .centro {
+    position: absolute;
+    left: 50%;
+    top: 54%;
+    height: auto;
+    transform: translate(-50%, -50%);
+    z-index: 5;
+  }
+
+  #tela-resultado-sorting .resultado-corpo { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
+  #tela-resultado-sorting .minha-posicao { order: -1; }
+  #tela-resultado-sorting .rodape { flex-direction: column-reverse; }
+  #tela-resultado-sorting .status { max-width: none; }
+  #tela-resultado-sorting .btn-primario { width: 100%; }
+}
+
+@media (orientation: landscape) and (max-height: 340px) {
+  #tela-sorting,
+  #tela-resultado-sorting { --gap: 6px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is(#tela-sorting, #tela-resultado-sorting) *,
+  :is(#tela-sorting, #tela-resultado-sorting) *::before,
+  :is(#tela-sorting, #tela-resultado-sorting) *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}

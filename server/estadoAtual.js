@@ -113,6 +113,7 @@ function enviarEstadoAoJogador(sala, jogador) {
         categoriaA: sala.sortingAtual.categoriaA,
         categoriaB: sala.sortingAtual.categoriaB,
         itens: p.itens,
+        pontosPorItem: cfg.pontosPorItemSorting,
         tempoLimiteMs: restante(sala, cfg.tempoLimiteSortingMs, sala.sortingAtual.iniciadaEm),
         respondidos: [...p.respondidos].map(([itemIndex, categoria]) => ({
           itemIndex,

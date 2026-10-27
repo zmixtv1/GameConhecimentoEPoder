@@ -1532,6 +1532,7 @@ class Sala {
         categoriaA: conjunto.categoriaA,
         categoriaB: conjunto.categoriaB,
         itens,
+        pontosPorItem: this.cfg.pontosPorItemSorting, // o selo "+25" de cada acerto
         tempoLimiteMs: this.cfg.tempoLimiteSortingMs,
       });
     }

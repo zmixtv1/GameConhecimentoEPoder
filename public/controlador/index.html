@@ -10,7 +10,8 @@
   <link rel="stylesheet" href="telas/poderes.css" />
   <link rel="stylesheet" href="telas/efeitos.css" />
   <link rel="stylesheet" href="telas/fim.css" />
-  <link rel="stylesheet" href="telas/desafios.css" />
+  <link rel="stylesheet" href="telas/ligacao.css" />
+  <link rel="stylesheet" href="telas/classificacao.css" />
 </head>
 <body>
   <div class="ambient-light light-1"></div>
@@ -224,25 +225,27 @@
     </footer>
   </section>
 
-  <!-- LINKING -->
+  <!-- LIGAÇÃO (igual ao controle_ligacao.html) -->
   <section id="tela-linking" class="tela oculto">
     <header class="cabecalho">
       <div class="player-identity glass-panel" data-identidade></div>
       <div class="cabecalho-texto">
-        <p class="categoria" id="linking-tema"></p>
-        <h2 id="linking-titulo">Ligue os pares!</h2>
-        <p class="ajuda ajuda-mini" id="linking-progresso"></p>
+        <p class="tema" id="linking-tema"></p>
+        <h2 class="titulo"><span id="linking-titulo">Ligue os pares</span><span class="progresso-pares" id="linking-progresso"></span></h2>
       </div>
-      <div class="timer-redondo-mini glass-panel">
-        <svg class="timer-anel-mini" viewBox="0 0 120 120">
-          <circle class="anel-fundo-mini" cx="60" cy="60" r="52"></circle>
-          <circle class="anel-progresso-mini" id="anel-linking" cx="60" cy="60" r="52"></circle>
+      <div class="timer glass-panel" id="timer-linking">
+        <svg viewBox="0 0 120 120">
+          <circle class="anel-fundo" cx="60" cy="60" r="52"></circle>
+          <circle class="anel" id="anel-linking" cx="60" cy="60" r="52"></circle>
         </svg>
-        <span class="timer-numero-mini" id="numero-linking"></span>
+        <span class="timer-numero" id="numero-linking"></span>
       </div>
     </header>
-    <div class="corpo">
-      <div class="linking-lista" id="linking-lista"></div>
+
+    <div class="ligar" id="ligar">
+      <div class="coluna esquerda" id="coluna-esquerda"></div>
+      <div class="coluna direita" id="coluna-direita"></div>
+      <svg class="linhas" id="linhas"></svg>
     </div>
   </section>
 
@@ -250,50 +253,61 @@
     <header class="cabecalho">
       <div class="player-identity glass-panel" data-identidade></div>
       <div class="cabecalho-texto">
-        <h2 id="linking-resultado-titulo"></h2>
-        <p id="linking-pontos" class="pontos"></p>
+        <p class="ganho-titulo">Ligação: <span class="pts" id="linking-pontos"></span></p>
+        <p class="ganho-sub" id="linking-pares-sub"></p>
       </div>
       <div class="cabecalho-vazio"></div>
     </header>
-    <div class="corpo corpo-duas-colunas">
-      <div>
-        <h3>Gabarito</h3>
-        <ol id="linking-gabarito" class="gabarito-pares"></ol>
+
+    <div class="resultado-corpo">
+      <div class="gabarito-col">
+        <p class="rotulo">Gabarito</p>
+        <ol class="gabarito" id="linking-gabarito"></ol>
       </div>
-      <div class="coluna-posicao">
-        <div class="minha-posicao" id="minha-posicao-linking">
-        <p class="posicao-rotulo">Sua posição</p>
+      <div class="minha-posicao glass-panel">
+        <p class="rotulo">Sua posição</p>
         <p class="posicao-numero" id="posicao-numero-linking"></p>
         <p class="posicao-pontos" id="posicao-pontos-linking"></p>
         <p class="posicao-diferenca oculto" id="posicao-diferenca-linking"></p>
       </div>
-      </div>
     </div>
+
     <footer class="rodape">
-      <button id="botao-continuar-linking" class="btn-primario">Continuar</button>
-      <p class="ajuda oculto" id="status-continuar-linking"></p>
+      <button id="botao-continuar-linking" class="btn-primario" type="button">Continuar</button>
+      <p class="status oculto" id="status-continuar-linking" data-curto></p>
     </footer>
   </section>
 
-  <!-- SORTING -->
+  <!-- CLASSIFICAÇÃO (igual ao controle_classificacao.html) -->
   <section id="tela-sorting" class="tela oculto">
     <header class="cabecalho">
       <div class="player-identity glass-panel" data-identidade></div>
       <div class="cabecalho-texto">
-        <p class="categoria" id="sorting-categorias"></p>
-        <h2>Classifique!</h2>
-        <p class="ajuda ajuda-mini" id="sorting-progresso"></p>
+        <h2 class="titulo" id="sorting-titulo">Arraste cada item para o lado certo</h2>
+        <span class="bolinhas" id="sorting-progresso"></span>
       </div>
-      <div class="timer-redondo-mini glass-panel">
-        <svg class="timer-anel-mini" viewBox="0 0 120 120">
-          <circle class="anel-fundo-mini" cx="60" cy="60" r="52"></circle>
-          <circle class="anel-progresso-mini" id="anel-sorting" cx="60" cy="60" r="52"></circle>
+      <div class="timer glass-panel" id="timer-sorting">
+        <svg viewBox="0 0 120 120">
+          <circle class="anel-fundo" cx="60" cy="60" r="52"></circle>
+          <circle class="anel" id="anel-sorting" cx="60" cy="60" r="52"></circle>
         </svg>
-        <span class="timer-numero-mini" id="numero-sorting"></span>
+        <span class="timer-numero" id="numero-sorting"></span>
       </div>
     </header>
-    <div class="corpo corpo-grade">
-      <div id="sorting-itens" class="sorting-itens"></div>
+
+    <div class="arena" id="arena">
+      <div class="buraco a" id="buraco-a" data-cat="A">
+        <span class="nome-cat" id="nome-cat-a"></span>
+        <span class="seta">⟵</span>
+      </div>
+      <div class="centro" id="centro">
+        <div class="monte" id="monte"><div class="moeda" id="moeda"><span class="texto" id="moeda-texto"></span></div></div>
+        <p class="dica" id="dica"><span class="ponta">⟵</span> arraste <span class="ponta dir">⟶</span></p>
+      </div>
+      <div class="buraco b" id="buraco-b" data-cat="B">
+        <span class="nome-cat" id="nome-cat-b"></span>
+        <span class="seta">⟶</span>
+      </div>
     </div>
   </section>
 
@@ -301,28 +315,28 @@
     <header class="cabecalho">
       <div class="player-identity glass-panel" data-identidade></div>
       <div class="cabecalho-texto">
-        <h2 id="sorting-resultado-titulo"></h2>
-        <p id="sorting-pontos" class="pontos"></p>
+        <p class="ganho-titulo">Classificação: <span class="pts" id="sorting-pontos"></span></p>
+        <p class="ganho-sub" id="sorting-acertos"></p>
       </div>
       <div class="cabecalho-vazio"></div>
     </header>
-    <div class="corpo corpo-duas-colunas">
-      <div>
-        <h3>Onde você pôs cada um</h3>
-        <div id="sorting-gabarito" class="gabarito-grupos"></div>
+
+    <div class="resultado-corpo">
+      <div class="gabarito">
+        <div class="gab-col a"><h3 id="gab-titulo-a"></h3><ul id="gab-a"></ul></div>
+        <div class="gab-col b"><h3 id="gab-titulo-b"></h3><ul id="gab-b"></ul></div>
       </div>
-      <div class="coluna-posicao">
-        <div class="minha-posicao" id="minha-posicao-sorting">
-        <p class="posicao-rotulo">Sua posição</p>
+      <div class="minha-posicao glass-panel">
+        <p class="rotulo">Sua posição</p>
         <p class="posicao-numero" id="posicao-numero-sorting"></p>
         <p class="posicao-pontos" id="posicao-pontos-sorting"></p>
         <p class="posicao-diferenca oculto" id="posicao-diferenca-sorting"></p>
       </div>
-      </div>
     </div>
+
     <footer class="rodape">
-      <button id="botao-continuar-sorting" class="btn-primario">Continuar</button>
-      <p class="ajuda oculto" id="status-continuar-sorting"></p>
+      <button id="botao-continuar-sorting" class="btn-primario" type="button">Continuar</button>
+      <p class="status oculto" id="status-continuar-sorting" data-curto></p>
     </footer>
   </section>
 
@@ -384,6 +398,8 @@
   <script src="telas/poderes.js"></script>
   <script src="telas/efeitos.js"></script>
   <script src="telas/fim.js"></script>
+  <script src="telas/ligacao.js"></script>
+  <script src="telas/classificacao.js"></script>
   <script src="controlador.js"></script>
 </body>
 </html>

@@ -126,7 +126,6 @@ body {
   margin: -2px -6px -8px;
 }
 .corpo-centro { align-items: center; justify-content: center; text-align: center; }
-.corpo-duas-colunas { display: grid; grid-template-columns: 1.5fr 1fr; gap: 12px; align-content: start; }
 
 .rodape {
   flex: none;
@@ -507,80 +506,6 @@ input:focus { outline: 2px solid var(--cor-jogador); }
 .fase-leitura #contagem-leitura { display: block; font-size: clamp(40px, 22vh, 80px); line-height: 1; }
 .area-alternativas { position: relative; flex: 1; min-height: 0; display: flex; }
 
-/* ---------- Linking ---------- */
-.linking-lista {
-  flex: 1;
-  min-height: 0;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-auto-rows: minmax(48px, 1fr);
-  gap: 8px;
-}
-.linking-item-full {
-  min-height: 0;
-  padding: 6px 12px;
-  border-radius: 18px;
-  background: var(--glass-bg);
-  border: 2px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
-  color: var(--text-main);
-  font-size: clamp(13px, 4vh, 18px);
-  font-weight: 800;
-  overflow-wrap: anywhere;
-}
-.linking-item-full:active:not(:disabled) { transform: scale(0.97); }
-.linking-item-full.correto { background: color-mix(in srgb, var(--verde) 18%, transparent); border-color: var(--verde); color: #0a7a3c; }
-.linking-item-full.incorreto { background: color-mix(in srgb, var(--vermelho) 22%, transparent); border-color: var(--vermelho); }
-.linking-item-full.usado { opacity: 0.35; }
-.linking-item-full:disabled:not(.correto):not(.usado) { opacity: 0.6; }
-.linking-voltar {
-  grid-column: 1 / -1;
-  grid-row: auto;
-  align-self: center;
-  height: 78%;
-  min-height: 0;
-  padding: 6px;
-  border-radius: 14px;
-  background: transparent;
-  border: 2px solid var(--text-muted);
-  color: var(--text-muted);
-  font-weight: 800;
-}
-
-/* ---------- Sorting: 3 itens por vez, cada um numa linha (nome | A | B) ---------- */
-.sorting-itens { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 8px; }
-.sorting-item {
-  flex: 1;
-  min-height: 0;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
-  align-items: center;
-  gap: 10px;
-  padding: 6px 12px;
-  border-radius: 20px;
-  background: var(--glass-bg);
-  border: 2px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
-}
-.sorting-item-nome { text-align: left; font-size: clamp(14px, 4.2vh, 20px); font-weight: 900; overflow-wrap: anywhere; }
-.sorting-item-botoes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; height: 100%; padding: 2px 0; }
-.sorting-botao-categoria {
-  min-height: 0;
-  padding: 4px 6px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.85);
-  border: 2px solid var(--glass-border);
-  color: var(--text-main);
-  font-size: clamp(11px, 3.4vh, 16px);
-  font-weight: 800;
-  overflow-wrap: anywhere;
-}
-.sorting-botao-categoria:active:not(:disabled) { transform: scale(0.95); }
-.sorting-botao-categoria:disabled:not(.escolhida) { opacity: 0.4; }
-.sorting-botao-categoria.escolhida { background: var(--player-glass); border-color: var(--cor-jogador); color: var(--cor-jogador); }
-.sorting-item.correto .sorting-botao-categoria.escolhida { background: color-mix(in srgb, var(--verde) 20%, transparent); border-color: var(--verde); color: #0a7a3c; }
-.sorting-item.incorreto .sorting-botao-categoria.escolhida { background: color-mix(in srgb, var(--vermelho) 20%, transparent); border-color: var(--vermelho); color: #b3202f; }
-
 /* ---------- Pirâmide ---------- */
 .alternativa.errada-piramide {
   background: color-mix(in srgb, var(--vermelho) 20%, transparent);
@@ -608,7 +533,6 @@ input:focus { outline: 2px solid var(--cor-jogador); }
   text-align: center;
   margin: auto;
 }
-.coluna-posicao { display: flex; align-items: center; justify-content: center; }
 .posicao-rotulo {
   font-size: clamp(10px, 2.8vh, 13px);
   font-weight: 800;
@@ -686,11 +610,7 @@ input:focus { outline: 2px solid var(--cor-jogador); }
 
   .animais-grid { grid-template-columns: repeat(2, 1fr); grid-auto-rows: minmax(84px, 1fr); }
   .alternativas { grid-template-columns: 1fr; grid-auto-rows: minmax(60px, 1fr); }
-  .linking-lista { grid-template-columns: 1fr; }
-  .sorting-item { grid-template-columns: 1fr; }
-  .corpo-duas-colunas { grid-template-columns: 1fr; }
   .lista-cartoes { grid-template-columns: 1fr; }
-  .corpo-duas-colunas { grid-template-columns: 1fr; }
 
   h2 { font-size: 20px; }
   .pergunta-texto { font-size: 18px; }

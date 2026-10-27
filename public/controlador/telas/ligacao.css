@@ -1,0 +1,332 @@
+/* Desafio de Ligação no celular: durante (as duas colunas lado a lado, ligar
+   por toque ou arrastando) e o resultado.
+   Referência: controle_ligacao.html. Tudo preso às duas telas, porque o
+   design usa nomes genéricos (.item, .timer, .titulo, .gabarito...). */
+
+#tela-linking,
+#tela-resultado-linking {
+  --verde-escuro: #0a7a3c;
+  --gap: clamp(6px, 2vmin, 12px);
+  gap: var(--gap);
+  touch-action: none;
+}
+:is(#tela-linking, #tela-resultado-linking) * { -webkit-user-select: none; }
+
+/* o fundo desta tela tem um toque lilás */
+body:has(#tela-linking:not(.oculto)) .light-3,
+body:has(#tela-resultado-linking:not(.oculto)) .light-3 { background: rgba(233, 213, 255, 0.5); }
+
+/* ===================== ESTRUTURA ===================== */
+:is(#tela-linking, #tela-resultado-linking) .cabecalho { min-height: 0; gap: 10px; }
+:is(#tela-linking, #tela-resultado-linking) .cabecalho-vazio { width: clamp(44px, 13vmin, 56px); }
+
+:is(#tela-linking, #tela-resultado-linking) .player-identity {
+  padding: 5px 14px 5px 8px;
+  max-width: 32%;
+}
+:is(#tela-linking, #tela-resultado-linking) .player-avatar { font-size: clamp(20px, 6vmin, 26px); filter: none; }
+:is(#tela-linking, #tela-resultado-linking) .player-name { font-size: clamp(12px, 3.6vmin, 15px); max-width: none; }
+
+#tela-linking .tema {
+  font-size: clamp(10px, 3vmin, 13px);
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--violet);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#tela-linking .titulo {
+  font-size: clamp(15px, 5vmin, 22px);
+  font-weight: 900;
+  line-height: 1.15;
+}
+#tela-linking .progresso-pares {
+  display: inline-flex;
+  gap: 4px;
+  vertical-align: middle;
+  margin-left: 6px;
+}
+#tela-linking .progresso-pares i {
+  width: clamp(7px, 2vmin, 10px);
+  height: clamp(7px, 2vmin, 10px);
+  border-radius: 50%;
+  background: rgba(15, 23, 42, .15);
+  transition: background .25s ease, transform .25s ease;
+}
+#tela-linking .progresso-pares i.ok { background: var(--verde); transform: scale(1.2); }
+
+/* Timer */
+#tela-linking .timer {
+  position: relative;
+  flex: none;
+  width: clamp(44px, 13vmin, 56px);
+  height: clamp(44px, 13vmin, 56px);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+}
+#tela-linking .timer svg { position: absolute; inset: -4px; width: calc(100% + 8px); height: calc(100% + 8px); transform: rotate(-90deg); }
+#tela-linking .anel-fundo { fill: none; stroke: rgba(255, 255, 255, 0.8); stroke-width: 9; }
+#tela-linking .anel { fill: none; stroke: var(--text-main); stroke-width: 9; stroke-linecap: round; stroke-dasharray: 326.7; transition: stroke .3s ease; }
+#tela-linking .timer-numero { font-size: clamp(17px, 5.4vmin, 22px); font-weight: 900; font-variant-numeric: tabular-nums; }
+#tela-linking .timer.urgente { animation: ligacaoPulso 1s ease-in-out infinite; border-color: var(--vermelho); }
+#tela-linking .timer.urgente .anel { stroke: var(--vermelho); }
+#tela-linking .timer.urgente .timer-numero { color: var(--vermelho); }
+@keyframes ligacaoPulso { 50% { transform: scale(1.1); } }
+
+/* ===================== ÁREA DE LIGAR ===================== */
+#tela-linking .ligar {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(30px, 10vw, 90px) minmax(0, 1fr);
+}
+
+#tela-linking .coluna {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: clamp(5px, 1.6vmin, 10px);
+}
+#tela-linking .coluna.esquerda { grid-column: 1; }
+#tela-linking .coluna.direita { grid-column: 3; }
+
+#tela-linking .item {
+  --cor-par: var(--cor-jogador);
+  position: relative;
+  flex: 1 1 0;
+  min-height: 0;
+  max-height: 92px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px clamp(8px, 2.4vmin, 14px);
+  border-radius: clamp(12px, 3.6vmin, 18px);
+  border: 2px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: var(--glass-shadow);
+  color: var(--text-main);
+  font-size: clamp(13px, 4.4vmin, 20px);
+  font-weight: 900;
+  line-height: 1.1;
+  text-align: center;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+  touch-action: none;
+  opacity: 0;
+  animation: ligacaoEntrar .4s cubic-bezier(.34, 1.56, .64, 1) forwards;
+  transition: transform .15s cubic-bezier(.34, 1.56, .64, 1), border-color .2s ease, background .2s ease, box-shadow .2s ease, opacity .3s ease;
+}
+@keyframes ligacaoEntrar { from { opacity: 0; transform: translateY(8px) scale(.94); } to { opacity: 1; transform: none; } }
+#tela-linking .item:active:not(.ligado) { transform: scale(.96); }
+
+/* Ponto de conexão na borda que fica de frente para a outra coluna */
+#tela-linking .item::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: clamp(10px, 2.8vmin, 14px);
+  height: clamp(10px, 2.8vmin, 14px);
+  margin-top: calc(clamp(10px, 2.8vmin, 14px) / -2);
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid rgba(15, 23, 42, .2);
+  transition: background .2s ease, border-color .2s ease;
+}
+#tela-linking .esquerda .item::after { right: calc(clamp(10px, 2.8vmin, 14px) / -2 - 1px); }
+#tela-linking .direita .item::after { left: calc(clamp(10px, 2.8vmin, 14px) / -2 - 1px); }
+
+#tela-linking .item.selecionado {
+  border-color: var(--cor-jogador);
+  background: var(--player-glass);
+  box-shadow: 0 8px 20px var(--player-glow);
+  color: color-mix(in srgb, var(--cor-jogador) 75%, #0f172a);
+  transform: scale(1.03);
+}
+#tela-linking .item.selecionado::after { background: var(--cor-jogador); border-color: var(--cor-jogador); }
+
+#tela-linking .item.aguardando { opacity: .7; pointer-events: none; }
+
+#tela-linking .item.ligado {
+  cursor: default;
+  border-color: var(--cor-par);
+  background: color-mix(in srgb, var(--cor-par) 16%, var(--glass-bg));
+  color: color-mix(in srgb, var(--cor-par) 60%, #0f172a);
+  box-shadow: 0 6px 14px color-mix(in srgb, var(--cor-par) 22%, transparent);
+  animation: ligacaoLigou .45s cubic-bezier(.34, 1.8, .64, 1);
+  opacity: 1;
+}
+#tela-linking .item.ligado::after { background: var(--cor-par); border-color: var(--cor-par); }
+#tela-linking .item.ligado .check { display: inline; }
+#tela-linking .check { display: none; margin-right: 4px; }
+@keyframes ligacaoLigou { 40% { transform: scale(1.07); } }
+
+#tela-linking .item.errou {
+  border-color: var(--vermelho);
+  background: color-mix(in srgb, var(--vermelho) 18%, var(--glass-bg));
+  animation: ligacaoTremer .4s ease;
+  opacity: 1;
+}
+@keyframes ligacaoTremer {
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(3px); }
+}
+
+/* Linhas por cima de tudo, sem pegar toque */
+#tela-linking .linhas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+  z-index: 3;
+}
+#tela-linking .linhas path {
+  fill: none;
+  stroke-width: clamp(3px, 1.1vmin, 5px);
+  stroke-linecap: round;
+}
+#tela-linking .linhas .fixa { stroke-dasharray: var(--len); stroke-dashoffset: var(--len); animation: ligacaoDesenhar .35s ease forwards; }
+#tela-linking .linhas .temporaria { stroke: var(--cor-jogador); stroke-dasharray: 7 7; opacity: .85; }
+#tela-linking .linhas .erro { stroke: var(--vermelho); animation: ligacaoSumir .5s ease forwards; }
+@keyframes ligacaoDesenhar { to { stroke-dashoffset: 0; } }
+@keyframes ligacaoSumir { 0%, 50% { opacity: 1; } 100% { opacity: 0; } }
+
+/* Tudo ligado */
+#tela-linking .terminou {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border-radius: 20px;
+  background: rgba(248, 250, 252, .78);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  text-align: center;
+  animation: ligacaoAparecer .4s ease;
+}
+@keyframes ligacaoAparecer { from { opacity: 0; } }
+#tela-linking .terminou .grande { font-size: clamp(36px, 14vmin, 64px); line-height: 1; animation: ligacaoLigou .6s cubic-bezier(.34, 1.8, .64, 1); }
+#tela-linking .terminou b { font-size: clamp(18px, 6vmin, 28px); font-weight: 900; color: var(--verde-escuro); }
+#tela-linking .terminou small { font-size: clamp(12px, 3.6vmin, 15px); font-weight: 700; color: var(--text-muted); }
+
+/* ===================== RESULTADO ===================== */
+#tela-resultado-linking .resultado-corpo {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: clamp(10px, 2.4vw, 20px);
+}
+#tela-resultado-linking .ganho-titulo { font-size: clamp(15px, 5vmin, 22px); font-weight: 900; }
+#tela-resultado-linking .ganho-titulo .pts { color: var(--cor-jogador); }
+#tela-resultado-linking .ganho-sub { font-size: clamp(11px, 3.2vmin, 14px); font-weight: 700; color: var(--text-muted); }
+
+#tela-resultado-linking .rotulo {
+  margin-bottom: 4px;
+  font-size: clamp(9px, 2.6vmin, 11px);
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+#tela-resultado-linking .gabarito-col { min-height: 0; display: flex; flex-direction: column; }
+#tela-resultado-linking .gabarito { list-style: none; flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 4px; }
+#tela-resultado-linking .gabarito li {
+  flex: 1 1 0;
+  min-height: 0;
+  max-height: 48px;
+  display: grid;
+  grid-template-columns: 1.4em minmax(0, 1fr) 1.2em minmax(0, 1fr);
+  align-items: center;
+  gap: 4px;
+  padding: 0 10px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .6);
+  border: 1px solid rgba(255, 255, 255, .9);
+  font-size: clamp(12px, 3.6vmin, 16px);
+  font-weight: 800;
+}
+#tela-resultado-linking .gabarito li.meu { background: color-mix(in srgb, var(--verde) 14%, white); border-color: color-mix(in srgb, var(--verde) 50%, white); }
+#tela-resultado-linking .gabarito .marca { text-align: center; }
+#tela-resultado-linking .gabarito .seta { text-align: center; color: var(--text-muted); }
+#tela-resultado-linking .gabarito .esq,
+#tela-resultado-linking .gabarito .dir { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#tela-resultado-linking .gabarito .dir { color: var(--verde-escuro); }
+#tela-resultado-linking .gabarito li:not(.meu) .marca { opacity: .45; }
+
+#tela-resultado-linking .minha-posicao {
+  min-height: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 8px;
+  border-radius: 20px;
+  text-align: center;
+}
+#tela-resultado-linking .posicao-numero {
+  font-size: clamp(40px, 16vmin, 80px);
+  font-weight: 900;
+  line-height: 1;
+  color: var(--cor-jogador);
+  text-shadow: 0 6px 20px var(--player-glow);
+}
+#tela-resultado-linking .posicao-pontos { font-size: clamp(15px, 4.6vmin, 22px); font-weight: 900; }
+#tela-resultado-linking .posicao-diferenca { margin-top: 0; font-size: clamp(11px, 3.2vmin, 14px); font-weight: 700; color: var(--text-muted); max-width: 95%; }
+
+#tela-resultado-linking .rodape { flex: none; display: flex; align-items: center; gap: 10px; }
+#tela-resultado-linking .btn-primario {
+  flex: 1;
+  width: auto;
+  padding: clamp(9px, 3vmin, 14px) 18px;
+  border: 0;
+  border-radius: 16px;
+  font-size: clamp(15px, 4.6vmin, 20px);
+  font-weight: 900;
+  cursor: pointer;
+}
+#tela-resultado-linking .btn-primario:disabled { cursor: default; }
+#tela-resultado-linking .status { flex: none; max-width: 45%; font-size: clamp(11px, 3.2vmin, 14px); font-weight: 700; color: var(--text-muted); }
+
+/* ===================== EM PÉ ===================== */
+@media (orientation: portrait) {
+  :is(#tela-linking, #tela-resultado-linking) .cabecalho { flex-wrap: wrap; row-gap: 6px; }
+  :is(#tela-linking, #tela-resultado-linking) .cabecalho-texto { order: 3; flex-basis: 100%; }
+  :is(#tela-linking, #tela-resultado-linking) .player-identity { max-width: 60%; }
+  :is(#tela-linking, #tela-resultado-linking) :is(.timer, .cabecalho-vazio) { margin-left: auto; }
+  #tela-linking .ligar { grid-template-columns: minmax(0, 1fr) clamp(40px, 15vw, 80px) minmax(0, 1fr); }
+  #tela-linking .item { max-height: 110px; font-size: clamp(15px, 2.6vh, 22px); }
+  #tela-resultado-linking .resultado-corpo { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
+  #tela-resultado-linking .minha-posicao { order: -1; }
+  #tela-resultado-linking .rodape { flex-direction: column-reverse; }
+  #tela-resultado-linking .status { max-width: none; }
+  #tela-resultado-linking .btn-primario { width: 100%; }
+}
+
+@media (orientation: landscape) and (max-height: 340px) {
+  #tela-linking,
+  #tela-resultado-linking { --gap: 6px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is(#tela-linking, #tela-resultado-linking) *,
+  :is(#tela-linking, #tela-resultado-linking) *::before,
+  :is(#tela-linking, #tela-resultado-linking) *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}

@@ -96,27 +96,10 @@ const posicaoPerguntaEls = elementosDePosicao("");
 const botaoProxima = document.getElementById("botao-proxima");
 const statusProximoEl = document.getElementById("status-proximo");
 
-const linkingTemaEl = document.getElementById("linking-tema");
-const linkingTituloEl = document.getElementById("linking-titulo");
-const anelLinkingEl = document.getElementById("anel-linking");
-const numeroLinkingEl = document.getElementById("numero-linking");
-const linkingListaEl = document.getElementById("linking-lista");
-const linkingProgressoEl = document.getElementById("linking-progresso");
-const linkingResultadoTituloEl = document.getElementById("linking-resultado-titulo");
-const linkingPontosEl = document.getElementById("linking-pontos");
-const linkingGabaritoEl = document.getElementById("linking-gabarito");
 const posicaoLinkingEls = elementosDePosicao("-linking");
 const botaoContinuarLinking = document.getElementById("botao-continuar-linking");
 const statusContinuarLinkingEl = document.getElementById("status-continuar-linking");
 
-const anelSortingEl = document.getElementById("anel-sorting");
-const numeroSortingEl = document.getElementById("numero-sorting");
-const sortingCategoriasEl = document.getElementById("sorting-categorias");
-const sortingItensEl = document.getElementById("sorting-itens");
-const sortingProgressoEl = document.getElementById("sorting-progresso");
-const sortingResultadoTituloEl = document.getElementById("sorting-resultado-titulo");
-const sortingPontosEl = document.getElementById("sorting-pontos");
-const sortingGabaritoEl = document.getElementById("sorting-gabarito");
 const posicaoSortingEls = elementosDePosicao("-sorting");
 const botaoContinuarSorting = document.getElementById("botao-continuar-sorting");
 const statusContinuarSortingEl = document.getElementById("status-continuar-sorting");
@@ -149,36 +132,17 @@ let escudoDaPergunta = null; // { bloqueados } quando o jogador usou Escudo nest
 let jaConfirmouContinuar = false;
 let statusContinuarAtivoEl = null;
 
-// estado do Linking
-let linkingEsquerdaTextos = [];
-let linkingDireitaTextos = [];
-let linkingCorretosSet = new Set();
-let linkingDireitaUsada = new Set();
-let linkingParesFeitos = new Map(); // esquerdaIndex -> texto da direita que ele ligou
-let linkingTotalPares = 0;
-let intervaloLinking = null;
-
-// estado do Sorting
-let sortingRespondidos = 0;
-let sortingTotalItens = 0;
-let sortingCategoriaANome = "";
-let sortingCategoriaBNome = "";
-let intervaloSorting = null;
-// sem scroll: mostra só 3 itens por vez e revela os próximos 3 conforme
-// esses vão sendo respondidos.
-const ITENS_POR_LOTE_SORTING = 3;
-let sortingLoteAtual = 0;
-
 // estado da Pirâmide
 let piramideTotalAndares = 0;
 let piramideJaRespondeu = false;
 
 // zera todos os contadores de tempo que possam estar rodando
 function pararContadores() {
-  for (const i of [intervaloLeitura, intervaloPergunta, intervaloPorta, intervaloPoder,
-                   intervaloAlvo, intervaloLinking, intervaloSorting]) {
+  for (const i of [intervaloLeitura, intervaloPergunta, intervaloPorta, intervaloPoder, intervaloAlvo]) {
     clearInterval(i);
   }
+  CelularLigacao.parar();
+  CelularClassificacao.parar();
 }
 
 function mostrarTela(tela) {
@@ -214,7 +178,8 @@ function criarEl(tag, classe, texto) {
 // Em vez da lista inteira, o celular mostra só a posição do próprio jogador,
 // a pontuação dele e quanto falta pra passar quem está logo acima.
 // O placar chega do servidor já ordenado do maior pro menor.
-function renderizarMinhaPosicao(placar, els) {
+// textoNaFrente: o que dizer a quem está em 1º (sem ele, a linha some)
+function renderizarMinhaPosicao(placar, els, textoNaFrente) {
   const eu = placar.find((j) => j.id === meuJogadorId);
   if (!eu) return;
 
@@ -230,6 +195,9 @@ function renderizarMinhaPosicao(placar, els) {
     const faltam = acima.pontos - eu.pontos + 1;
     els.diferenca.textContent = `Faltam ${faltam} ${faltam === 1 ? "ponto" : "pontos"} para passar ${acima.nome}`;
     els.diferenca.classList.remove("oculto");
+  } else if (textoNaFrente) {
+    els.diferenca.textContent = textoNaFrente;
+    els.diferenca.classList.remove("oculto");
   } else {
     els.diferenca.classList.add("oculto"); // 1º lugar: não tem ninguém acima
   }
@@ -241,7 +209,7 @@ function prepararTelaResultado(botao, statusEl, jaConfirmou = false) {
   jaConfirmouContinuar = !!jaConfirmou;
   botao.disabled = !!jaConfirmou;
   statusEl.classList.toggle("oculto", !jaConfirmou);
-  statusEl.textContent = jaConfirmou ? "Aguardando os outros jogadores..." : "";
+  statusEl.textContent = jaConfirmou ? "Aguardando os outros jogadores…" : "";
   statusContinuarAtivoEl = statusEl;
 }
 
@@ -250,7 +218,7 @@ function confirmarContinuar(botao) {
   jaConfirmouContinuar = true;
   botao.disabled = true;
   statusContinuarAtivoEl.classList.remove("oculto");
-  statusContinuarAtivoEl.textContent = "Aguardando os outros jogadores...";
+  statusContinuarAtivoEl.textContent = "Aguardando os outros jogadores…";
   enviarAoServidor({ type: "continuar" });
 }
 
@@ -630,131 +598,41 @@ function tratarMensagem(msg) {
     }
 
     case "iniciarLinking": {
-      linkingTemaEl.textContent = msg.tema;
-      linkingEsquerdaTextos = msg.esquerda;
-      linkingDireitaTextos = msg.direita;
-      // (ao voltar de uma queda, o servidor manda os pares que já estavam ligados)
-      linkingCorretosSet = new Set(msg.corretos || []);
-      linkingDireitaUsada = new Set(msg.direitaUsada || []);
-      linkingParesFeitos = new Map();
-      linkingTotalPares = msg.esquerda.length;
-      linkingProgressoEl.textContent = `${linkingCorretosSet.size} de ${linkingTotalPares} pares`;
-      renderizarListaEsquerda();
-      if (msg.completou) {
-        linkingListaEl.innerHTML = "";
-        linkingTituloEl.textContent = "Tudo ligado! 🎉";
-        linkingProgressoEl.textContent = `${linkingCorretosSet.size} de ${linkingTotalPares} pares — você terminou! Aguardando os outros...`;
-      }
-      iniciarContadorRedondo(intervaloLinking, anelLinkingEl, numeroLinkingEl, msg.tempoLimiteMs, (i) => (intervaloLinking = i));
+      // (ao voltar de uma queda, o servidor manda também os pares que já estavam ligados)
       mostrarTela(telaLinking);
+      CelularLigacao.montar(msg, (esquerdaIndex, direitaIndex) =>
+        enviarAoServidor({ type: "tentarPar", esquerdaIndex, direitaIndex })
+      );
       break;
     }
     case "resultadoTentativaPar": {
-      if (msg.correto) {
-        linkingCorretosSet.add(msg.esquerdaIndex);
-        linkingDireitaUsada.add(msg.direitaIndex);
-        linkingParesFeitos.set(msg.esquerdaIndex, linkingDireitaTextos[msg.direitaIndex]);
-        linkingProgressoEl.textContent = msg.completou
-          ? `${linkingCorretosSet.size} de ${linkingTotalPares} pares — você terminou! Aguardando os outros...`
-          : `${linkingCorretosSet.size} de ${linkingTotalPares} pares`;
-        if (msg.completou) {
-          linkingListaEl.innerHTML = "";
-          linkingTituloEl.textContent = "Tudo ligado! 🎉";
-        } else {
-          renderizarListaEsquerda();
-        }
-      } else {
-        const botaoErrado = linkingListaEl.querySelector(`[data-indice="${msg.direitaIndex}"]`);
-        if (botaoErrado) {
-          botaoErrado.disabled = false;
-          botaoErrado.classList.add("incorreto");
-          setTimeout(() => botaoErrado.classList.remove("incorreto"), 400);
-        }
-      }
+      CelularLigacao.resultadoTentativa(msg);
       break;
     }
     case "resultadoLinking": {
-      clearInterval(intervaloLinking);
       mostrarTela(telaResultadoLinking);
-      linkingResultadoTituloEl.textContent = msg.paresCorretos >= msg.totalPares
-        ? "Você ligou tudo! 🎉"
-        : `Você ligou ${msg.paresCorretos} de ${msg.totalPares}`;
-      linkingPontosEl.textContent = `+${msg.pontosGanhos} pontos`;
-      // o servidor diz quais pares ele ligou (vale mesmo se reconectou agora)
-      const ligados = new Set(msg.corretos || linkingCorretosSet);
-      linkingGabaritoEl.replaceChildren(
-        ...msg.pares.map((par, i) => {
-          const acertou = ligados.has(i);
-          const li = criarEl("li", acertou ? "acertou" : "");
-          li.style.animationDelay = `${i * 60}ms`;
-          li.append(
-            criarEl("span", "selo-gabarito", acertou ? "✓" : "–"),
-            criarEl("span", "esquerda", par.esquerda),
-            document.createTextNode("→"),
-            criarEl("span", "direita", par.direita)
-          );
-          return li;
-        })
-      );
-      renderizarMinhaPosicao(msg.placar, posicaoLinkingEls);
+      CelularLigacao.mostrarResultado(msg);
+      renderizarMinhaPosicao(msg.placar, posicaoLinkingEls, "Você está na frente! 🏆");
       prepararTelaResultado(botaoContinuarLinking, statusContinuarLinkingEl, msg.jaConfirmou);
       break;
     }
 
     case "iniciarSorting": {
-      sortingCategoriaANome = msg.categoriaA;
-      sortingCategoriaBNome = msg.categoriaB;
-      sortingCategoriasEl.textContent = `${msg.categoriaA}  ou  ${msg.categoriaB}?`;
-      sortingRespondidos = 0;
-      sortingTotalItens = msg.itens.length;
-      sortingLoteAtual = 0;
-      sortingProgressoEl.textContent = `0 de ${sortingTotalItens} respondidos`;
-      renderizarSorting(msg.itens, msg.categoriaA, msg.categoriaB);
-      // (ao voltar de uma queda, o servidor manda os itens que já tinham sido classificados)
-      for (const r of msg.respondidos || []) {
-        const card = sortingItensEl.children[r.itemIndex];
-        if (!card) continue;
-        card.classList.add(r.correto ? "correto" : "incorreto");
-        const botoes = card.querySelectorAll(".sorting-botao-categoria");
-        botoes.forEach((b) => (b.disabled = true));
-        botoes[r.categoria === "A" ? 0 : 1].classList.add("escolhida");
-        sortingRespondidos++;
-      }
-      if (sortingRespondidos > 0) {
-        sortingLoteAtual = Math.min(
-          Math.floor(sortingRespondidos / ITENS_POR_LOTE_SORTING),
-          Math.ceil(sortingTotalItens / ITENS_POR_LOTE_SORTING) - 1
-        );
-        mostrarLoteSorting();
-        sortingProgressoEl.textContent = `${sortingRespondidos} de ${sortingTotalItens} respondidos`;
-      }
-      iniciarContadorRedondo(intervaloSorting, anelSortingEl, numeroSortingEl, msg.tempoLimiteMs, (i) => (intervaloSorting = i));
+      // (ao voltar de uma queda, o servidor manda também os itens que já tinham sido classificados)
       mostrarTela(telaSorting);
+      CelularClassificacao.montar(msg, (itemIndex, categoria) =>
+        enviarAoServidor({ type: "classificarItem", itemIndex, categoria })
+      );
       break;
     }
     case "resultadoClassificacaoItem": {
-      const card = sortingItensEl.children[msg.itemIndex];
-      card.classList.add(msg.correto ? "correto" : "incorreto");
-      sortingRespondidos++;
-      sortingProgressoEl.textContent = `${sortingRespondidos} de ${sortingTotalItens} respondidos`;
-
-      // terminou o lote de 3 atual? revela o próximo lote (sem precisar rolar)
-      if (sortingRespondidos < sortingTotalItens && sortingRespondidos % ITENS_POR_LOTE_SORTING === 0) {
-        avancarLoteSorting();
-      }
+      CelularClassificacao.resultadoItem(msg);
       break;
     }
     case "resultadoSorting": {
-      clearInterval(intervaloSorting);
-      if (msg.categoriaA) sortingCategoriaANome = msg.categoriaA;
-      if (msg.categoriaB) sortingCategoriaBNome = msg.categoriaB;
       mostrarTela(telaResultadoSorting);
-      sortingResultadoTituloEl.textContent = msg.corretos >= msg.totalItens
-        ? "Você acertou todos! 🎉"
-        : `Você acertou ${msg.corretos} de ${msg.totalItens}`;
-      sortingPontosEl.textContent = `+${msg.pontosGanhos} pontos`;
-      renderizarGabaritoClassificacao(msg);
-      renderizarMinhaPosicao(msg.placar, posicaoSortingEls);
+      CelularClassificacao.mostrarResultado(msg);
+      renderizarMinhaPosicao(msg.placar, posicaoSortingEls, "Você está na frente! 🏆");
       prepararTelaResultado(botaoContinuarSorting, statusContinuarSortingEl, msg.jaConfirmou);
       break;
     }
@@ -815,7 +693,9 @@ function tratarMensagem(msg) {
     case "progressoContinuar": {
       if (statusContinuarAtivoEl) {
         statusContinuarAtivoEl.classList.remove("oculto");
-        statusContinuarAtivoEl.textContent = `${msg.confirmados} de ${msg.total} confirmaram estar prontos`;
+        statusContinuarAtivoEl.textContent = statusContinuarAtivoEl.hasAttribute("data-curto")
+          ? `${msg.confirmados} de ${msg.total} prontos`
+          : `${msg.confirmados} de ${msg.total} confirmaram estar prontos`;
       }
       break;
     }
@@ -1049,140 +929,6 @@ function responder(indice, botaoClicado) {
   // fica na própria tela-pergunta (grid desabilitado, sua escolha em
   // destaque) em vez de trocar de tela - é nela que a resposta certa vai
   // piscar em verde quando a TV revelar.
-}
-
-// Mostra a lista de itens da esquerda, um por linha, em tela cheia. Tocar
-// num item ainda não ligado leva pra lista de opções da direita.
-function renderizarListaEsquerda() {
-  linkingTituloEl.textContent = "Toque em um item pra ligar";
-  linkingListaEl.innerHTML = "";
-  linkingEsquerdaTextos.forEach((texto, i) => {
-    const btn = document.createElement("button");
-    btn.className = "linking-item-full";
-    if (linkingCorretosSet.has(i)) {
-      // o par inteiro, pra ele ver o que já ligou (ao reconectar, só o item)
-      const direita = linkingParesFeitos.get(i);
-      btn.textContent = direita ? `✓ ${texto} → ${direita}` : `✓ ${texto}`;
-      btn.classList.add("correto");
-      btn.disabled = true;
-    } else {
-      btn.textContent = texto;
-      btn.addEventListener("click", () => mostrarOpcoesDireita(i));
-    }
-    linkingListaEl.appendChild(btn);
-  });
-}
-
-// Mostra as opções da direita em tela cheia, pra ligar com o item da
-// esquerda escolhido. Um botão "Voltar" permite desistir e trocar de item.
-function mostrarOpcoesDireita(esquerdaIndex) {
-  linkingTituloEl.textContent = `Ligue "${linkingEsquerdaTextos[esquerdaIndex]}" com:`;
-  linkingListaEl.innerHTML = "";
-  linkingDireitaTextos.forEach((texto, k) => {
-    const btn = document.createElement("button");
-    btn.className = "linking-item-full";
-    btn.textContent = texto;
-    btn.dataset.indice = k;
-    if (linkingDireitaUsada.has(k)) {
-      btn.disabled = true;
-      btn.classList.add("usado");
-    } else {
-      btn.addEventListener("click", () => tentarPar(esquerdaIndex, k, btn));
-    }
-    linkingListaEl.appendChild(btn);
-  });
-
-  const botaoVoltar = document.createElement("button");
-  botaoVoltar.className = "linking-voltar";
-  botaoVoltar.textContent = "← Voltar";
-  botaoVoltar.addEventListener("click", renderizarListaEsquerda);
-  linkingListaEl.appendChild(botaoVoltar);
-}
-
-function tentarPar(esquerdaIndex, direitaIndex, botaoClicado) {
-  botaoClicado.disabled = true; // trava até a resposta do servidor chegar, evita clique duplo
-  enviarAoServidor({ type: "tentarPar", esquerdaIndex, direitaIndex });
-}
-
-function renderizarSorting(itens, categoriaA, categoriaB) {
-  sortingItensEl.innerHTML = "";
-  itens.forEach((nome, i) => {
-    const card = document.createElement("div");
-    card.className = "sorting-item";
-    // só o primeiro lote de 3 itens começa visível - os outros ficam
-    // escondidos no DOM (mantendo o índice certo pra quando o resultado
-    // de cada item chegar) até o jogador terminar o lote atual.
-    if (Math.floor(i / ITENS_POR_LOTE_SORTING) !== 0) card.classList.add("oculto");
-
-    const nomeEl = document.createElement("p");
-    nomeEl.className = "sorting-item-nome";
-    nomeEl.textContent = nome;
-
-    const botoes = document.createElement("div");
-    botoes.className = "sorting-item-botoes";
-
-    const btnA = document.createElement("button");
-    btnA.className = "sorting-botao-categoria";
-    btnA.textContent = categoriaA;
-
-    const btnB = document.createElement("button");
-    btnB.className = "sorting-botao-categoria";
-    btnB.textContent = categoriaB;
-
-    btnA.addEventListener("click", () => classificar(i, "A", btnA, btnB));
-    btnB.addEventListener("click", () => classificar(i, "B", btnB, btnA));
-
-    botoes.appendChild(btnA);
-    botoes.appendChild(btnB);
-    card.appendChild(nomeEl);
-    card.appendChild(botoes);
-    sortingItensEl.appendChild(card);
-  });
-}
-
-// O gabarito da Classificação dividido nos dois lados, e em cada item o que
-// ESTE jogador fez: ✓ pôs do lado certo, ✗ pôs do outro lado, – não respondeu.
-// O item aparece sempre no lado certo; a marca é que diz como ele foi.
-function renderizarGabaritoClassificacao(msg) {
-  const minhas = new Map((msg.minhasRespostas || []).map((r) => [r.nome, r]));
-  const grupos = [["A", msg.categoriaA], ["B", msg.categoriaB]].map(([chave, nome]) => {
-    const grupo = criarEl("div", `gabarito-grupo ${chave.toLowerCase()}`);
-    const lista = criarEl("ul");
-    for (const item of msg.gabarito.filter((x) => x.categoria === chave)) {
-      const minha = minhas.get(item.nome);
-      const estado = !minha || minha.escolhida === null ? "pulou" : minha.correto ? "acertou" : "errou";
-      const li = criarEl("li", estado);
-      li.append(
-        criarEl("span", "selo-gabarito", estado === "acertou" ? "✓" : estado === "errou" ? "✗" : "–"),
-        document.createTextNode(item.nome)
-      );
-      lista.append(li);
-    }
-    grupo.append(criarEl("h4", "", nome), lista);
-    return grupo;
-  });
-  sortingGabaritoEl.replaceChildren(...grupos);
-}
-
-function avancarLoteSorting() {
-  sortingLoteAtual++;
-  mostrarLoteSorting();
-}
-
-function mostrarLoteSorting() {
-  const inicio = sortingLoteAtual * ITENS_POR_LOTE_SORTING;
-  const fim = inicio + ITENS_POR_LOTE_SORTING;
-  [...sortingItensEl.children].forEach((card, i) => {
-    card.classList.toggle("oculto", i < inicio || i >= fim);
-  });
-}
-
-function classificar(itemIndex, categoria, botaoEscolhido, botaoOutro) {
-  if (botaoEscolhido.disabled || botaoOutro.disabled) return;
-  botaoEscolhido.disabled = true;
-  botaoOutro.disabled = true;
-  botaoEscolhido.classList.add("escolhida");
-  enviarAoServidor({ type: "classificarItem", itemIndex, categoria });
 }
 
 function responderPiramide(indice, botaoClicado) {
