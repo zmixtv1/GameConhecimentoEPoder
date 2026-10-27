@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+    <title>Controle Mobile - Classificação</title>
+
+    <!--
+      PROPOSTA NOVA das telas do celular no desafio de Classificação ("sorting").
+
+      DURANTE: um buraco de cada lado (categoria A na esquerda, B na direita) e
+      uma CARTA no centro com o nome do item.
+        - Arraste a carta para um lado, ou dê um "peteleco" para o lado.
+          Tocar direto no painel também funciona (atalho).
+        - A carta voa para o painel, que pisca verde (+25) ou vermelho.
+          Cada item vale uma tentativa: errou, ficou errado.
+        - A próxima carta sai do monte. As bolinhas no topo mostram certo/errado.
+        - Acabou: "Tudo separado!" esperando os outros.
+      Funciona deitado e em pé (os painéis ficam sempre nas laterais).
+
+      (Visual: uma CARTA com o item no meio, em cima de um monte, e um painel
+      de cada lado com o nome da categoria. Arrastando, o painel daquele lado
+      enche de cor. A carta voa para dentro do painel, que fica verde ou
+      vermelho.)
+
+      RESULTADO: pontos ganhos, gabarito separado nas duas categorias marcando
+      ✅/❌ nos itens que VOCÊ respondeu, sua posição e o botão Continuar.
+
+      Protocolo igual ao de hoje:
+        recebe iniciarSorting, resultadoClassificacaoItem, resultadoSorting, progressoContinuar
+        envia  classificarItem { itemIndex, categoria: "A" | "B" } e continuar
+
+      Barra do protótipo: Jogar de novo · Resultado. ?limpo esconde,
+      ?tela=resultado abre direto no resultado.
+    -->
+
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            color-scheme: light;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --bg: #f8fafc;
+            --verde: #2ed573;
+            --verde-escuro: #0a7a3c;
+            --vermelho: #ff4757;
+            --glass-bg: rgba(255, 255, 255, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.9);
+            --glass-shadow: 0 6px 14px rgba(0, 0, 0, 0.07);
+
+            --cor-jogador: #1e90ff;
+            --player-glass: color-mix(in srgb, var(--cor-jogador) 15%, transparent);
+            --player-glow: color-mix(in srgb, var(--cor-jogador) 30%, transparent);
+
+            /* Mesmas cores das categorias na TV */
+            --cor-a: #6366f1;
+            --cor-b: #f59e0b;
+
+            --pad-t: max(8px, env(safe-area-inset-top));
+            --pad-r: max(12px, env(safe-area-inset-right));
+            --pad-b: max(8px, env(safe-area-inset-bottom));
+            --pad-l: max(12px, env(safe-area-inset-left));
+
+            --gap: clamp(6px, 2vmin, 12px);
+            --moeda: clamp(96px, 34vmin, 170px);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Outfit", system-ui, sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html { height: 100%; }
+
+        body {
+            height: 100vh;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            padding: var(--pad-t) var(--pad-r) var(--pad-b) var(--pad-l);
+            background-color: var(--bg);
+            background-image: radial-gradient(#cbd5e1 2px, transparent 2px);
+            background-size: 40px 40px;
+            background-position: center;
+            color: var(--text-main);
+            overflow: hidden;
+            position: relative;
+            touch-action: none;
+        }
+
+        .oculto { display: none !important; }
+
+        .ambient-light {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 0;
+            pointer-events: none;
+            animation: fluidMotion 20s infinite alternate ease-in-out;
+        }
+        .light-1 { top: -10%; left: -10%; width: 60vmax; height: 60vmax; background: rgba(224, 231, 255, 0.8); }
+        .light-2 { bottom: -20%; right: -10%; width: 50vmax; height: 50vmax; background: rgba(254, 243, 199, 0.7); animation-delay: -5s; }
+        .light-3 { top: 30%; left: 30%; width: 35vmax; height: 35vmax; background: rgba(255, 255, 255, 0.9); animation-delay: -10s; }
+        @keyframes fluidMotion {
+            0% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(15px, 20px) scale(1.05); }
+            66% { transform: translate(-15px, 10px) scale(0.95); }
+            100% { transform: translate(25px, -15px) scale(1.02); }
+        }
+
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 2px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+        }
+
+        /* ===================== ESTRUTURA ===================== */
+        .tela {
+            position: relative;
+            z-index: 1;
+            flex: 1;
+            min-height: 0;
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: var(--gap);
+        }
+
+        .cabecalho { flex: none; display: flex; align-items: center; gap: 10px; }
+        .cabecalho-texto { flex: 1; min-width: 0; text-align: center; }
+        .cabecalho-vazio { flex: none; width: clamp(44px, 13vmin, 56px); }
+
+        .player-identity {
+            flex: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 14px 5px 8px;
+            border-radius: 100px;
+            max-width: 32%;
+        }
+        .player-avatar { font-size: clamp(20px, 6vmin, 26px); line-height: 1; }
+        .player-name {
+            font-size: clamp(12px, 3.6vmin, 15px);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .titulo { font-size: clamp(15px, 5vmin, 22px); font-weight: 900; line-height: 1.15; }
+        .bolinhas { display: inline-flex; gap: clamp(3px, 1vmin, 5px); margin-top: 3px; }
+        .bolinhas i {
+            width: clamp(8px, 2.4vmin, 11px);
+            height: clamp(8px, 2.4vmin, 11px);
+            border-radius: 50%;
+            background: rgba(15, 23, 42, .14);
+            transition: background .25s ease, transform .25s ease;
+        }
+        .bolinhas i.atual { background: transparent; box-shadow: inset 0 0 0 2px var(--text-muted); }
+        .bolinhas i.certo { background: var(--verde); transform: scale(1.15); }
+        .bolinhas i.errado { background: var(--vermelho); transform: scale(1.15); }
+
+        /* Timer */
+        .timer {
+            position: relative;
+            flex: none;
+            width: clamp(44px, 13vmin, 56px);
+            height: clamp(44px, 13vmin, 56px);
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+        }
+        .timer svg { position: absolute; inset: -4px; width: calc(100% + 8px); height: calc(100% + 8px); transform: rotate(-90deg); }
+        .anel-fundo { fill: none; stroke: rgba(255, 255, 255, 0.8); stroke-width: 9; }
+        .anel { fill: none; stroke: var(--text-main); stroke-width: 9; stroke-linecap: round; stroke-dasharray: 326.7; transition: stroke .3s ease; }
+        .timer-numero { font-size: clamp(17px, 5.4vmin, 22px); font-weight: 900; font-variant-numeric: tabular-nums; }
+        .timer.urgente { animation: pulso 1s ease-in-out infinite; border-color: var(--vermelho); }
+        .timer.urgente .anel { stroke: var(--vermelho); }
+        .timer.urgente .timer-numero { color: var(--vermelho); }
+        @keyframes pulso { 50% { transform: scale(1.1); } }
+
+        /* ===================== ARENA ===================== */
+        .arena {
+            position: relative;
+            flex: 1;
+            min-height: 0;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+            align-items: center;
+            gap: clamp(8px, 2vmin, 16px);
+        }
+
+        /* Zona de cada categoria: painel na lateral da tela */
+        .buraco {
+            --c: var(--cor-a);
+            position: relative;
+            height: 100%;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: clamp(6px, 2vmin, 12px);
+            padding: 10px;
+            border-radius: clamp(20px, 6vmin, 32px);
+            border: 2px solid color-mix(in srgb, var(--c) 35%, white);
+            background: linear-gradient(180deg, color-mix(in srgb, var(--c) 10%, rgba(255, 255, 255, .75)), color-mix(in srgb, var(--c) 18%, rgba(255, 255, 255, .6)));
+            box-shadow: var(--glass-shadow);
+            color: color-mix(in srgb, var(--c) 80%, #0f172a);
+            cursor: pointer;
+            overflow: hidden;
+            transition: transform .2s cubic-bezier(.34, 1.56, .64, 1), border-color .2s ease, background .25s ease, color .25s ease, box-shadow .25s ease;
+        }
+        .buraco.b { --c: var(--cor-b); }
+
+        .buraco .nome-cat {
+            max-width: 100%;
+            font-size: clamp(20px, 8vmin, 40px);
+            font-weight: 900;
+            line-height: 1.05;
+            text-align: center;
+            overflow-wrap: anywhere;
+        }
+        .buraco .seta {
+            font-size: clamp(22px, 8vmin, 40px);
+            font-weight: 900;
+            line-height: 1;
+            opacity: .55;
+            transition: transform .25s ease, opacity .25s ease;
+        }
+        .buraco.a .seta { animation: chamarA 1.6s ease-in-out infinite; }
+        .buraco.b .seta { animation: chamarB 1.6s ease-in-out infinite; }
+        @keyframes chamarA { 50% { transform: translateX(-6px); } }
+        @keyframes chamarB { 50% { transform: translateX(6px); } }
+
+        /* Carta passando por cima: a zona enche com a cor da categoria */
+        .buraco.mira {
+            border-color: var(--c);
+            background: linear-gradient(180deg, color-mix(in srgb, var(--c) 85%, white), var(--c));
+            color: #fff;
+            box-shadow: 0 12px 28px color-mix(in srgb, var(--c) 40%, transparent);
+            transform: scale(1.02);
+        }
+        .buraco.mira .seta { opacity: 1; }
+
+        /* Resposta do servidor */
+        .buraco.acertou {
+            border-color: var(--verde);
+            background: linear-gradient(180deg, color-mix(in srgb, var(--verde) 30%, white), color-mix(in srgb, var(--verde) 45%, white));
+            color: var(--verde-escuro);
+        }
+        .buraco.errou {
+            border-color: var(--vermelho);
+            background: linear-gradient(180deg, color-mix(in srgb, var(--vermelho) 22%, white), color-mix(in srgb, var(--vermelho) 34%, white));
+            color: #b3202f;
+            animation: tremer .4s ease;
+        }
+        @keyframes tremer {
+            20% { transform: translateX(-6px); }
+            40% { transform: translateX(6px); }
+            60% { transform: translateX(-4px); }
+            80% { transform: translateX(3px); }
+        }
+
+        .feedback {
+            position: absolute;
+            left: 50%;
+            top: 42%;
+            z-index: 6;
+            padding: 3px 12px;
+            border-radius: 100px;
+            font-size: clamp(14px, 4.6vmin, 22px);
+            font-weight: 900;
+            color: #fff;
+            white-space: nowrap;
+            pointer-events: none;
+            transform: translate(-50%, 0);
+            animation: subirSumir .9s ease forwards;
+        }
+        .feedback.ok { background: var(--verde-escuro); }
+        .feedback.nao { background: var(--vermelho); }
+        @keyframes subirSumir {
+            0% { opacity: 0; transform: translate(-50%, 10px) scale(.7); }
+            20% { opacity: 1; transform: translate(-50%, 0) scale(1.1); }
+            70% { opacity: 1; transform: translate(-50%, -14px) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -26px) scale(1); }
+        }
+
+        /* Centro: carta com o item (em cima de um "monte" de cartas) */
+        .centro {
+            width: calc(var(--moeda) * 1.3);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: clamp(6px, 1.6vmin, 12px);
+        }
+
+        .monte { position: relative; display: grid; place-items: center; }
+        /* Cartas de trás (só decoração) */
+        .monte::before, .monte::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: clamp(14px, 4vmin, 20px);
+            background: rgba(255, 255, 255, .7);
+            border: 2px solid rgba(15, 23, 42, .06);
+            z-index: 0;
+        }
+        .monte::before { transform: translate(6px, 7px) rotate(4deg); }
+        .monte::after { transform: translate(-5px, 4px) rotate(-3deg); }
+        .monte.vazio::before, .monte.vazio::after { display: none; }
+
+        .moeda {
+            position: relative;
+            z-index: 5;
+            width: calc(var(--moeda) * 1.25);
+            height: calc(var(--moeda) * .95);
+            border-radius: clamp(14px, 4vmin, 20px);
+            display: grid;
+            place-items: center;
+            padding: 10%;
+            background: #fff;
+            border: 2px solid rgba(15, 23, 42, .08);
+            box-shadow: 0 12px 26px rgba(15, 23, 42, .14);
+            color: var(--text-main);
+            text-align: center;
+            cursor: grab;
+            touch-action: none;
+            will-change: transform;
+        }
+        .moeda:active { cursor: grabbing; }
+        .moeda .texto {
+            font-size: var(--fonte, calc(var(--moeda) * .15));
+            font-weight: 900;
+            line-height: 1.05;
+            overflow-wrap: normal;
+            word-break: normal;
+        }
+        .moeda.entrando { animation: entrarCarta .35s cubic-bezier(.3, 1.5, .5, 1); }
+        @keyframes entrarCarta { from { transform: translateY(18px) scale(.85); opacity: 0; } }
+        .moeda.voltando { transition: transform .35s cubic-bezier(.34, 1.56, .64, 1); }
+        .moeda.arrastando { transition: none; box-shadow: 0 22px 36px rgba(15, 23, 42, .22); }
+
+        .dica {
+            font-size: clamp(11px, 3.2vmin, 14px);
+            font-weight: 800;
+            color: var(--text-muted);
+            text-align: center;
+            white-space: nowrap;
+        }
+        .dica .ponta { display: inline-block; animation: piscar 1.2s ease-in-out infinite; }
+        .dica .ponta.dir { animation-delay: .6s; }
+        @keyframes piscar { 50% { opacity: .25; } }
+
+        /* Fim */
+        .terminou {
+            position: absolute;
+            inset: 0;
+            z-index: 8;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            border-radius: 20px;
+            background: rgba(248, 250, 252, .82);
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
+            text-align: center;
+            animation: aparecer .4s ease;
+        }
+        @keyframes aparecer { from { opacity: 0; } }
+        .terminou .grande { font-size: clamp(36px, 14vmin, 64px); line-height: 1; }
+        .terminou b { font-size: clamp(18px, 6vmin, 28px); font-weight: 900; color: var(--verde-escuro); }
+        .terminou small { font-size: clamp(12px, 3.6vmin, 15px); font-weight: 700; color: var(--text-muted); }
+
+        /* ===================== RESULTADO ===================== */
+        .resultado-corpo {
+            flex: 1;
+            min-height: 0;
+            display: grid;
+            grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+            gap: clamp(10px, 2.4vw, 20px);
+        }
+        .ganho-titulo { font-size: clamp(15px, 5vmin, 22px); font-weight: 900; }
+        .ganho-titulo .pts { color: var(--cor-jogador); }
+        .ganho-sub { font-size: clamp(11px, 3.2vmin, 14px); font-weight: 700; color: var(--text-muted); }
+
+        .gabarito { min-height: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(6px, 1.6vmin, 10px); }
+        .gab-col {
+            --c: var(--cor-a);
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 2px solid color-mix(in srgb, var(--c) 45%, white);
+            background: color-mix(in srgb, var(--c) 7%, rgba(255, 255, 255, .7));
+        }
+        .gab-col.b { --c: var(--cor-b); }
+        .gab-col h3 {
+            flex: none;
+            padding: 3px 8px;
+            text-align: center;
+            font-size: clamp(12px, 3.6vmin, 16px);
+            font-weight: 900;
+            color: #fff;
+            background: var(--c);
+        }
+        .gab-col ul { list-style: none; flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; gap: 3px; padding: 5px; }
+        .gab-col li {
+            flex: 1 1 0;
+            min-height: 0;
+            max-height: 36px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 0 7px;
+            border-radius: 9px;
+            background: #fff;
+            font-size: clamp(11px, 3.3vmin, 15px);
+            font-weight: 800;
+        }
+        .gab-col li .n { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .gab-col li.certo { background: color-mix(in srgb, var(--verde) 14%, white); }
+        .gab-col li.errado { background: color-mix(in srgb, var(--vermelho) 12%, white); }
+
+        .minha-posicao {
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            padding: 8px;
+            border-radius: 20px;
+            text-align: center;
+        }
+        .rotulo { font-size: clamp(9px, 2.6vmin, 11px); font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); }
+        .posicao-numero { font-size: clamp(40px, 16vmin, 80px); font-weight: 900; line-height: 1; color: var(--cor-jogador); text-shadow: 0 6px 20px var(--player-glow); }
+        .posicao-pontos { font-size: clamp(15px, 4.6vmin, 22px); font-weight: 900; }
+        .posicao-diferenca { font-size: clamp(11px, 3.2vmin, 14px); font-weight: 700; color: var(--text-muted); max-width: 95%; }
+
+        .rodape { flex: none; display: flex; align-items: center; gap: 10px; }
+        .btn-primario {
+            flex: 1;
+            padding: clamp(9px, 3vmin, 14px) 18px;
+            border: 0;
+            border-radius: 16px;
+            background: var(--cor-jogador);
+            color: #fff;
+            font-size: clamp(15px, 4.6vmin, 20px);
+            font-weight: 900;
+            box-shadow: 0 10px 25px var(--player-glow);
+            cursor: pointer;
+            transition: transform .15s cubic-bezier(.34, 1.56, .64, 1), opacity .2s;
+        }
+        .btn-primario:active:not(:disabled) { transform: scale(.96); }
+        .btn-primario:disabled { opacity: .5; box-shadow: none; cursor: default; }
+        .status { flex: none; max-width: 45%; font-size: clamp(11px, 3.2vmin, 14px); font-weight: 700; color: var(--text-muted); }
+
+        /* ===================== EM PÉ ===================== */
+        @media (orientation: portrait) {
+            :root { --moeda: clamp(100px, 34vw, 160px); }
+            .cabecalho { flex-wrap: wrap; row-gap: 6px; }
+            .cabecalho-texto { order: 3; flex-basis: 100%; }
+            .player-identity { max-width: 60%; }
+            .timer, .cabecalho-vazio { margin-left: auto; }
+
+            /* Buracos continuam nas laterais, mais altos; moeda no meio */
+            .arena { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); }
+            .buraco.a { grid-column: 1; grid-row: 1; }
+            .buraco.b { grid-column: 2; grid-row: 1; }
+            .buraco { justify-content: flex-start; padding-top: 7vh; }
+            .centro {
+                position: absolute;
+                left: 50%;
+                top: 54%;
+                height: auto;
+                transform: translate(-50%, -50%);
+                z-index: 5;
+            }
+
+            .resultado-corpo { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
+            .minha-posicao { order: -1; }
+            .rodape { flex-direction: column-reverse; }
+            .status { max-width: none; }
+            .btn-primario { width: 100%; }
+        }
+
+        @media (orientation: landscape) and (max-height: 340px) {
+            :root { --gap: 6px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+        }
+
+        /* ===== só deste protótipo, não existe no jogo ===== */
+        .barra-prototipo {
+            position: fixed; bottom: 6px; right: 6px; z-index: 500;
+            display: flex; align-items: center; gap: 6px;
+            padding: 4px 6px; border-radius: 8px;
+            background: rgba(15, 23, 42, 0.88); color: #fff;
+            font-size: 10px; font-weight: 700;
+        }
+        .barra-prototipo button { padding: 2px 6px; border: 0; border-radius: 5px; background: #fff; color: #0f172a; font-size: 10px; font-weight: 800; font-family: inherit; cursor: pointer; }
+    </style>
+</head>
+
+<body>
+    <div class="ambient-light light-1"></div>
+    <div class="ambient-light light-2"></div>
+    <div class="ambient-light light-3"></div>
+
+    <!-- ===================== DURANTE ===================== -->
+    <section id="tela-sorting" class="tela oculto">
+        <header class="cabecalho">
+            <div class="player-identity glass-panel" data-identidade></div>
+            <div class="cabecalho-texto">
+                <h2 class="titulo" id="sorting-titulo">Arraste cada item para o lado certo</h2>
+                <span class="bolinhas" id="sorting-progresso"></span>
+            </div>
+            <div class="timer glass-panel" id="timer-sorting">
+                <svg viewBox="0 0 120 120">
+                    <circle class="anel-fundo" cx="60" cy="60" r="52"></circle>
+                    <circle class="anel" id="anel-sorting" cx="60" cy="60" r="52"></circle>
+                </svg>
+                <span class="timer-numero" id="numero-sorting"></span>
+            </div>
+        </header>
+
+        <div class="arena" id="arena">
+            <div class="buraco a" id="buraco-a" data-cat="A">
+                <span class="nome-cat" id="nome-cat-a"></span>
+                <span class="seta">⟵</span>
+            </div>
+            <div class="centro" id="centro">
+                <div class="monte" id="monte"><div class="moeda" id="moeda"><span class="texto" id="moeda-texto"></span></div></div>
+                <p class="dica" id="dica"><span class="ponta">⟵</span> arraste <span class="ponta dir">⟶</span></p>
+            </div>
+            <div class="buraco b" id="buraco-b" data-cat="B">
+                <span class="nome-cat" id="nome-cat-b"></span>
+                <span class="seta">⟶</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===================== RESULTADO ===================== -->
+    <section id="tela-resultado-sorting" class="tela oculto">
+        <header class="cabecalho">
+            <div class="player-identity glass-panel" data-identidade></div>
+            <div class="cabecalho-texto">
+                <p class="ganho-titulo">Classificação: <span class="pts" id="sorting-pontos"></span></p>
+                <p class="ganho-sub" id="sorting-acertos"></p>
+            </div>
+            <div class="cabecalho-vazio"></div>
+        </header>
+
+        <div class="resultado-corpo">
+            <div class="gabarito">
+                <div class="gab-col a"><h3 id="gab-titulo-a"></h3><ul id="gab-a"></ul></div>
+                <div class="gab-col b"><h3 id="gab-titulo-b"></h3><ul id="gab-b"></ul></div>
+            </div>
+            <div class="minha-posicao glass-panel">
+                <p class="rotulo">Sua posição</p>
+                <p class="posicao-numero" id="posicao-numero-sorting"></p>
+                <p class="posicao-pontos" id="posicao-pontos-sorting"></p>
+                <p class="posicao-diferenca oculto" id="posicao-diferenca-sorting"></p>
+            </div>
+        </div>
+
+        <footer class="rodape">
+            <button id="botao-continuar-sorting" class="btn-primario" type="button">Continuar</button>
+            <p class="status oculto" id="status-continuar-sorting"></p>
+        </footer>
+    </section>
+
+    <div class="barra-prototipo" id="barra-prototipo">
+        <button id="botao-repetir" type="button">Jogar de novo</button>
+        <button id="botao-resultado" type="button">Resultado</button>
+    </div>
+
+    <script>
+    (() => {
+        'use strict';
+
+        // ======== Celular (substitui o trecho do public/controlador/controlador.js) ========
+        const $ = id => document.getElementById(id);
+        const telaSorting = $('tela-sorting');
+        const telaResultadoSorting = $('tela-resultado-sorting');
+        const TODAS_AS_TELAS = [telaSorting, telaResultadoSorting];
+
+        const arena = $('arena');
+        const moeda = $('moeda');
+        const buracos = { A: $('buraco-a'), B: $('buraco-b') };
+
+        let meuJogadorId = null;
+        let jaConfirmouContinuar = false;
+        let statusContinuarAtivoEl = null;
+        let intervaloSorting = null;
+
+        let itens = [];
+        let catA = '', catB = '';
+        let atual = 0;                 // índice do item na moeda
+        let respostas = new Map();     // itemIndex → { categoria, correto? }
+        let ocupado = false;           // moeda caindo / esperando o servidor
+        let terminou = false;
+
+        function mostrarTela(tela) {
+            for (const t of TODAS_AS_TELAS) t.classList.toggle('oculto', t !== tela);
+        }
+
+        function criarEl(tag, classe, texto) {
+            const el = document.createElement(tag);
+            if (classe) el.className = classe;
+            if (texto !== undefined) el.textContent = texto;
+            return el;
+        }
+
+        // ---------- Timer ----------
+        const CIRC = 326.7;
+        function iniciarTimer(ms) {
+            clearInterval(intervaloSorting);
+            const anel = $('anel-sorting'), numero = $('numero-sorting'), modulo = $('timer-sorting');
+            const inicio = Date.now();
+            const atualizar = () => {
+                const dec = Date.now() - inicio;
+                const resta = Math.max(0, ms - dec);
+                anel.style.strokeDashoffset = String(CIRC * Math.min(1, dec / ms));
+                const s = Math.ceil(resta / 1000);
+                numero.textContent = String(s);
+                modulo.classList.toggle('urgente', s <= 5 && s > 0 && !terminou);
+                if (resta <= 0) clearInterval(intervaloSorting);
+            };
+            atualizar();
+            intervaloSorting = setInterval(atualizar, 100);
+        }
+
+        // ---------- Progresso ----------
+        function atualizarBolinhas() {
+            $('sorting-progresso').replaceChildren(...itens.map((_, i) => {
+                const r = respostas.get(i);
+                let cls = '';
+                if (r && r.correto === true) cls = 'certo';
+                else if (r && r.correto === false) cls = 'errado';
+                else if (i === atual && !terminou) cls = 'atual';
+                return criarEl('i', cls);
+            }));
+        }
+
+        // ---------- Moeda ----------
+        function ajustarFonte(texto) {
+            // O tamanho segue a MAIOR palavra (quebra só em espaço ou hífen, nunca no meio)
+            const maior = Math.max(...texto.split(/[\s-]+/).map(p => p.length + (texto.includes('-') ? 1 : 0)));
+            const tam = Math.min(.24, 1.45 / Math.max(1, maior), .62 / Math.sqrt(texto.length));
+            moeda.style.setProperty('--fonte', `calc(var(--moeda) * ${tam.toFixed(3)})`);
+        }
+
+        function mostrarMoeda() {
+            if (atual >= itens.length) return;
+            $('moeda-texto').textContent = itens[atual];
+            ajustarFonte(itens[atual]);
+            moeda.classList.remove('oculto', 'voltando');
+            moeda.style.transform = '';
+            moeda.style.opacity = '';
+            moeda.classList.remove('entrando');
+            void moeda.offsetWidth;
+            moeda.classList.add('entrando');
+            ocupado = false;
+            atualizarBolinhas();
+        }
+
+        function centroDe(el) {
+            const r = el.getBoundingClientRect();
+            return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+        }
+
+        // A carta voa para o lado escolhido e some dentro da zona
+        function jogarNoBuraco(cat) {
+            if (ocupado || terminou || atual >= itens.length) return;
+            ocupado = true;
+            buracos.A.classList.remove('mira');
+            buracos.B.classList.remove('mira');
+
+            const zona = buracos[cat];
+            const de = centroDe(moeda), para = centroDe(zona);
+            const atualT = moeda.style.transform || 'translate(0px, 0px)';
+            const m = /translate\(([-\d.]+)px,\s*([-\d.]+)px\)/.exec(atualT) || [0, 0, 0];
+            const x0 = Number(m[1]), y0 = Number(m[2]);
+            const dx = para.x - de.x + x0, dy = para.y - de.y + y0;
+            const giro = cat === 'A' ? -18 : 18;
+
+            moeda.classList.remove('entrando', 'voltando', 'arrastando');
+            const anim = moeda.animate([
+                { transform: `translate(${x0}px, ${y0}px) rotate(${x0 * .08}deg) scale(1)`, opacity: 1 },
+                { transform: `translate(${dx}px, ${dy}px) rotate(${giro}deg) scale(.55)`, opacity: .9, offset: .8 },
+                { transform: `translate(${dx}px, ${dy}px) rotate(${giro}deg) scale(.3)`, opacity: 0 }
+            ], { duration: 320, easing: 'cubic-bezier(.4,0,.6,1)', fill: 'forwards' });
+
+            const itemIndex = atual;
+            respostas.set(itemIndex, { categoria: cat });
+            if (navigator.vibrate) navigator.vibrate(15);
+            anim.onfinish = () => {
+                moeda.classList.add('oculto');
+                if (atual >= itens.length - 1) $('monte').classList.add('vazio');
+                anim.cancel();
+                enviarAoServidor({ type: 'classificarItem', itemIndex, categoria: cat });
+            };
+        }
+
+        function mostrarFeedback(cat, correto) {
+            const b = buracos[cat];
+            b.classList.remove('acertou', 'errou');
+            void b.offsetWidth;
+            b.classList.add(correto ? 'acertou' : 'errou');
+            const f = criarEl('span', 'feedback ' + (correto ? 'ok' : 'nao'), correto ? '✓ +25' : '✗ Errou');
+            b.append(f);
+            setTimeout(() => { f.remove(); b.classList.remove('acertou', 'errou'); }, 900);
+            if (!correto && navigator.vibrate) navigator.vibrate([30, 40, 30]);
+        }
+
+        function mostrarTerminou() {
+            terminou = true;
+            const certos = [...respostas.values()].filter(r => r.correto).length;
+            const t = criarEl('div', 'terminou');
+            t.append(criarEl('span', 'grande', '🎉'), criarEl('b', '', 'Tudo separado!'),
+                criarEl('small', '', `${certos} de ${itens.length} certos · aguardando os outros…`));
+            arena.append(t);
+            atualizarBolinhas();
+        }
+
+        // ---------- Arrastar / peteleco / tocar no buraco ----------
+        let arrasto = null; // { x0, y0, t0, ultimoX, ultimoT, vx }
+
+        moeda.addEventListener('pointerdown', (ev) => {
+            if (ocupado || terminou) return;
+            ev.preventDefault();
+            moeda.setPointerCapture(ev.pointerId);
+            moeda.classList.remove('entrando', 'voltando');
+            moeda.classList.add('arrastando');
+            arrasto = { x0: ev.clientX, y0: ev.clientY, ultimoX: ev.clientX, ultimoT: performance.now(), vx: 0 };
+            $('dica').style.visibility = 'hidden';
+        });
+
+        moeda.addEventListener('pointermove', (ev) => {
+            if (!arrasto) return;
+            const dx = ev.clientX - arrasto.x0, dy = ev.clientY - arrasto.y0;
+            moeda.style.transform = `translate(${dx}px, ${dy}px) rotate(${dx * .08}deg)`;
+            const agora = performance.now();
+            const dt = Math.max(1, agora - arrasto.ultimoT);
+            arrasto.vx = (ev.clientX - arrasto.ultimoX) / dt; // px/ms
+            arrasto.ultimoX = ev.clientX;
+            arrasto.ultimoT = agora;
+            const alvo = buracoSob(ev.clientX, ev.clientY);
+            buracos.A.classList.toggle('mira', alvo === 'A');
+            buracos.B.classList.toggle('mira', alvo === 'B');
+        });
+
+        function soltar(ev) {
+            if (!arrasto) return;
+            const a = arrasto;
+            arrasto = null;
+            moeda.classList.remove('arrastando');
+            const dx = ev.clientX - a.x0;
+            const larguraArena = arena.getBoundingClientRect().width;
+
+            let cat = buracoSob(ev.clientX, ev.clientY);
+            // Peteleco: soltou rápido para o lado, mesmo sem chegar no buraco
+            if (!cat && Math.abs(a.vx) > 0.6 && Math.abs(dx) > 25) cat = a.vx < 0 ? 'A' : 'B';
+            // Arrastou bastante para um lado
+            if (!cat && Math.abs(dx) > larguraArena * 0.22) cat = dx < 0 ? 'A' : 'B';
+
+            if (cat) jogarNoBuraco(cat);
+            else {
+                buracos.A.classList.remove('mira');
+                buracos.B.classList.remove('mira');
+                moeda.classList.add('voltando');
+                moeda.style.transform = '';
+            }
+        }
+        moeda.addEventListener('pointerup', soltar);
+        moeda.addEventListener('pointercancel', soltar);
+
+        function buracoSob(x, y) {
+            for (const cat of ['A', 'B']) {
+                const r = buracos[cat].getBoundingClientRect();
+                if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) return cat;
+            }
+            return null;
+        }
+
+        // Atalho: tocar no buraco joga a moeda nele
+        for (const cat of ['A', 'B']) buracos[cat].addEventListener('click', () => jogarNoBuraco(cat));
+
+        // ---------- Resultado ----------
+        function renderizarMinhaPosicao(placar) {
+            const eu = placar.find(j => j.id === meuJogadorId);
+            if (!eu) return;
+            const posicao = placar.filter(j => j.pontos > eu.pontos).length + 1;
+            $('posicao-numero-sorting').textContent = `${posicao}º`;
+            $('posicao-pontos-sorting').textContent = `${eu.pontos} pts`;
+            const dif = $('posicao-diferenca-sorting');
+            const acima = [...placar].reverse().find(j => j.pontos > eu.pontos);
+            dif.textContent = acima
+                ? `Faltam ${acima.pontos - eu.pontos + 1} pontos para passar ${acima.nome}`
+                : 'Você está na frente! 🏆';
+            dif.classList.remove('oculto');
+        }
+
+        function renderizarGabarito(gabarito) {
+            $('gab-titulo-a').textContent = catA;
+            $('gab-titulo-b').textContent = catB;
+            const ulA = $('gab-a'), ulB = $('gab-b');
+            ulA.replaceChildren();
+            ulB.replaceChildren();
+            for (const item of gabarito) {
+                const meuIdx = itens.indexOf(item.nome);
+                const r = respostas.get(meuIdx);
+                const estado = !r || r.correto === undefined ? '' : r.correto ? 'certo' : 'errado';
+                const li = criarEl('li', estado);
+                li.append(criarEl('span', '', estado === 'certo' ? '✅' : estado === 'errado' ? '❌' : '➖'), criarEl('span', 'n', item.nome));
+                (item.categoria === 'A' ? ulA : ulB).append(li);
+            }
+        }
+
+        function prepararContinuar(jaConfirmou) {
+            const botao = $('botao-continuar-sorting'), status = $('status-continuar-sorting');
+            jaConfirmouContinuar = !!jaConfirmou;
+            botao.disabled = !!jaConfirmou;
+            status.classList.toggle('oculto', !jaConfirmou);
+            status.textContent = jaConfirmou ? 'Aguardando os outros jogadores…' : '';
+            statusContinuarAtivoEl = status;
+        }
+
+        $('botao-continuar-sorting').addEventListener('click', () => {
+            if (jaConfirmouContinuar) return;
+            jaConfirmouContinuar = true;
+            $('botao-continuar-sorting').disabled = true;
+            statusContinuarAtivoEl.classList.remove('oculto');
+            statusContinuarAtivoEl.textContent = 'Aguardando os outros jogadores…';
+            enviarAoServidor({ type: 'continuar' });
+        });
+
+        // ---------- Mensagens do servidor ----------
+        function tratarMensagem(msg) {
+            switch (msg.type) {
+                case 'iniciarSorting': {
+                    catA = msg.categoriaA;
+                    catB = msg.categoriaB;
+                    $('nome-cat-a').textContent = catA;
+                    $('nome-cat-b').textContent = catB;
+                    itens = msg.itens;
+                    atual = 0;
+                    respostas = new Map();
+                    terminou = false;
+                    arena.querySelector('.terminou')?.remove();
+                    $('monte').classList.remove('vazio');
+                    $('dica').style.visibility = '';
+                    mostrarTela(telaSorting);
+                    mostrarMoeda();
+                    iniciarTimer(msg.tempoLimiteMs);
+                    break;
+                }
+                case 'resultadoClassificacaoItem': {
+                    const r = respostas.get(msg.itemIndex) || {};
+                    r.correto = msg.correto;
+                    respostas.set(msg.itemIndex, r);
+                    if (r.categoria) mostrarFeedback(r.categoria, msg.correto);
+                    atual = msg.itemIndex + 1;
+                    if (atual >= itens.length) setTimeout(mostrarTerminou, 500);
+                    else setTimeout(mostrarMoeda, 260);
+                    atualizarBolinhas();
+                    break;
+                }
+                case 'resultadoSorting': {
+                    clearInterval(intervaloSorting);
+                    if (msg.categoriaA) catA = msg.categoriaA;
+                    if (msg.categoriaB) catB = msg.categoriaB;
+                    mostrarTela(telaResultadoSorting);
+                    $('sorting-pontos').textContent = `+${msg.pontosGanhos} pts`;
+                    $('sorting-acertos').textContent = `Você acertou ${msg.corretos} de ${msg.totalItens}`;
+                    renderizarGabarito(msg.gabarito);
+                    renderizarMinhaPosicao(msg.placar);
+                    prepararContinuar(msg.jaConfirmou);
+                    break;
+                }
+                case 'progressoContinuar': {
+                    if (statusContinuarAtivoEl) {
+                        statusContinuarAtivoEl.classList.remove('oculto');
+                        statusContinuarAtivoEl.textContent = `${msg.confirmados} de ${msg.total} prontos`;
+                    }
+                    break;
+                }
+            }
+        }
+
+        // ======== servidor de mentira (responde como o server/sala.js) ========
+        const TEMPO_LIMITE_MS = 30000;
+        const PONTOS_POR_ITEM = 25;
+
+        const CONJUNTO = {
+            categoriaA: 'Marvel',
+            categoriaB: 'DC',
+            itens: [
+                { nome: 'Homem-Aranha', categoria: 'A' },
+                { nome: 'Batman', categoria: 'B' },
+                { nome: 'Homem de Ferro', categoria: 'A' },
+                { nome: 'Superman', categoria: 'B' },
+                { nome: 'Hulk', categoria: 'A' },
+                { nome: 'Mulher-Maravilha', categoria: 'B' },
+                { nome: 'Thor', categoria: 'A' },
+                { nome: 'Flash', categoria: 'B' }
+            ]
+        };
+
+        const EU = { id: '2', nome: 'Rodrigo', pontos: 1355, avatar: { emoji: '🐼', cor: '#1e90ff' } };
+        const OUTROS = [
+            { id: '1', nome: 'Ana',   pontos: 1480, avatar: { emoji: '🦊', cor: '#ff4757' }, terminaEm: 13000, acertos: 7 },
+            { id: '3', nome: 'Carla', pontos: 1290, avatar: { emoji: '🐸', cor: '#2ed573' }, terminaEm: 19000, acertos: 6 },
+            { id: '4', nome: 'Duda',  pontos: 1105, avatar: { emoji: '🦁', cor: '#ffa502' }, terminaEm: 24000, acertos: 6 },
+            { id: '5', nome: 'Edu',   pontos:  980, avatar: { emoji: '🦄', cor: '#9b59b6' }, terminaEm: 28000, acertos: 4 },
+            { id: '6', nome: 'Bruno', pontos:  845, avatar: { emoji: '🐧', cor: '#00d2d3' }, terminaEm: 16000, acertos: 7 }
+        ];
+
+        let timers = [];
+        const depois = (ms, fn) => timers.push(setTimeout(fn, ms));
+        let estado = null;
+
+        function embaralhar(lista) {
+            const a = [...lista];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        const todosTerminaram = () => estado.eu.respondidos.size >= CONJUNTO.itens.length && estado.outros.every(o => o.terminou);
+
+        function revelar() {
+            if (estado.revelado) return;
+            estado.revelado = true;
+            timers.forEach(clearTimeout);
+            timers = [];
+            let corretos = 0;
+            for (const [i, cat] of estado.eu.respondidos) if (estado.eu.gabarito[i] === cat) corretos++;
+            const meuGanho = corretos * PONTOS_POR_ITEM;
+            const placar = [
+                { id: EU.id, nome: EU.nome, avatar: EU.avatar, pontos: EU.pontos + meuGanho },
+                ...estado.outros.map(o => ({ id: o.id, nome: o.nome, avatar: o.avatar, pontos: o.pontos + o.acertos * PONTOS_POR_ITEM }))
+            ].sort((a, b) => b.pontos - a.pontos);
+            tratarMensagem({
+                type: 'resultadoSorting',
+                categoriaA: CONJUNTO.categoriaA,
+                categoriaB: CONJUNTO.categoriaB,
+                pontosGanhos: meuGanho,
+                corretos,
+                totalItens: CONJUNTO.itens.length,
+                gabarito: CONJUNTO.itens.map(it => ({ nome: it.nome, categoria: it.categoria })),
+                placar
+            });
+            estado.confirmados = 0;
+            estado.outros.forEach((_, k) => depois(2000 + k * 900 + Math.random() * 1500, confirmacao));
+        }
+
+        function confirmacao() {
+            estado.confirmados++;
+            tratarMensagem({ type: 'progressoContinuar', confirmados: estado.confirmados, total: 1 + estado.outros.length });
+        }
+
+        function enviarAoServidor(msg) {
+            if (!estado) return;
+            if (msg.type === 'classificarItem') {
+                estado.eu.respondidos.set(msg.itemIndex, msg.categoria);
+                const correto = estado.eu.gabarito[msg.itemIndex] === msg.categoria;
+                depois(120, () => {
+                    tratarMensagem({ type: 'resultadoClassificacaoItem', itemIndex: msg.itemIndex, correto });
+                    if (todosTerminaram()) depois(1500, revelar);
+                });
+            } else if (msg.type === 'continuar') {
+                confirmacao();
+            }
+        }
+
+        function jogar() {
+            timers.forEach(clearTimeout);
+            timers = [];
+            meuJogadorId = EU.id;
+            document.documentElement.style.setProperty('--cor-jogador', EU.avatar.cor);
+            for (const el of document.querySelectorAll('[data-identidade]')) {
+                el.replaceChildren(criarEl('span', 'player-avatar', EU.avatar.emoji), criarEl('span', 'player-name', EU.nome));
+            }
+            const ordem = embaralhar(CONJUNTO.itens);
+            estado = {
+                revelado: false,
+                eu: { itens: ordem.map(it => it.nome), gabarito: ordem.map(it => it.categoria), respondidos: new Map() },
+                outros: OUTROS.map(o => ({ ...o, terminou: false }))
+            };
+            for (const o of estado.outros) {
+                depois(o.terminaEm, () => { o.terminou = true; if (todosTerminaram()) revelar(); });
+            }
+            depois(TEMPO_LIMITE_MS + 500, revelar);
+            tratarMensagem({ type: 'iniciarSorting', categoriaA: CONJUNTO.categoriaA, categoriaB: CONJUNTO.categoriaB, itens: estado.eu.itens, tempoLimiteMs: TEMPO_LIMITE_MS });
+        }
+
+        function resultadoDireto() {
+            jogar();
+            // como se você tivesse classificado tudo e errado 2
+            estado.eu.gabarito.forEach((cat, i) => {
+                const escolha = i < 2 ? (cat === 'A' ? 'B' : 'A') : cat;
+                estado.eu.respondidos.set(i, escolha);
+                respostas.set(i, { categoria: escolha, correto: escolha === cat });
+            });
+            estado.outros.forEach(o => (o.terminou = true));
+            revelar();
+        }
+
+        // Expõe para testes automáticos do protótipo
+        window.__prototipo = { estado: () => estado };
+
+        $('botao-repetir').addEventListener('click', jogar);
+        $('botao-resultado').addEventListener('click', resultadoDireto);
+        const params = new URLSearchParams(location.search);
+        if (params.has('limpo')) $('barra-prototipo').classList.add('oculto');
+        if (params.get('tela') === 'resultado') resultadoDireto(); else jogar();
+    })();
+    </script>
+</body>
+
+</html>
