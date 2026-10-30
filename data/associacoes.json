@@ -64,5 +64,489 @@
       { "esquerda": "O Grito", "direita": "Edvard Munch" },
       { "esquerda": "A Persistência da Memória", "direita": "Salvador Dalí" }
     ]
+  },
+  {
+    "id": 7,
+    "tema": "Capitais do Brasil I",
+    "pares": [
+      { "esquerda": "Alagoas", "direita": "Maceió" },
+      { "esquerda": "Amazonas", "direita": "Manaus" },
+      { "esquerda": "Goiás", "direita": "Goiânia" },
+      { "esquerda": "Paraná", "direita": "Curitiba" },
+      { "esquerda": "Pernambuco", "direita": "Recife" }
+    ]
+  },
+  {
+    "id": 8,
+    "tema": "Capitais do Brasil II",
+    "pares": [
+      { "esquerda": "Acre", "direita": "Rio Branco" },
+      { "esquerda": "Amapá", "direita": "Macapá" },
+      { "esquerda": "Mato Grosso", "direita": "Cuiabá" },
+      { "esquerda": "Piauí", "direita": "Teresina" },
+      { "esquerda": "Roraima", "direita": "Boa Vista" }
+    ]
+  },
+  {
+    "id": 9,
+    "tema": "Capitais da América do Sul",
+    "pares": [
+      { "esquerda": "Argentina", "direita": "Buenos Aires" },
+      { "esquerda": "Chile", "direita": "Santiago" },
+      { "esquerda": "Colômbia", "direita": "Bogotá" },
+      { "esquerda": "Peru", "direita": "Lima" },
+      { "esquerda": "Uruguai", "direita": "Montevidéu" }
+    ]
+  },
+  {
+    "id": 10,
+    "tema": "Capitais da Europa",
+    "pares": [
+      { "esquerda": "Alemanha", "direita": "Berlim" },
+      { "esquerda": "Espanha", "direita": "Madri" },
+      { "esquerda": "Grécia", "direita": "Atenas" },
+      { "esquerda": "Itália", "direita": "Roma" },
+      { "esquerda": "Portugal", "direita": "Lisboa" }
+    ]
+  },
+  {
+    "id": 11,
+    "tema": "Capitais da África",
+    "pares": [
+      { "esquerda": "Angola", "direita": "Luanda" },
+      { "esquerda": "Gana", "direita": "Acra" },
+      { "esquerda": "Quênia", "direita": "Nairóbi" },
+      { "esquerda": "Namíbia", "direita": "Windhoek" },
+      { "esquerda": "Senegal", "direita": "Dacar" }
+    ]
+  },
+  {
+    "id": 12,
+    "tema": "Capitais da Ásia",
+    "pares": [
+      { "esquerda": "China", "direita": "Pequim" },
+      { "esquerda": "Índia", "direita": "Nova Délhi" },
+      { "esquerda": "Coreia do Sul", "direita": "Seul" },
+      { "esquerda": "Tailândia", "direita": "Bangcoc" },
+      { "esquerda": "Vietnã", "direita": "Hanói" }
+    ]
+  },
+  {
+    "id": 13,
+    "tema": "Capitais da Oceania",
+    "pares": [
+      { "esquerda": "Fiji", "direita": "Suva" },
+      { "esquerda": "Nova Zelândia", "direita": "Wellington" },
+      { "esquerda": "Papua-Nova Guiné", "direita": "Port Moresby" },
+      { "esquerda": "Samoa", "direita": "Apia" },
+      { "esquerda": "Tonga", "direita": "Nuku'alofa" }
+    ]
+  },
+  {
+    "id": 14,
+    "tema": "Planetas e Ordem a Partir do Sol",
+    "pares": [
+      { "esquerda": "Mercúrio", "direita": "1º planeta" },
+      { "esquerda": "Vênus", "direita": "2º planeta" },
+      { "esquerda": "Terra", "direita": "3º planeta" },
+      { "esquerda": "Marte", "direita": "4º planeta" },
+      { "esquerda": "Júpiter", "direita": "5º planeta" }
+    ]
+  },
+  {
+    "id": 15,
+    "tema": "Luas Naturais e Planetas",
+    "pares": [
+      { "esquerda": "Lua", "direita": "Terra" },
+      { "esquerda": "Fobos", "direita": "Marte" },
+      { "esquerda": "Ganimedes", "direita": "Júpiter" },
+      { "esquerda": "Titã", "direita": "Saturno" },
+      { "esquerda": "Tritão", "direita": "Netuno" }
+    ]
+  },
+  {
+    "id": 16,
+    "tema": "Elementos Químicos e Símbolos II",
+    "pares": [
+      { "esquerda": "Carbono", "direita": "C" },
+      { "esquerda": "Nitrogênio", "direita": "N" },
+      { "esquerda": "Sódio", "direita": "Na" },
+      { "esquerda": "Cálcio", "direita": "Ca" },
+      { "esquerda": "Cobre", "direita": "Cu" }
+    ]
+  },
+  {
+    "id": 17,
+    "tema": "Biomas Brasileiros e Características",
+    "pares": [
+      { "esquerda": "Amazônia", "direita": "Grande floresta tropical úmida" },
+      { "esquerda": "Caatinga", "direita": "Vegetação adaptada ao clima semiárido" },
+      { "esquerda": "Cerrado", "direita": "Savana brasileira" },
+      { "esquerda": "Pantanal", "direita": "Planície sazonalmente inundável" },
+      { "esquerda": "Pampa", "direita": "Campos de gramíneas no Sul do Brasil" }
+    ]
+  },
+  {
+    "id": 18,
+    "tema": "Regiões do Brasil e Estados",
+    "pares": [
+      { "esquerda": "Norte", "direita": "Acre" },
+      { "esquerda": "Nordeste", "direita": "Bahia" },
+      { "esquerda": "Centro-Oeste", "direita": "Goiás" },
+      { "esquerda": "Sudeste", "direita": "Minas Gerais" },
+      { "esquerda": "Sul", "direita": "Rio Grande do Sul" }
+    ]
+  },
+  {
+    "id": 19,
+    "tema": "Animais e Habitats Característicos",
+    "pares": [
+      { "esquerda": "Camelo", "direita": "Deserto" },
+      { "esquerda": "Urso-polar", "direita": "Regiões árticas" },
+      { "esquerda": "Capivara", "direita": "Áreas alagadas" },
+      { "esquerda": "Coral", "direita": "Recife marinho" },
+      { "esquerda": "Coala", "direita": "Florestas de eucalipto" }
+    ]
+  },
+  {
+    "id": 20,
+    "tema": "Animais e Nomes dos Filhotes",
+    "pares": [
+      { "esquerda": "Cavalo", "direita": "Potro" },
+      { "esquerda": "Vaca", "direita": "Bezerro" },
+      { "esquerda": "Ovelha", "direita": "Cordeiro" },
+      { "esquerda": "Porca", "direita": "Leitão" },
+      { "esquerda": "Galinha", "direita": "Pintinho" }
+    ]
+  },
+  {
+    "id": 21,
+    "tema": "Animais e Sons",
+    "pares": [
+      { "esquerda": "Cachorro", "direita": "Latido" },
+      { "esquerda": "Gato", "direita": "Miado" },
+      { "esquerda": "Leão", "direita": "Rugido" },
+      { "esquerda": "Lobo", "direita": "Uivo" },
+      { "esquerda": "Cavalo", "direita": "Relincho" }
+    ]
+  },
+  {
+    "id": 22,
+    "tema": "Aves e Características",
+    "pares": [
+      { "esquerda": "Avestruz", "direita": "Não consegue voar" },
+      { "esquerda": "Beija-flor", "direita": "Consegue pairar no ar" },
+      { "esquerda": "Pinguim", "direita": "Usa as asas para nadar" },
+      { "esquerda": "Tucano", "direita": "Tem bico grande e colorido" },
+      { "esquerda": "Coruja", "direita": "É conhecida por seus hábitos noturnos" }
+    ]
+  },
+  {
+    "id": 23,
+    "tema": "Animais Vertebrados e Classes",
+    "pares": [
+      { "esquerda": "Baleia", "direita": "Mamífero" },
+      { "esquerda": "Sapo", "direita": "Anfíbio" },
+      { "esquerda": "Cobra", "direita": "Réptil" },
+      { "esquerda": "Salmão", "direita": "Peixe" },
+      { "esquerda": "Arara", "direita": "Ave" }
+    ]
+  },
+  {
+    "id": 24,
+    "tema": "Monumentos e Localidades",
+    "pares": [
+      { "esquerda": "Torre Eiffel", "direita": "Paris" },
+      { "esquerda": "Coliseu", "direita": "Roma" },
+      { "esquerda": "Taj Mahal", "direita": "Agra" },
+      { "esquerda": "Estátua da Liberdade", "direita": "Nova York" },
+      { "esquerda": "Machu Picchu", "direita": "Região de Cusco" }
+    ]
+  },
+  {
+    "id": 25,
+    "tema": "Rios e Continentes",
+    "pares": [
+      { "esquerda": "Rio Amazonas", "direita": "América do Sul" },
+      { "esquerda": "Rio Nilo", "direita": "África" },
+      { "esquerda": "Rio Danúbio", "direita": "Europa" },
+      { "esquerda": "Rio Ganges", "direita": "Ásia" },
+      { "esquerda": "Rio Murray", "direita": "Oceania" }
+    ]
+  },
+  {
+    "id": 26,
+    "tema": "Montanhas e Países",
+    "pares": [
+      { "esquerda": "Aconcágua", "direita": "Argentina" },
+      { "esquerda": "Denali", "direita": "Estados Unidos" },
+      { "esquerda": "Monte Fuji", "direita": "Japão" },
+      { "esquerda": "Kilimanjaro", "direita": "Tanzânia" },
+      { "esquerda": "Monte Elbrus", "direita": "Rússia" }
+    ]
+  },
+  {
+    "id": 27,
+    "tema": "Pratos Brasileiros e Estados",
+    "pares": [
+      { "esquerda": "Acarajé", "direita": "Bahia" },
+      { "esquerda": "Barreado", "direita": "Paraná" },
+      { "esquerda": "Moqueca capixaba", "direita": "Espírito Santo" },
+      { "esquerda": "Pato no tucupi", "direita": "Pará" },
+      { "esquerda": "Pão de queijo", "direita": "Minas Gerais" }
+    ]
+  },
+  {
+    "id": 28,
+    "tema": "Autores Brasileiros e Obras",
+    "pares": [
+      { "esquerda": "Clarice Lispector", "direita": "A Hora da Estrela" },
+      { "esquerda": "Graciliano Ramos", "direita": "Vidas Secas" },
+      { "esquerda": "Guimarães Rosa", "direita": "Grande Sertão: Veredas" },
+      { "esquerda": "Jorge Amado", "direita": "Capitães da Areia" },
+      { "esquerda": "José de Alencar", "direita": "Iracema" }
+    ]
+  },
+  {
+    "id": 29,
+    "tema": "Autores Estrangeiros e Obras",
+    "pares": [
+      { "esquerda": "Jane Austen", "direita": "Orgulho e Preconceito" },
+      { "esquerda": "Mary Shelley", "direita": "Frankenstein" },
+      { "esquerda": "Júlio Verne", "direita": "Vinte Mil Léguas Submarinas" },
+      { "esquerda": "Herman Melville", "direita": "Moby Dick" },
+      { "esquerda": "Antoine de Saint-Exupéry", "direita": "O Pequeno Príncipe" }
+    ]
+  },
+  {
+    "id": 30,
+    "tema": "Personagens e Obras Literárias",
+    "pares": [
+      { "esquerda": "Sherlock Holmes", "direita": "O Cão dos Baskervilles" },
+      { "esquerda": "Alice", "direita": "Alice no País das Maravilhas" },
+      { "esquerda": "Tom Sawyer", "direita": "As Aventuras de Tom Sawyer" },
+      { "esquerda": "Drácula", "direita": "Drácula" },
+      { "esquerda": "Raskólnikov", "direita": "Crime e Castigo" }
+    ]
+  },
+  {
+    "id": 31,
+    "tema": "Deuses Gregos e Domínios",
+    "pares": [
+      { "esquerda": "Zeus", "direita": "Céu e trovões" },
+      { "esquerda": "Poseidon", "direita": "Mar" },
+      { "esquerda": "Atena", "direita": "Sabedoria e estratégia" },
+      { "esquerda": "Ares", "direita": "Guerra" },
+      { "esquerda": "Deméter", "direita": "Agricultura" }
+    ]
+  },
+  {
+    "id": 32,
+    "tema": "Deuses Gregos e Equivalentes Romanos",
+    "pares": [
+      { "esquerda": "Zeus", "direita": "Júpiter" },
+      { "esquerda": "Hera", "direita": "Juno" },
+      { "esquerda": "Poseidon", "direita": "Netuno" },
+      { "esquerda": "Afrodite", "direita": "Vênus" },
+      { "esquerda": "Ares", "direita": "Marte" }
+    ]
+  },
+  {
+    "id": 33,
+    "tema": "Contos de Fadas e Elementos Marcantes",
+    "pares": [
+      { "esquerda": "Sapatinho de cristal", "direita": "Cinderela" },
+      { "esquerda": "Casa de doces", "direita": "João e Maria" },
+      { "esquerda": "Cabelo comprido", "direita": "Rapunzel" },
+      { "esquerda": "Fuso de roca", "direita": "A Bela Adormecida" },
+      { "esquerda": "Lâmpada mágica", "direita": "Aladdin" }
+    ]
+  },
+  {
+    "id": 34,
+    "tema": "Pinturas e Pintores II",
+    "pares": [
+      { "esquerda": "O Nascimento de Vênus", "direita": "Sandro Botticelli" },
+      { "esquerda": "O Beijo", "direita": "Gustav Klimt" },
+      { "esquerda": "As Meninas", "direita": "Diego Velázquez" },
+      { "esquerda": "A Liberdade Guiando o Povo", "direita": "Eugène Delacroix" },
+      { "esquerda": "A Última Ceia", "direita": "Leonardo da Vinci" }
+    ]
+  },
+  {
+    "id": 35,
+    "tema": "Compositores e Obras Musicais",
+    "pares": [
+      { "esquerda": "Antonio Vivaldi", "direita": "As Quatro Estações" },
+      { "esquerda": "Ludwig van Beethoven", "direita": "Sinfonia nº 5" },
+      { "esquerda": "Wolfgang Amadeus Mozart", "direita": "A Flauta Mágica" },
+      { "esquerda": "Piotr Ilitch Tchaikovsky", "direita": "O Lago dos Cisnes" },
+      { "esquerda": "Frédéric Chopin", "direita": "Noturno em Mi bemol maior, Op. 9 nº 2" }
+    ]
+  },
+  {
+    "id": 36,
+    "tema": "Instrumentos e Famílias Musicais",
+    "pares": [
+      { "esquerda": "Violino", "direita": "Cordas" },
+      { "esquerda": "Flauta", "direita": "Madeiras" },
+      { "esquerda": "Trompete", "direita": "Metais" },
+      { "esquerda": "Tímpanos", "direita": "Percussão" },
+      { "esquerda": "Piano", "direita": "Teclas" }
+    ]
+  },
+  {
+    "id": 37,
+    "tema": "Esportes e Equipamentos",
+    "pares": [
+      { "esquerda": "Tênis", "direita": "Raquete" },
+      { "esquerda": "Golfe", "direita": "Taco" },
+      { "esquerda": "Beisebol", "direita": "Bastão" },
+      { "esquerda": "Hóquei no gelo", "direita": "Stick" },
+      { "esquerda": "Esgrima", "direita": "Florete" }
+    ]
+  },
+  {
+    "id": 38,
+    "tema": "Esportes e Locais de Prática",
+    "pares": [
+      { "esquerda": "Futebol", "direita": "Campo" },
+      { "esquerda": "Basquete", "direita": "Quadra" },
+      { "esquerda": "Natação", "direita": "Piscina" },
+      { "esquerda": "Ciclismo de pista", "direita": "Velódromo" },
+      { "esquerda": "Boliche", "direita": "Pista de boliche" }
+    ]
+  },
+  {
+    "id": 39,
+    "tema": "Atletas e Esportes",
+    "pares": [
+      { "esquerda": "Marta", "direita": "Futebol" },
+      { "esquerda": "Usain Bolt", "direita": "Corrida de velocidade" },
+      { "esquerda": "Michael Phelps", "direita": "Natação" },
+      { "esquerda": "Simone Biles", "direita": "Ginástica artística" },
+      { "esquerda": "Serena Williams", "direita": "Tênis" }
+    ]
+  },
+  {
+    "id": 40,
+    "tema": "Órgãos do Corpo e Funções",
+    "pares": [
+      { "esquerda": "Coração", "direita": "Bombeia o sangue" },
+      { "esquerda": "Pulmões", "direita": "Realizam trocas gasosas" },
+      { "esquerda": "Rins", "direita": "Filtram o sangue" },
+      { "esquerda": "Fígado", "direita": "Metaboliza diversas substâncias" },
+      { "esquerda": "Estômago", "direita": "Inicia a digestão dos alimentos" }
+    ]
+  },
+  {
+    "id": 41,
+    "tema": "Sentidos e Órgãos Sensoriais",
+    "pares": [
+      { "esquerda": "Visão", "direita": "Olhos" },
+      { "esquerda": "Audição", "direita": "Ouvidos" },
+      { "esquerda": "Olfato", "direita": "Nariz" },
+      { "esquerda": "Paladar", "direita": "Língua" },
+      { "esquerda": "Tato", "direita": "Pele" }
+    ]
+  },
+  {
+    "id": 42,
+    "tema": "Cientistas e Contribuições",
+    "pares": [
+      { "esquerda": "Isaac Newton", "direita": "Leis do movimento e gravitação universal" },
+      { "esquerda": "Marie Curie", "direita": "Pesquisas sobre radioatividade" },
+      { "esquerda": "Gregor Mendel", "direita": "Princípios da hereditariedade" },
+      { "esquerda": "Charles Darwin", "direita": "Teoria da evolução por seleção natural" },
+      { "esquerda": "Alexander Fleming", "direita": "Observação da ação antibacteriana da penicilina" }
+    ]
+  },
+  {
+    "id": 43,
+    "tema": "Ciências e Objetos de Estudo",
+    "pares": [
+      { "esquerda": "Botânica", "direita": "Plantas" },
+      { "esquerda": "Zoologia", "direita": "Animais" },
+      { "esquerda": "Geologia", "direita": "Terra e suas rochas" },
+      { "esquerda": "Astronomia", "direita": "Corpos celestes" },
+      { "esquerda": "Meteorologia", "direita": "Atmosfera e fenômenos do tempo" }
+    ]
+  },
+  {
+    "id": 44,
+    "tema": "Profissões e Instrumentos de Trabalho",
+    "pares": [
+      { "esquerda": "Astrônomo", "direita": "Telescópio" },
+      { "esquerda": "Carpinteiro", "direita": "Serrote" },
+      { "esquerda": "Dentista", "direita": "Espelho clínico" },
+      { "esquerda": "Cozinheiro", "direita": "Faca de cozinha" },
+      { "esquerda": "Fotógrafo", "direita": "Câmera" }
+    ]
+  },
+  {
+    "id": 45,
+    "tema": "Figuras Geométricas e Número de Lados",
+    "pares": [
+      { "esquerda": "Triângulo", "direita": "3 lados" },
+      { "esquerda": "Quadrado", "direita": "4 lados iguais" },
+      { "esquerda": "Pentágono", "direita": "5 lados" },
+      { "esquerda": "Hexágono", "direita": "6 lados" },
+      { "esquerda": "Octógono", "direita": "8 lados" }
+    ]
+  },
+  {
+    "id": 46,
+    "tema": "Unidades do SI e Grandezas",
+    "pares": [
+      { "esquerda": "Metro", "direita": "Comprimento" },
+      { "esquerda": "Quilograma", "direita": "Massa" },
+      { "esquerda": "Segundo", "direita": "Tempo" },
+      { "esquerda": "Ampere", "direita": "Corrente elétrica" },
+      { "esquerda": "Kelvin", "direita": "Temperatura termodinâmica" }
+    ]
+  },
+  {
+    "id": 47,
+    "tema": "Instrumentos de Medição e Grandezas",
+    "pares": [
+      { "esquerda": "Termômetro", "direita": "Temperatura" },
+      { "esquerda": "Barômetro", "direita": "Pressão atmosférica" },
+      { "esquerda": "Anemômetro", "direita": "Velocidade do vento" },
+      { "esquerda": "Higrômetro", "direita": "Umidade do ar" },
+      { "esquerda": "Sismógrafo", "direita": "Ondas sísmicas" }
+    ]
+  },
+  {
+    "id": 48,
+    "tema": "Camadas da Atmosfera e Características",
+    "pares": [
+      { "esquerda": "Troposfera", "direita": "Onde ocorrem a maioria dos fenômenos meteorológicos" },
+      { "esquerda": "Estratosfera", "direita": "Abriga a camada de ozônio" },
+      { "esquerda": "Mesosfera", "direita": "Onde muitos meteoroides se desintegram" },
+      { "esquerda": "Termosfera", "direita": "Região em que ocorrem muitas auroras" },
+      { "esquerda": "Exosfera", "direita": "Camada mais externa da atmosfera" }
+    ]
+  },
+  {
+    "id": 49,
+    "tema": "Bandas e Vocalistas II",
+    "pares": [
+      { "esquerda": "The Doors", "direita": "Jim Morrison" },
+      { "esquerda": "The Rolling Stones", "direita": "Mick Jagger" },
+      { "esquerda": "The Police", "direita": "Sting" },
+      { "esquerda": "Pearl Jam", "direita": "Eddie Vedder" },
+      { "esquerda": "The Smiths", "direita": "Morrissey" }
+    ]
+  },
+  {
+    "id": 50,
+    "tema": "Personagens e Atores II",
+    "pares": [
+      { "esquerda": "Luke Skywalker", "direita": "Mark Hamill" },
+      { "esquerda": "Forrest Gump", "direita": "Tom Hanks" },
+      { "esquerda": "Marty McFly", "direita": "Michael J. Fox" },
+      { "esquerda": "Indiana Jones", "direita": "Harrison Ford" },
+      { "esquerda": "Rocky Balboa", "direita": "Sylvester Stallone" }
+    ]
   }
 ]
