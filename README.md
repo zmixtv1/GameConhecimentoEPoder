@@ -89,13 +89,7 @@ O **primeiro jogador que entrou é o anfitrião**: só ele tem o botão de inici
    docker compose up --build -d
    ```
 
-3. Acompanhe a inicialização e anote o código da sala:
-
-   ```bash
-   docker compose logs -f jogo
-   ```
-
-Abra `http://localhost:3000/tv` na máquina do Docker. Se a TV for outro aparelho, use `http://IP_ANUNCIADO:PORTA/tv` (com os valores do `.env`). Os celulares podem escanear o QR code da TV ou abrir o endereço `Na rede:` exibido nos logs.
+Se a TV for outro aparelho na rede, acesse `http://IP_ANUNCIADO:PORTA/tv` (com os valores do `.env`). Se for na mesma máquina do docker, acesse `http://localhost:3000/tv`. Os celulares podem escanear o QR code da TV para fácil acesso à sala do jogo.
 
 Para parar o servidor, use `docker compose down`. Depois de editar o código, os arquivos de `public/` ou os bancos em `data/`, aplique as mudanças com `docker compose up --build -d`.
 
@@ -103,19 +97,7 @@ Para parar o servidor, use `docker compose down`. Depois de editar o código, os
 
 ## Usar outra porta
 
-A porta padrão é a 3000. Para mudar:
-
-```powershell
-# Windows (PowerShell)
-$env:PORTA = 8080; npm start
-```
-
-```bash
-# Linux, macOS, Git Bash
-PORTA=8080 npm start
-```
-
----
+A porta padrão é a 3000. Para mudar altere no arquivo .env e reinicie o servidor.
 
 ---
 
