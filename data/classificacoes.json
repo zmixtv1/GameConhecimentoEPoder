@@ -88,5 +88,665 @@
       { "nome": "Rony Weasley", "categoria": "A" },
       { "nome": "Aragorn", "categoria": "B" }
     ]
+  },
+  {
+    "id": 7,
+    "categoriaA": "Mamífero",
+    "categoriaB": "Ave",
+    "itens": [
+      { "nome": "Morcego", "categoria": "A" },
+      { "nome": "Avestruz", "categoria": "B" },
+      { "nome": "Golfinho", "categoria": "A" },
+      { "nome": "Beija-flor", "categoria": "B" },
+      { "nome": "Ornitorrinco", "categoria": "A" },
+      { "nome": "Pinguim", "categoria": "B" },
+      { "nome": "Cachorro", "categoria": "A" },
+      { "nome": "Arara", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 8,
+    "categoriaA": "Réptil",
+    "categoriaB": "Anfíbio",
+    "itens": [
+      { "nome": "Crocodilo", "categoria": "A" },
+      { "nome": "Sapo", "categoria": "B" },
+      { "nome": "Tartaruga", "categoria": "A" },
+      { "nome": "Perereca", "categoria": "B" },
+      { "nome": "Iguana", "categoria": "A" },
+      { "nome": "Salamandra", "categoria": "B" },
+      { "nome": "Cobra", "categoria": "A" },
+      { "nome": "Axolote", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 9,
+    "categoriaA": "Vertebrado",
+    "categoriaB": "Invertebrado",
+    "itens": [
+      { "nome": "Cavalo", "categoria": "A" },
+      { "nome": "Polvo", "categoria": "B" },
+      { "nome": "Salmão", "categoria": "A" },
+      { "nome": "Borboleta", "categoria": "B" },
+      { "nome": "Águia", "categoria": "A" },
+      { "nome": "Aranha", "categoria": "B" },
+      { "nome": "Sapo", "categoria": "A" },
+      { "nome": "Caranguejo", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 10,
+    "categoriaA": "Herbívoro",
+    "categoriaB": "Carnívoro",
+    "itens": [
+      { "nome": "Elefante", "categoria": "A" },
+      { "nome": "Leão", "categoria": "B" },
+      { "nome": "Girafa", "categoria": "A" },
+      { "nome": "Tigre", "categoria": "B" },
+      { "nome": "Coelho", "categoria": "A" },
+      { "nome": "Águia", "categoria": "B" },
+      { "nome": "Cavalo", "categoria": "A" },
+      { "nome": "Tubarão-branco", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 11,
+    "categoriaA": "Planta com flor",
+    "categoriaB": "Planta sem flor",
+    "itens": [
+      { "nome": "Rosa", "categoria": "A" },
+      { "nome": "Samambaia", "categoria": "B" },
+      { "nome": "Girassol", "categoria": "A" },
+      { "nome": "Musgo", "categoria": "B" },
+      { "nome": "Orquídea", "categoria": "A" },
+      { "nome": "Pinheiro", "categoria": "B" },
+      { "nome": "Tulipa", "categoria": "A" },
+      { "nome": "Avenca", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 12,
+    "categoriaA": "Metal",
+    "categoriaB": "Não metal",
+    "itens": [
+      { "nome": "Ferro", "categoria": "A" },
+      { "nome": "Oxigênio", "categoria": "B" },
+      { "nome": "Cobre", "categoria": "A" },
+      { "nome": "Carbono", "categoria": "B" },
+      { "nome": "Alumínio", "categoria": "A" },
+      { "nome": "Enxofre", "categoria": "B" },
+      { "nome": "Ouro", "categoria": "A" },
+      { "nome": "Nitrogênio", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 13,
+    "categoriaA": "Sólido a 25 °C",
+    "categoriaB": "Líquido a 25 °C",
+    "itens": [
+      { "nome": "Ferro", "categoria": "A" },
+      { "nome": "Água", "categoria": "B" },
+      { "nome": "Sal de cozinha", "categoria": "A" },
+      { "nome": "Etanol", "categoria": "B" },
+      { "nome": "Cobre", "categoria": "A" },
+      { "nome": "Mercúrio", "categoria": "B" },
+      { "nome": "Açúcar (sacarose)", "categoria": "A" },
+      { "nome": "Bromo", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 14,
+    "categoriaA": "Fonte renovável",
+    "categoriaB": "Fonte não renovável",
+    "itens": [
+      { "nome": "Energia solar", "categoria": "A" },
+      { "nome": "Carvão mineral", "categoria": "B" },
+      { "nome": "Energia eólica", "categoria": "A" },
+      { "nome": "Petróleo", "categoria": "B" },
+      { "nome": "Energia hidrelétrica", "categoria": "A" },
+      { "nome": "Gás natural", "categoria": "B" },
+      { "nome": "Energia geotérmica", "categoria": "A" },
+      { "nome": "Urânio (combustível nuclear)", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 15,
+    "categoriaA": "Planeta rochoso",
+    "categoriaB": "Planeta gigante",
+    "itens": [
+      { "nome": "Mercúrio", "categoria": "A" },
+      { "nome": "Júpiter", "categoria": "B" },
+      { "nome": "Vênus", "categoria": "A" },
+      { "nome": "Saturno", "categoria": "B" },
+      { "nome": "Terra", "categoria": "A" },
+      { "nome": "Urano", "categoria": "B" },
+      { "nome": "Marte", "categoria": "A" },
+      { "nome": "Netuno", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 16,
+    "categoriaA": "Estrela",
+    "categoriaB": "Planeta",
+    "itens": [
+      { "nome": "Sol", "categoria": "A" },
+      { "nome": "Júpiter", "categoria": "B" },
+      { "nome": "Sírius", "categoria": "A" },
+      { "nome": "Terra", "categoria": "B" },
+      { "nome": "Betelgeuse", "categoria": "A" },
+      { "nome": "Netuno", "categoria": "B" },
+      { "nome": "Proxima Centauri", "categoria": "A" },
+      { "nome": "Marte", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 17,
+    "categoriaA": "Unidade básica do Sistema Internacional de Unidades",
+    "categoriaB": "Unidade derivada do Sistema Internacional de Unidades",
+    "itens": [
+      { "nome": "Metro", "categoria": "A" },
+      { "nome": "Newton", "categoria": "B" },
+      { "nome": "Quilograma", "categoria": "A" },
+      { "nome": "Joule", "categoria": "B" },
+      { "nome": "Segundo", "categoria": "A" },
+      { "nome": "Pascal", "categoria": "B" },
+      { "nome": "Kelvin", "categoria": "A" },
+      { "nome": "Watt", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 18,
+    "categoriaA": "Sistema respiratório",
+    "categoriaB": "Sistema digestório",
+    "itens": [
+      { "nome": "Pulmões", "categoria": "A" },
+      { "nome": "Esôfago", "categoria": "B" },
+      { "nome": "Traqueia", "categoria": "A" },
+      { "nome": "Estômago", "categoria": "B" },
+      { "nome": "Laringe", "categoria": "A" },
+      { "nome": "Intestino delgado", "categoria": "B" },
+      { "nome": "Brônquios", "categoria": "A" },
+      { "nome": "Fígado", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 19,
+    "categoriaA": "Dispositivo de entrada",
+    "categoriaB": "Dispositivo de saída",
+    "itens": [
+      { "nome": "Teclado", "categoria": "A" },
+      { "nome": "Monitor", "categoria": "B" },
+      { "nome": "Mouse", "categoria": "A" },
+      { "nome": "Impressora", "categoria": "B" },
+      { "nome": "Scanner", "categoria": "A" },
+      { "nome": "Alto-falantes", "categoria": "B" },
+      { "nome": "Microfone", "categoria": "A" },
+      { "nome": "Projetor", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 20,
+    "categoriaA": "Hardware",
+    "categoriaB": "Software",
+    "itens": [
+      { "nome": "Processador", "categoria": "A" },
+      { "nome": "Ubuntu", "categoria": "B" },
+      { "nome": "Memória RAM", "categoria": "A" },
+      { "nome": "Mozilla Firefox", "categoria": "B" },
+      { "nome": "Teclado", "categoria": "A" },
+      { "nome": "LibreOffice Writer", "categoria": "B" },
+      { "nome": "SSD", "categoria": "A" },
+      { "nome": "GIMP", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 21,
+    "categoriaA": "Navegador",
+    "categoriaB": "Mecanismo de busca",
+    "itens": [
+      { "nome": "Google Chrome", "categoria": "A" },
+      { "nome": "Google", "categoria": "B" },
+      { "nome": "Mozilla Firefox", "categoria": "A" },
+      { "nome": "Bing", "categoria": "B" },
+      { "nome": "Safari", "categoria": "A" },
+      { "nome": "DuckDuckGo", "categoria": "B" },
+      { "nome": "Microsoft Edge", "categoria": "A" },
+      { "nome": "Ecosia", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 22,
+    "categoriaA": "Formato de imagem",
+    "categoriaB": "Formato de áudio",
+    "itens": [
+      { "nome": ".png", "categoria": "A" },
+      { "nome": ".mp3", "categoria": "B" },
+      { "nome": ".jpg", "categoria": "A" },
+      { "nome": ".wav", "categoria": "B" },
+      { "nome": ".gif", "categoria": "A" },
+      { "nome": ".flac", "categoria": "B" },
+      { "nome": ".svg", "categoria": "A" },
+      { "nome": ".aac", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 23,
+    "categoriaA": "Número primo",
+    "categoriaB": "Número composto",
+    "itens": [
+      { "nome": "2", "categoria": "A" },
+      { "nome": "4", "categoria": "B" },
+      { "nome": "3", "categoria": "A" },
+      { "nome": "6", "categoria": "B" },
+      { "nome": "5", "categoria": "A" },
+      { "nome": "8", "categoria": "B" },
+      { "nome": "7", "categoria": "A" },
+      { "nome": "9", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 24,
+    "categoriaA": "Número par",
+    "categoriaB": "Número ímpar",
+    "itens": [
+      { "nome": "12", "categoria": "A" },
+      { "nome": "7", "categoria": "B" },
+      { "nome": "24", "categoria": "A" },
+      { "nome": "19", "categoria": "B" },
+      { "nome": "38", "categoria": "A" },
+      { "nome": "31", "categoria": "B" },
+      { "nome": "50", "categoria": "A" },
+      { "nome": "53", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 25,
+    "categoriaA": "Ângulo agudo",
+    "categoriaB": "Ângulo obtuso",
+    "itens": [
+      { "nome": "Ângulo de 25°", "categoria": "A" },
+      { "nome": "Ângulo de 100°", "categoria": "B" },
+      { "nome": "Ângulo de 45°", "categoria": "A" },
+      { "nome": "Ângulo de 125°", "categoria": "B" },
+      { "nome": "Ângulo de 75°", "categoria": "A" },
+      { "nome": "Ângulo de 150°", "categoria": "B" },
+      { "nome": "Ângulo de 89°", "categoria": "A" },
+      { "nome": "Ângulo de 179°", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 26,
+    "categoriaA": "País europeu",
+    "categoriaB": "País africano",
+    "itens": [
+      { "nome": "Noruega", "categoria": "A" },
+      { "nome": "Quênia", "categoria": "B" },
+      { "nome": "Polônia", "categoria": "A" },
+      { "nome": "Gana", "categoria": "B" },
+      { "nome": "Irlanda", "categoria": "A" },
+      { "nome": "Marrocos", "categoria": "B" },
+      { "nome": "Grécia", "categoria": "A" },
+      { "nome": "Uganda", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 27,
+    "categoriaA": "País asiático",
+    "categoriaB": "País sul-americano",
+    "itens": [
+      { "nome": "Nepal", "categoria": "A" },
+      { "nome": "Equador", "categoria": "B" },
+      { "nome": "Tailândia", "categoria": "A" },
+      { "nome": "Paraguai", "categoria": "B" },
+      { "nome": "Mongólia", "categoria": "A" },
+      { "nome": "Bolívia", "categoria": "B" },
+      { "nome": "Paquistão", "categoria": "A" },
+      { "nome": "Venezuela", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 28,
+    "categoriaA": "Cidade no Hemisfério Norte",
+    "categoriaB": "Cidade no Hemisfério Sul",
+    "itens": [
+      { "nome": "Reiquiavique", "categoria": "A" },
+      { "nome": "Sydney", "categoria": "B" },
+      { "nome": "Cairo", "categoria": "A" },
+      { "nome": "Wellington", "categoria": "B" },
+      { "nome": "Tóquio", "categoria": "A" },
+      { "nome": "Buenos Aires", "categoria": "B" },
+      { "nome": "Ottawa", "categoria": "A" },
+      { "nome": "Cidade do Cabo", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 29,
+    "categoriaA": "Região Norte",
+    "categoriaB": "Região Nordeste",
+    "itens": [
+      { "nome": "Amazonas", "categoria": "A" },
+      { "nome": "Ceará", "categoria": "B" },
+      { "nome": "Acre", "categoria": "A" },
+      { "nome": "Pernambuco", "categoria": "B" },
+      { "nome": "Pará", "categoria": "A" },
+      { "nome": "Bahia", "categoria": "B" },
+      { "nome": "Tocantins", "categoria": "A" },
+      { "nome": "Sergipe", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 30,
+    "categoriaA": "Rio africano",
+    "categoriaB": "Rio asiático",
+    "itens": [
+      { "nome": "Nilo", "categoria": "A" },
+      { "nome": "Ganges", "categoria": "B" },
+      { "nome": "Congo", "categoria": "A" },
+      { "nome": "Mekong", "categoria": "B" },
+      { "nome": "Zambeze", "categoria": "A" },
+      { "nome": "Yangtzé", "categoria": "B" },
+      { "nome": "Níger", "categoria": "A" },
+      { "nome": "Eufrates", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 31,
+    "categoriaA": "Ponto turístico brasileiro",
+    "categoriaB": "Ponto turístico europeu",
+    "itens": [
+      { "nome": "Cristo Redentor", "categoria": "A" },
+      { "nome": "Torre Eiffel", "categoria": "B" },
+      { "nome": "Elevador Lacerda", "categoria": "A" },
+      { "nome": "Coliseu", "categoria": "B" },
+      { "nome": "Teatro Amazonas", "categoria": "A" },
+      { "nome": "Acrópole de Atenas", "categoria": "B" },
+      { "nome": "Pelourinho", "categoria": "A" },
+      { "nome": "Portão de Brandemburgo", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 32,
+    "categoriaA": "Autor brasileiro",
+    "categoriaB": "Autor estrangeiro",
+    "itens": [
+      { "nome": "Machado de Assis", "categoria": "A" },
+      { "nome": "William Shakespeare", "categoria": "B" },
+      { "nome": "Clarice Lispector", "categoria": "A" },
+      { "nome": "Jane Austen", "categoria": "B" },
+      { "nome": "Jorge Amado", "categoria": "A" },
+      { "nome": "Gabriel García Márquez", "categoria": "B" },
+      { "nome": "Carolina Maria de Jesus", "categoria": "A" },
+      { "nome": "Haruki Murakami", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 33,
+    "categoriaA": "Comédia de Shakespeare",
+    "categoriaB": "Tragédia de Shakespeare",
+    "itens": [
+      { "nome": "Muito Barulho por Nada", "categoria": "A" },
+      { "nome": "Hamlet", "categoria": "B" },
+      { "nome": "Sonho de uma Noite de Verão", "categoria": "A" },
+      { "nome": "Macbeth", "categoria": "B" },
+      { "nome": "A Megera Domada", "categoria": "A" },
+      { "nome": "Otelo", "categoria": "B" },
+      { "nome": "Noite de Reis", "categoria": "A" },
+      { "nome": "Romeu e Julieta", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 34,
+    "categoriaA": "Nome grego de divindade",
+    "categoriaB": "Nome romano de divindade",
+    "itens": [
+      { "nome": "Zeus", "categoria": "A" },
+      { "nome": "Júpiter", "categoria": "B" },
+      { "nome": "Hera", "categoria": "A" },
+      { "nome": "Juno", "categoria": "B" },
+      { "nome": "Atena", "categoria": "A" },
+      { "nome": "Minerva", "categoria": "B" },
+      { "nome": "Ares", "categoria": "A" },
+      { "nome": "Marte", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 35,
+    "categoriaA": "Instrumento de cordas",
+    "categoriaB": "Instrumento de percussão",
+    "itens": [
+      { "nome": "Violão", "categoria": "A" },
+      { "nome": "Tambor", "categoria": "B" },
+      { "nome": "Violino", "categoria": "A" },
+      { "nome": "Triângulo", "categoria": "B" },
+      { "nome": "Harpa", "categoria": "A" },
+      { "nome": "Xilofone", "categoria": "B" },
+      { "nome": "Violoncelo", "categoria": "A" },
+      { "nome": "Tímpanos", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 36,
+    "categoriaA": "Família das madeiras",
+    "categoriaB": "Família dos metais",
+    "itens": [
+      { "nome": "Flauta", "categoria": "A" },
+      { "nome": "Trompete", "categoria": "B" },
+      { "nome": "Clarinete", "categoria": "A" },
+      { "nome": "Trombone", "categoria": "B" },
+      { "nome": "Oboé", "categoria": "A" },
+      { "nome": "Tuba", "categoria": "B" },
+      { "nome": "Fagote", "categoria": "A" },
+      { "nome": "Trompa", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 37,
+    "categoriaA": "Compositor barroco",
+    "categoriaB": "Compositor romântico",
+    "itens": [
+      { "nome": "Johann Sebastian Bach", "categoria": "A" },
+      { "nome": "Frédéric Chopin", "categoria": "B" },
+      { "nome": "Antonio Vivaldi", "categoria": "A" },
+      { "nome": "Franz Liszt", "categoria": "B" },
+      { "nome": "George Frideric Handel", "categoria": "A" },
+      { "nome": "Robert Schumann", "categoria": "B" },
+      { "nome": "Domenico Scarlatti", "categoria": "A" },
+      { "nome": "Piotr Ilitch Tchaikovsky", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 38,
+    "categoriaA": "Pintura impressionista",
+    "categoriaB": "Pintura cubista",
+    "itens": [
+      { "nome": "Impressão, nascer do sol", "categoria": "A" },
+      { "nome": "Les Demoiselles d'Avignon", "categoria": "B" },
+      { "nome": "Nenúfares", "categoria": "A" },
+      { "nome": "Casas em L'Estaque", "categoria": "B" },
+      { "nome": "Baile no Moulin de la Galette", "categoria": "A" },
+      { "nome": "Violino e Castiçal", "categoria": "B" },
+      { "nome": "A Aula de Dança", "categoria": "A" },
+      { "nome": "Ma Jolie", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 39,
+    "categoriaA": "Banda brasileira",
+    "categoriaB": "Banda britânica",
+    "itens": [
+      { "nome": "Legião Urbana", "categoria": "A" },
+      { "nome": "Queen", "categoria": "B" },
+      { "nome": "Titãs", "categoria": "A" },
+      { "nome": "The Beatles", "categoria": "B" },
+      { "nome": "Os Paralamas do Sucesso", "categoria": "A" },
+      { "nome": "The Rolling Stones", "categoria": "B" },
+      { "nome": "Skank", "categoria": "A" },
+      { "nome": "The Police", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 40,
+    "categoriaA": "Romance literário",
+    "categoriaB": "Peça teatral",
+    "itens": [
+      { "nome": "Dom Casmurro", "categoria": "A" },
+      { "nome": "Hamlet", "categoria": "B" },
+      { "nome": "Frankenstein", "categoria": "A" },
+      { "nome": "O Auto da Compadecida", "categoria": "B" },
+      { "nome": "Vidas Secas", "categoria": "A" },
+      { "nome": "O Pagador de Promessas", "categoria": "B" },
+      { "nome": "O Cortiço", "categoria": "A" },
+      { "nome": "A Megera Domada", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 41,
+    "categoriaA": "Personagem de Star Wars",
+    "categoriaB": "Personagem de Star Trek",
+    "itens": [
+      { "nome": "Leia Organa", "categoria": "A" },
+      { "nome": "Spock", "categoria": "B" },
+      { "nome": "Chewbacca", "categoria": "A" },
+      { "nome": "James T. Kirk", "categoria": "B" },
+      { "nome": "Obi-Wan Kenobi", "categoria": "A" },
+      { "nome": "Nyota Uhura", "categoria": "B" },
+      { "nome": "R2-D2", "categoria": "A" },
+      { "nome": "Jean-Luc Picard", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 42,
+    "categoriaA": "Animal de floresta tropical",
+    "categoriaB": "Animal de deserto",
+    "itens": [
+      { "nome": "Onça-pintada", "categoria": "A" },
+      { "nome": "Feneco", "categoria": "B" },
+      { "nome": "Preguiça-de-dois-dedos", "categoria": "A" },
+      { "nome": "Dromedário", "categoria": "B" },
+      { "nome": "Mico-leão-dourado", "categoria": "A" },
+      { "nome": "Órix-da-Arábia", "categoria": "B" },
+      { "nome": "Arara-vermelha", "categoria": "A" },
+      { "nome": "Jerboa", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 43,
+    "categoriaA": "Planeta com sistema de anéis",
+    "categoriaB": "Planeta sem sistema de anéis",
+    "itens": [
+      { "nome": "Saturno", "categoria": "A" },
+      { "nome": "Mercúrio", "categoria": "B" },
+      { "nome": "Júpiter", "categoria": "A" },
+      { "nome": "Vênus", "categoria": "B" },
+      { "nome": "Urano", "categoria": "A" },
+      { "nome": "Terra", "categoria": "B" },
+      { "nome": "Netuno", "categoria": "A" },
+      { "nome": "Marte", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 44,
+    "categoriaA": "Esporte olímpico de verão",
+    "categoriaB": "Esporte olímpico de inverno",
+    "itens": [
+      { "nome": "Ginástica artística", "categoria": "A" },
+      { "nome": "Curling", "categoria": "B" },
+      { "nome": "Esgrima", "categoria": "A" },
+      { "nome": "Biatlo", "categoria": "B" },
+      { "nome": "Taekwondo", "categoria": "A" },
+      { "nome": "Luge", "categoria": "B" },
+      { "nome": "Polo aquático", "categoria": "A" },
+      { "nome": "Salto de esqui", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 45,
+    "categoriaA": "Esporte individual de combate",
+    "categoriaB": "Esporte coletivo",
+    "itens": [
+      { "nome": "Judô", "categoria": "A" },
+      { "nome": "Handebol", "categoria": "B" },
+      { "nome": "Esgrima", "categoria": "A" },
+      { "nome": "Rúgbi", "categoria": "B" },
+      { "nome": "Taekwondo", "categoria": "A" },
+      { "nome": "Basquete", "categoria": "B" },
+      { "nome": "Boxe", "categoria": "A" },
+      { "nome": "Voleibol", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 46,
+    "categoriaA": "Esporte aquático",
+    "categoriaB": "Esporte terrestre",
+    "itens": [
+      { "nome": "Natação artística", "categoria": "A" },
+      { "nome": "Atletismo", "categoria": "B" },
+      { "nome": "Polo aquático", "categoria": "A" },
+      { "nome": "Judô", "categoria": "B" },
+      { "nome": "Surfe", "categoria": "A" },
+      { "nome": "Skate", "categoria": "B" },
+      { "nome": "Saltos ornamentais", "categoria": "A" },
+      { "nome": "Escalada esportiva", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 47,
+    "categoriaA": "Rocha ígnea",
+    "categoriaB": "Rocha sedimentar",
+    "itens": [
+      { "nome": "Granito", "categoria": "A" },
+      { "nome": "Arenito", "categoria": "B" },
+      { "nome": "Basalto", "categoria": "A" },
+      { "nome": "Calcário", "categoria": "B" },
+      { "nome": "Obsidiana", "categoria": "A" },
+      { "nome": "Folhelho", "categoria": "B" },
+      { "nome": "Pedra-pomes", "categoria": "A" },
+      { "nome": "Conglomerado", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 48,
+    "categoriaA": "Monumento grego",
+    "categoriaB": "Monumento egípcio",
+    "itens": [
+      { "nome": "Partenon", "categoria": "A" },
+      { "nome": "Grande Pirâmide de Gizé", "categoria": "B" },
+      { "nome": "Templo de Apolo em Delfos", "categoria": "A" },
+      { "nome": "Grande Esfinge de Gizé", "categoria": "B" },
+      { "nome": "Teatro de Epidauro", "categoria": "A" },
+      { "nome": "Complexo de templos de Karnak", "categoria": "B" },
+      { "nome": "Templo de Zeus em Olímpia", "categoria": "A" },
+      { "nome": "Templos de Abu Simbel", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 49,
+    "categoriaA": "Personagem de Os Simpsons",
+    "categoriaB": "Personagem de Bob Esponja",
+    "itens": [
+      { "nome": "Homer Simpson", "categoria": "A" },
+      { "nome": "Bob Esponja", "categoria": "B" },
+      { "nome": "Marge Simpson", "categoria": "A" },
+      { "nome": "Patrick Estrela", "categoria": "B" },
+      { "nome": "Bart Simpson", "categoria": "A" },
+      { "nome": "Lula Molusco", "categoria": "B" },
+      { "nome": "Lisa Simpson", "categoria": "A" },
+      { "nome": "Sandy Bochechas", "categoria": "B" }
+    ]
+  },
+  {
+    "id": 50,
+    "categoriaA": "Personagem da Disney",
+    "categoriaB": "Personagem de Looney Tunes",
+    "itens": [
+      { "nome": "Mickey Mouse", "categoria": "A" },
+      { "nome": "Pernalonga", "categoria": "B" },
+      { "nome": "Pato Donald", "categoria": "A" },
+      { "nome": "Patolino", "categoria": "B" },
+      { "nome": "Pateta", "categoria": "A" },
+      { "nome": "Piu-Piu", "categoria": "B" },
+      { "nome": "Simba", "categoria": "A" },
+      { "nome": "Wile E. Coyote", "categoria": "B" }
+    ]
   }
 ]
