@@ -60,7 +60,9 @@ servidorHttp.listen(PORTA, async () => {
   console.log(`TV:         http://localhost:${PORTA}/tv`);
   console.log(`Controle:   http://localhost:${PORTA}/controlador`);
 
-  const ipLocal = await obterIpLocal();
+  // Em Docker bridge, o IP detectado é interno ao contêiner. Permite anunciar
+  // no QR o IP da máquina host, alcançável pelos celulares na rede local.
+  const ipLocal = process.env.IP_ANUNCIADO || await obterIpLocal();
   if (ipLocal) {
     const linkControlador = `http://${ipLocal}:${PORTA}/controlador?codigo=${sala.codigo}`;
     console.log(`Na rede:    ${linkControlador}`);

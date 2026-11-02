@@ -1,0 +1,9 @@
+.git
+.env
+.env.*
+**/node_modules
+*.log
+server/tests
+design
+raspberry-pi
+teste

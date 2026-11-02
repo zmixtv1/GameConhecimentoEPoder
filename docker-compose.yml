@@ -1,0 +1,12 @@
+services:
+  jogo:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: dominio-pelo-saber:local
+    environment:
+      PORTA: "${PORTA:-3000}"
+      IP_ANUNCIADO: "${IP_ANUNCIADO:?Configure IP_ANUNCIADO no arquivo .env}"
+    ports:
+      - "${PORTA:-3000}:${PORTA:-3000}"
+    restart: unless-stopped

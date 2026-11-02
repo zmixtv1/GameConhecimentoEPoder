@@ -71,6 +71,36 @@ O **primeiro jogador que entrou é o anfitrião**: só ele tem o botão de inici
 
 ---
 
+## Implantação rápida com Docker Compose
+
+É necessário ter Docker Engine e Docker Compose v2 (já incluídos no Docker Desktop). Não precisa instalar Node.js na máquina: o servidor usa a imagem `node:lts-alpine`.
+
+1. Copie `.env.example` para `.env`:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+   No PowerShell, use `Copy-Item .env.example .env`. Edite `IP_ANUNCIADO` com o IPv4 local da máquina que roda Docker, na interface Wi-Fi ou cabeada (por exemplo, `192.168.1.23`). **Não use o IP interno do contêiner.** Esse endereço é colocado no QR code para que os celulares consigam acessar o servidor. A máquina, a TV e os celulares devem estar na mesma rede.
+
+2. Na pasta do projeto, suba o jogo:
+
+   ```bash
+   docker compose up --build -d
+   ```
+
+3. Acompanhe a inicialização e anote o código da sala:
+
+   ```bash
+   docker compose logs -f jogo
+   ```
+
+Abra `http://localhost:3000/tv` na máquina do Docker. Se a TV for outro aparelho, use `http://IP_ANUNCIADO:PORTA/tv` (com os valores do `.env`). Os celulares podem escanear o QR code da TV ou abrir o endereço `Na rede:` exibido nos logs.
+
+Para parar o servidor, use `docker compose down`. Depois de editar o código, os arquivos de `public/` ou os bancos em `data/`, aplique as mudanças com `docker compose up --build -d`.
+
+---
+
 ## Usar outra porta
 
 A porta padrão é a 3000. Para mudar:
